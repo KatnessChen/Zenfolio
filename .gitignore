@@ -51,3 +51,7 @@ npm-debug.log
 # Frontend asset builds
 *.bundle.js
 *.bundle.js.map
+
+# AI model outputs and test data
+backend/output/
+backend/test-data/

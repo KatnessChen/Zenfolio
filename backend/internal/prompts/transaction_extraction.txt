@@ -1,0 +1,26 @@
+Analyze the provided transaction screenshots and extract the transaction details.
+Organize the content into the following JSON format:
+
+{
+  "transactions": [
+    {
+      "ticker": "AAPL",
+      "exchange": "NASDAQ", 
+      "currency": "USD",
+      "trade_date": "YYYY/MM/DD",
+      "trade_type": "Buy",
+      "quantity": 0,
+      "price": 0.00,
+      "trade_amount": 0
+    }
+  ]
+}
+
+Rules:
+1. trade_type must be one of: "Buy", "Sell", "Dividends"
+2. Infer the "exchange" and "currency" from the screenshot content
+3. Use YYYY/MM/DD format for trade_date
+4. All numeric values should be numbers, not strings
+5. If information is not available, use reasonable defaults or null
+
+Please analyze the screenshots and return only the JSON response.
