@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/transaction-tracker/backend/config"
+	"github.com/transaction-tracker/backend/internal/constants"
 )
 
 // JWTClaims represents the claims in the JWT
@@ -21,10 +22,10 @@ type JWTClaims struct {
 func AuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Get the Authorization header
-		authHeader := c.GetHeader("Authorization")
+		authHeader := c.GetHeader(constants.AuthorizationHeader)
 		if authHeader == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-				"error": "Authorization header is required",
+				"error": constants.ErrMsgAuthHeaderRequired,
 			})
 			return
 		}
@@ -32,11 +33,11 @@ func AuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 		// Check if it's a Bearer token
 		tokenString := ""
 		parts := strings.Split(authHeader, " ")
-		if len(parts) == 2 && parts[0] == "Bearer" {
+		if len(parts) == 2 && parts[0] == constants.BearerTokenPrefix {
 			tokenString = parts[1]
 		} else {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-				"error": "Invalid Authorization header format",
+				"error": constants.ErrMsgInvalidAuthFormat,
 			})
 			return
 		}
@@ -45,14 +46,14 @@ func AuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 		token, err := jwt.ParseWithClaims(tokenString, &JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
 			// Validate signing method
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, errors.New("invalid signing method")
+				return nil, errors.New(constants.ErrMsgInvalidSigningMethod)
 			}
 			return []byte(cfg.JWTSecret), nil
 		})
 
 		if err != nil || !token.Valid {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-				"error": "Invalid or expired token",
+				"error": constants.ErrMsgInvalidToken,
 			})
 			return
 		}

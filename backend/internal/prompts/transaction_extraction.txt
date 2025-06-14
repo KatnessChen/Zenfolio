@@ -1,0 +1,39 @@
+Analyze the provided transaction screenshots and extract the transaction details from all images.
+Organize the content into the following JSON format:
+
+{
+  "transactions": [
+    {
+      "ticker": "GOOGL",
+      "ticker_label": "ALPHABET INC CLASS A COMMON STOCK CASH DIV",
+      "exchange": "NASDAQ", 
+      "currency": "USD",
+      "trade_date": "YYYY/MM/DD",
+      "trade_type": "Buy",
+      "quantity": 0,
+      "price": 0.00,
+      "trade_amount": 0
+    },
+    {
+      "ticker": "2330",
+      "ticker_label": "2330台積電",
+      "exchange": "NASDAQ", 
+      "currency": "USD",
+      "trade_date": "YYYY/MM/DD",
+      "trade_type": "Buy",
+      "quantity": 0,
+      "price": 0.00,
+      "trade_amount": 0
+    }
+  ]
+}
+
+Rules:
+1. trade_type must be one of: "Buy", "Sell", "Dividends"
+2. ticker is the stock symbol, ticker_label is human-readable stock name
+2. Infer the "exchange" and "currency" from the screenshot content
+3. Use YYYY/MM/DD format for trade_date
+4. All numeric values should be numbers, not strings
+5. If information is not available, use reasonable defaults or null
+
+Please analyze the screenshots and return only the JSON response.

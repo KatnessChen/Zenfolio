@@ -92,6 +92,56 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /api/v1/extract-transactions:
+    post:
+      summary: Extract transactions from images
+      description: Uploads one or more images and extracts transaction data using AI.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                images:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: One or more image files to process.
+      responses:
+        "200":
+          description: Successful extraction
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExtractResponse"
+        "400":
+          description: Invalid request (e.g., no images uploaded, bad image format)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error (e.g., AI processing failed)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   securitySchemes:
     bearerAuth:
@@ -133,3 +183,52 @@ components:
         message:
           type: string
           example: Operation completed successfully
+    TransactionData:
+      type: object
+      properties:
+        ticker:
+          type: string
+          example: "AAPL"
+        ticker_label:
+          type: string
+          example: "Apple Inc."
+          description: "Human-readable company name or description"
+        exchange:
+          type: string
+          example: "NASDAQ"
+        currency:
+          type: string
+          example: "USD"
+        trade_date:
+          type: string
+          format: date
+          example: "2024/06/14"
+        trade_type:
+          type: string
+          enum: ["Buy", "Sell", "Dividends"]
+          example: "Buy"
+        quantity:
+          type: number
+          format: double
+          example: 10.5
+        price:
+          type: number
+          format: double
+          example: 150.25
+        trade_amount:
+          type: number
+          format: double
+          example: 1577.625
+    ExtractResponse:
+      type: object
+      properties:
+        transactions:
+          type: array
+          items:
+            $ref: "#/components/schemas/TransactionData"
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Transactions extracted successfully."
