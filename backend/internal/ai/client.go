@@ -8,6 +8,7 @@ import (
 // TransactionData represents extracted transaction information
 type TransactionData struct {
 	Ticker      string  `json:"ticker"`
+	TickerLabel string  `json:"ticker_label"`
 	Exchange    string  `json:"exchange"`
 	Currency    string  `json:"currency"`
 	TradeDate   string  `json:"trade_date"`

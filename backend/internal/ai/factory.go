@@ -22,11 +22,9 @@ func NewClient(cfg *config.Config) (Client, error) {
 
 	log.Printf("Initializing AI client with model: %s", aiConfig.Model)
 
-	// For now, we only support Gemini, but this can be extended
-	// to support other models based on configuration
-	client, err := NewGeminiClient(aiConfig)
+	client, err := NewAIModelClient(aiConfig)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create Gemini client: %w", err)
+		return nil, fmt.Errorf("failed to create AI model client: %w", err)
 	}
 
 	return client, nil

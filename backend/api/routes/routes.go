@@ -23,7 +23,7 @@ func SetupRouter(cfg *config.Config) *gin.Engine {
 	api.Use(middlewares.RateLimitMiddleware(rateLimiter))
 	{
 		api.GET(constants.HelloWorldEndpoint, handlers.HelloWorld)
-		api.GET("/hello-world", handlers.HelloWorld)
+		api.POST(constants.ExtractTransEndpoint, handlers.ExtractTransactionsHandler(cfg))
 	}
 	
 	return r
