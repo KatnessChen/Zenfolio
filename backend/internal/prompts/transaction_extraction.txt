@@ -5,7 +5,7 @@ Organize the content into the following JSON format:
   "transactions": [
     {
       "ticker": "GOOGL",
-      "ticker_label": "ALPHABET INC CLASS A COMMON STOCK CASH DIV"
+      "ticker_label": "ALPHABET INC CLASS A COMMON STOCK CASH DIV",
       "exchange": "NASDAQ", 
       "currency": "USD",
       "trade_date": "YYYY/MM/DD",
@@ -16,7 +16,7 @@ Organize the content into the following JSON format:
     },
     {
       "ticker": "2330",
-      "ticker_label": "2330台積電"
+      "ticker_label": "2330台積電",
       "exchange": "NASDAQ", 
       "currency": "USD",
       "trade_date": "YYYY/MM/DD",

@@ -189,6 +189,10 @@ components:
         ticker:
           type: string
           example: "AAPL"
+        ticker_label:
+          type: string
+          example: "Apple Inc."
+          description: "Human-readable company name or description"
         exchange:
           type: string
           example: "NASDAQ"
