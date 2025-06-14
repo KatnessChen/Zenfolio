@@ -1,10 +1,13 @@
 package constants
 
-// AI Model Configuration
+// Default Configuration
 const (
 	DefaultAIModel = "gemini-2.0-flash"
+	DefaultAPIKey = "GEMINI_API_KEY"
 	DefaultAITimeout = 30
 	DefaultAIMaxRetry = 3
+	DefaultServerAddr = ":8080"
+	DefaultJWTExpiry = 24
 )
 
 // API Routes and Endpoints
@@ -41,23 +44,6 @@ const (
 	TradeTypeDividends = "Dividends"
 )
 
-// Common Exchanges
-const (
-	ExchangeNASDAQ = "NASDAQ"
-	ExchangeNYSE = "NYSE"
-	ExchangeOTC = "OTC"
-)
-
-// Common Currencies
-const (
-	CurrencyUSD = "USD"
-	CurrencyEUR = "EUR"
-	CurrencyGBP = "GBP"
-	CurrencyJPY = "JPY"
-	CurrencyCAD = "CAD"
-	CurrencyTWD = "TWD"
-)
-
 // Error Messages
 const (
 	ErrMsgAuthHeaderRequired = "Authorization header is required"
@@ -92,22 +78,6 @@ const (
 	MsgHelloWorld = "Hello, World! You are authenticated."
 )
 
-// Environment Variable Names
-const (
-	EnvServerAddr = "SERVER_ADDR"
-	EnvJWTSecret = "JWT_SECRET"
-	EnvGeminiAPIKey = "GEMINI_API_KEY"
-	EnvAIModel = "AI_MODEL"
-	EnvAITimeout = "AI_TIMEOUT"
-	EnvAIMaxRetry = "AI_MAX_RETRY"
-)
-
-// Default Values
-const (
-	DefaultServerAddr = ":8080"
-	DefaultJWTExpiry = 24
-)
-
 // Rate Limiting
 const (
 	DefaultRateLimit = 100
@@ -118,13 +88,6 @@ const (
 const (
 	MaxFileSize = 10 << 20
 	MaxFilesPerBatch = 10
-)
-
-// Validation Constants
-const (
-	MinPasswordLength = 6
-	MaxUsernameLength = 50
-	MaxTickerLength = 10
 )
 
 // ValidTradeTypes returns a slice of valid trade types

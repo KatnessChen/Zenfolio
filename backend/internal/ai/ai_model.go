@@ -19,12 +19,8 @@ type ModelType string
 
 const (
 	ModelTypeGemini ModelType = "gemini"
-	// Future model types can be added here
-	// ModelTypeOpenAI ModelType = "openai"
-	// ModelTypeClaude ModelType = "claude"
 )
 
-// AIModelClient is a generic AI model client that can work with different providers
 type AIModelClient struct {
 	modelType ModelType
 	config    *Config
@@ -32,10 +28,6 @@ type AIModelClient struct {
 	// Provider-specific clients (only one will be active at a time)
 	geminiClient *genai.Client
 	geminiModel  *genai.GenerativeModel
-	
-	// Future provider clients can be added here
-	// openaiClient *openai.Client
-	// claudeClient *claude.Client
 }
 
 // NewAIModelClient creates a new AI model client based on the configuration
@@ -76,14 +68,6 @@ func determineModelType(modelName string) ModelType {
 	case "gemini-2.0-flash", "gemini-1.5-pro", "gemini-1.5-flash":
 		return ModelTypeGemini
 	}
-
-	// Future model detection logic can be added here
-	// if strings.HasPrefix(modelName, "gpt-") {
-	//     return ModelTypeOpenAI
-	// }
-	// if strings.HasPrefix(modelName, "claude-") {
-	//     return ModelTypeClaude
-	// }
 
 	// Default to Gemini for backward compatibility
 	return ModelTypeGemini

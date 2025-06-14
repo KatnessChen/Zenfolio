@@ -33,7 +33,7 @@ func NewClient(cfg *config.Config) (Client, error) {
 // ValidateConfig validates the AI configuration
 func ValidateConfig(cfg *config.Config) error {
 	if cfg.AIAPIKey == "" {
-		return fmt.Errorf("GEMINI_API_KEY environment variable is required")
+		return fmt.Errorf("AI API key environment variable is required")
 	}
 
 	if cfg.AITimeout <= 0 {

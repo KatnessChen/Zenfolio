@@ -22,7 +22,7 @@ func TestAIModelClientCreation(t *testing.T) {
 	// Test with valid config (but dummy API key)
 	config = &ai.Config{
 		APIKey:   "dummy-key-for-testing",
-		Model:    constants.DefaultAIModel, // As of mid-2025; check https://ai.google.dev/models for latest models
+		Model:    constants.DefaultAIModel,
 		Timeout:  constants.DefaultAITimeout,
 		MaxRetry: constants.DefaultAIMaxRetry,
 	}
@@ -77,7 +77,7 @@ func TestExtractTransactionsValidation(t *testing.T) {
 // This is an integration test that requires a valid GEMINI_API_KEY environment variable
 func TestExtractTransactionsFromImage(t *testing.T) {
 	// Check if we have a real API key for integration testing
-	apiKey := os.Getenv(constants.EnvGeminiAPIKey)
+	apiKey := os.Getenv("GEMINI_API_KEY")
 	if apiKey == "" {
 		t.Skip("Skipping integration test: GEMINI_API_KEY not set")
 	}
@@ -174,7 +174,7 @@ func TestExtractTransactionsFromImage(t *testing.T) {
 
 		// Validate trade type is one of the allowed values
 		validTradeTypes := constants.ValidTradeTypesMap()
-		if !validTradeTypes[transaction.TradeType] {
+		if !validTradeTypes[string(transaction.TradeType)] {
 			t.Errorf("Transaction %d: Invalid trade type '%s', must be %v", i+1, transaction.TradeType, constants.ValidTradeTypes())
 		}
 
