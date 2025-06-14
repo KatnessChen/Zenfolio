@@ -4,6 +4,8 @@ import (
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/transaction-tracker/backend/internal/constants"
 )
 
 // Config holds all configuration for the application
@@ -23,32 +25,32 @@ type Config struct {
 // Load loads the configuration from environment variables
 // with sensible defaults when variables are not set
 func Load() (*Config, error) {
-	serverAddr := os.Getenv("SERVER_ADDR")
+	serverAddr := os.Getenv(constants.EnvServerAddr)
 	if serverAddr == "" {
-		serverAddr = ":8080"
+		serverAddr = constants.DefaultServerAddr
 	}
 
-	jwtSecret := os.Getenv("JWT_SECRET")
+	jwtSecret := os.Getenv(constants.EnvJWTSecret)
 	if jwtSecret == "" {
 		jwtSecret = "your-secret-key-change-in-production"
 	}
 
 	// AI Model configuration
-	aiAPIKey := os.Getenv("GEMINI_API_KEY")
-	aiModel := os.Getenv("AI_MODEL")
+	aiAPIKey := os.Getenv(constants.EnvGeminiAPIKey)
+	aiModel := os.Getenv(constants.EnvAIModel)
 	if aiModel == "" {
-		aiModel = "gemini-2.5-flash"
+		aiModel = constants.DefaultAIModel
 	}
 
-	aiTimeout := 30 // default 30 seconds
-	if timeoutStr := os.Getenv("AI_TIMEOUT"); timeoutStr != "" {
+	aiTimeout := constants.DefaultAITimeout // default 30 seconds
+	if timeoutStr := os.Getenv(constants.EnvAITimeout); timeoutStr != "" {
 		if t, err := strconv.Atoi(timeoutStr); err == nil {
 			aiTimeout = t
 		}
 	}
 
-	aiMaxRetry := 3 // default 3 retries
-	if retryStr := os.Getenv("AI_MAX_RETRY"); retryStr != "" {
+	aiMaxRetry := constants.DefaultAIMaxRetry // default 3 retries
+	if retryStr := os.Getenv(constants.EnvAIMaxRetry); retryStr != "" {
 		if r, err := strconv.Atoi(retryStr); err == nil {
 			aiMaxRetry = r
 		}
@@ -57,8 +59,8 @@ func Load() (*Config, error) {
 	return &Config{
 		ServerAddress:      serverAddr,
 		JWTSecret:          jwtSecret,
-		JWTExpirationHours: 24,
-		RateLimitRequests:  100,
+		JWTExpirationHours: constants.DefaultJWTExpiry,
+		RateLimitRequests:  constants.DefaultRateLimit,
 		RateLimitDuration:  time.Minute,
 		AIAPIKey:           aiAPIKey,
 		AIModel:            aiModel,

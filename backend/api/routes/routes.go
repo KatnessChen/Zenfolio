@@ -5,27 +5,24 @@ import (
 	"github.com/transaction-tracker/backend/api/handlers"
 	"github.com/transaction-tracker/backend/api/middlewares"
 	"github.com/transaction-tracker/backend/config"
+	"github.com/transaction-tracker/backend/internal/constants"
 )
 
 // SetupRouter configures the API routes
 func SetupRouter(cfg *config.Config) *gin.Engine {
 	r := gin.Default()
 
-	// Create a rate limiter
 	rateLimiter := middlewares.NewClientRateLimiter(cfg)
 
-	// Public routes
-	r.GET("/health", handlers.GetHealthCheck)
+	r.GET(constants.HealthEndpoint, handlers.GetHealthCheck)
 	
-	// Login route with rate limiting
-	r.POST("/api/v1/login", middlewares.RateLimitMiddleware(rateLimiter), handlers.Login(cfg))
+	r.POST(constants.APIVersion+constants.LoginEndpoint, middlewares.RateLimitMiddleware(rateLimiter), handlers.Login(cfg))
 
-	// API routes (authenticated)
-	api := r.Group("/api/v1")
+	api := r.Group(constants.APIVersion)
 	api.Use(middlewares.AuthMiddleware(cfg))
 	api.Use(middlewares.RateLimitMiddleware(rateLimiter))
 	{
-		// Hello world route for testing authentication
+		api.GET(constants.HelloWorldEndpoint, handlers.HelloWorld)
 		api.GET("/hello-world", handlers.HelloWorld)
 	}
 	
