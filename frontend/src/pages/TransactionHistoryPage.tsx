@@ -34,9 +34,7 @@ export default function TransactionHistoryPage() {
       <div className="space-y-8">
         <div className="text-center space-y-4">
           <h1 className="text-3xl font-bold tracking-tight">Transaction History</h1>
-          <p className="text-lg text-muted-foreground">
-            View and manage your extracted trading transactions
-          </p>
+          <p className="text-lg text-muted-foreground">View and manage your trading transactions</p>
         </div>
 
         <div className="space-y-4">

@@ -6,6 +6,7 @@ specifiers:
   '@radix-ui/react-slot': ^1.2.3
   '@reduxjs/toolkit': ^2.8.2
   '@rollup/rollup-darwin-arm64': ^4.43.0
+  '@types/node': ^24.0.3
   '@types/react': ^19.1.2
   '@types/react-dom': ^19.1.2
   '@vitejs/plugin-react': ^4.4.1
@@ -48,6 +49,7 @@ dependencies:
 devDependencies:
   '@eslint/js': 9.29.0
   '@rollup/rollup-darwin-arm64': 4.43.0
+  '@types/node': 24.0.3
   '@types/react': 19.1.8
   '@types/react-dom': 19.1.6_@types+react@19.1.8
   '@vitejs/plugin-react': 4.5.2_vite@6.3.5
@@ -62,7 +64,7 @@ devDependencies:
   tw-animate-css: 1.3.4
   typescript: 5.8.3
   typescript-eslint: 8.34.0_eslint@9.29.0+typescript@5.8.3
-  vite: 6.3.5
+  vite: 6.3.5_@types+node@24.0.3
 
 packages:
 
@@ -953,6 +955,12 @@ packages:
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
     dev: true
 
+  /@types/node/24.0.3:
+    resolution: {integrity: sha512-R4I/kzCYAdRLzfiCabn9hxWfbuHS573x+r0dJMkkzThEa7pbrcDWK+9zu3e7aBOouf+rQAciqPFMnxwr0aWgKg==}
+    dependencies:
+      undici-types: 7.8.0
+    dev: true
+
   /@types/react-dom/19.1.6_@types+react@19.1.8:
     resolution: {integrity: sha512-4hOiT/dwO8Ko0gV1m/TJZYk3y0KBnY9vzDh7W+DH17b2HFSOGgdj33dhihPeuy3l0q23+4e+hoXHV6hCC4dCXw==}
     peerDependencies:
@@ -1124,7 +1132,7 @@ packages:
       '@rolldown/pluginutils': 1.0.0-beta.11
       '@types/babel__core': 7.20.5
       react-refresh: 0.17.0
-      vite: 6.3.5
+      vite: 6.3.5_@types+node@24.0.3
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -2494,6 +2502,10 @@ packages:
     hasBin: true
     dev: true
 
+  /undici-types/7.8.0:
+    resolution: {integrity: sha512-9UJ2xGDvQ43tYyVMpuHlsgApydB8ZKfVYTsLDhXkFL/6gfkp+U8xTGdh8pMJv1SpZna0zxG1DwsKZsreLbXBxw==}
+    dev: true
+
   /update-browserslist-db/1.1.3_browserslist@4.25.0:
     resolution: {integrity: sha512-UxhIZQ+QInVdunkDAaiazvvT/+fXL5Osr0JZlJulepYu6Jd7qJtDZjlur0emRlT71EN3ScPoE7gvsuIKKNavKw==}
     hasBin: true
@@ -2523,7 +2535,7 @@ packages:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
     dev: true
 
-  /vite/6.3.5:
+  /vite/6.3.5_@types+node@24.0.3:
     resolution: {integrity: sha512-cZn6NDFE7wdTpINgs++ZJ4N49W2vRp8LCKrn3Ob1kYNtOo21vfDoaV5GzBfLU4MovSAB8uNRm4jgzVQZ+mBzPQ==}
     engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
     hasBin: true
@@ -2563,6 +2575,7 @@ packages:
       yaml:
         optional: true
     dependencies:
+      '@types/node': 24.0.3
       esbuild: 0.25.5
       fdir: 6.4.6_picomatch@4.0.2
       picomatch: 4.0.2

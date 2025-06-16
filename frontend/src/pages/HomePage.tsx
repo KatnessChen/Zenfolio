@@ -6,10 +6,12 @@ export default function HomePage() {
     <div className="container mx-auto py-10">
       <div className="flex flex-col items-center justify-center min-h-[600px] space-y-8">
         <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold tracking-tight">Transaction Tracker</h1>
+          <h1 className="text-5xl font-extrabold tracking-tighter bg-gradient-to-r from-blue-500 to-purple-600 text-transparent bg-clip-text">
+            TradeVault
+          </h1>
           <p className="text-xl text-muted-foreground max-w-2xl">
-            Automatically extract and manage your trading transactions using AI-powered image
-            processing
+            Trading on multiple exchanges? Upload screenshots and let AI do the work of reading and
+            organizing your transactions for you
           </p>
         </div>
 
@@ -29,9 +31,7 @@ export default function HomePage() {
           <Card>
             <CardHeader>
               <CardTitle>View Transactions</CardTitle>
-              <CardDescription>
-                Browse and manage your extracted transaction history
-              </CardDescription>
+              <CardDescription>Browse and manage your uploaded transaction history</CardDescription>
             </CardHeader>
             <CardContent>
               <Button variant="outline" className="w-full">

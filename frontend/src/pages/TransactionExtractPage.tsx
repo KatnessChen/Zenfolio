@@ -32,7 +32,7 @@ export default function TransactionExtractPage() {
     <div className="container mx-auto py-10">
       <div className="max-w-2xl mx-auto space-y-8">
         <div className="text-center space-y-4">
-          <h1 className="text-3xl font-bold tracking-tight">Extract Transactions</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Upload Transactions</h1>
           <p className="text-lg text-muted-foreground">
             Upload trading screenshots to automatically extract transaction data using AI
           </p>
