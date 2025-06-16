@@ -1,0 +1,165 @@
+/* 🏦 交易追踪应用专用配色方案 */
+
+:root {
+  /* 🎯 基础配色 - 专业金融感 */
+  --background: 220 15% 98%; /* 轻微蓝调的白色 */
+  --foreground: 220 20% 15%; /* 深蓝灰色文字 */
+  --card: 220 15% 100%; /* 纯白卡片 */
+  --card-foreground: 220 20% 15%;
+
+  /* 💼 主要操作色 - 信任蓝 */
+  --primary: 220 80% 50%; /* 专业蓝色 */
+  --primary-foreground: 0 0% 100%;
+  --primary-hover: 220 80% 45%; /* 悬停状态 */
+
+  /* 📊 交易状态色彩 */
+  --profit: 120 60% 45%; /* 盈利绿 */
+  --profit-foreground: 0 0% 100%;
+  --loss: 0 75% 55%; /* 亏损红 */
+  --loss-foreground: 0 0% 100%;
+  --neutral: 220 10% 60%; /* 中性灰 */
+  --neutral-foreground: 0 0% 100%;
+
+  /* 🚨 功能性颜色 */
+  --warning: 45 95% 55%; /* 警告橙 */
+  --warning-foreground: 220 20% 15%;
+  --info: 200 80% 50%; /* 信息蓝 */
+  --info-foreground: 0 0% 100%;
+
+  /* 🎚️ 优先级颜色 */
+  --high-priority: 15 85% 60%; /* 高优先级红橙 */
+  --medium-priority: 45 80% 60%; /* 中优先级橙 */
+  --low-priority: 220 15% 70%; /* 低优先级灰 */
+
+  /* 📈 数据可视化专用 */
+  --chart-profit: 120 50% 50%; /* 图表盈利色 */
+  --chart-loss: 0 70% 60%; /* 图表亏损色 */
+  --chart-volume: 200 60% 50%; /* 成交量 */
+  --chart-trend-up: 120 40% 60%; /* 上涨趋势 */
+  --chart-trend-down: 0 60% 60%; /* 下跌趋势 */
+
+  /* 🔧 界面辅助色 */
+  --secondary: 220 15% 92%; /* 次要按钮背景 */
+  --secondary-foreground: 220 20% 25%;
+  --muted: 220 10% 88%; /* 静音区域 */
+  --muted-foreground: 220 15% 55%;
+  --accent: 220 20% 90%; /* 强调背景 */
+  --accent-foreground: 220 20% 20%;
+
+  /* 📐 边框和分割 */
+  --border: 220 15% 85%; /* 主要边框 */
+  --border-light: 220 10% 92%; /* 轻微边框 */
+  --input: 220 15% 88%; /* 输入框边框 */
+  --ring: 220 80% 50%; /* 焦点环 */
+
+  /* 🎭 状态指示 */
+  --success: 120 60% 45%; /* 成功状态 */
+  --destructive: 0 75% 55%; /* 危险状态 */
+  --pending: 45 80% 60%; /* 待处理状态 */
+  --processing: 200 70% 55%; /* 处理中状态 */
+}
+
+/* 🌙 暗色主题 - 专业夜间模式 */
+.dark {
+  --background: 220 25% 8%; /* 深蓝黑背景 */
+  --foreground: 220 15% 88%; /* 浅色文字 */
+  --card: 220 20% 12%; /* 深色卡片 */
+  --card-foreground: 220 15% 88%;
+
+  /* 主要操作色在暗色下的调整 */
+  --primary: 220 70% 60%; /* 降低饱和度 */
+  --primary-foreground: 220 25% 8%;
+  --primary-hover: 220 70% 55%;
+
+  /* 交易状态色在暗色下的调整 */
+  --profit: 120 50% 55%; /* 提高亮度 */
+  --profit-foreground: 220 25% 8%;
+  --loss: 0 65% 65%; /* 提高亮度，降低饱和度 */
+  --loss-foreground: 220 25% 8%;
+  --neutral: 220 15% 65%;
+  --neutral-foreground: 220 25% 8%;
+
+  /* 功能性颜色的暗色调整 */
+  --warning: 45 85% 65%;
+  --warning-foreground: 220 25% 8%;
+  --info: 200 70% 60%;
+  --info-foreground: 220 25% 8%;
+
+  /* 界面辅助色暗色调整 */
+  --secondary: 220 20% 18%;
+  --secondary-foreground: 220 15% 85%;
+  --muted: 220 20% 15%;
+  --muted-foreground: 220 10% 65%;
+  --accent: 220 20% 20%;
+  --accent-foreground: 220 15% 85%;
+
+  /* 边框在暗色下的调整 */
+  --border: 220 20% 22%;
+  --border-light: 220 15% 18%;
+  --input: 220 20% 20%;
+  --ring: 220 70% 60%;
+}
+
+/* 🎨 交易应用专用 CSS 变量 */
+:root {
+  /* 金额显示 */
+  --amount-positive: var(--profit);
+  --amount-negative: var(--loss);
+  --amount-neutral: var(--neutral);
+
+  /* 百分比变化 */
+  --percentage-up: var(--chart-trend-up);
+  --percentage-down: var(--chart-trend-down);
+
+  /* 交易类型 */
+  --buy-order: var(--profit);
+  --sell-order: var(--loss);
+  --pending-order: var(--warning);
+
+  /* 账户状态 */
+  --account-active: var(--success);
+  --account-suspended: var(--destructive);
+  --account-pending: var(--pending);
+  --account-verified: var(--info);
+}
+
+/* 📱 响应式颜色调整 */
+@media (max-width: 768px) {
+  :root {
+    /* 移动端增强对比度 */
+    --profit: 120 70% 40%;
+    --loss: 0 80% 50%;
+    --border: 220 20% 80%;
+  }
+}
+
+/* ♿ 可访问性增强 */
+@media (prefers-contrast: high) {
+  :root {
+    /* 高对比度模式 */
+    --foreground: 220 30% 10%;
+    --background: 0 0% 100%;
+    --border: 220 50% 50%;
+    --profit: 120 100% 30%;
+    --loss: 0 100% 40%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    /* 减少动画的用户 */
+    --transition-duration: 0.1s;
+  }
+}
+
+/* 🖨️ 打印样式 */
+@media print {
+  :root {
+    /* 打印友好的颜色 */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
+    --profit: 0 0% 30%;
+    --loss: 0 0% 30%;
+    --border: 0 0% 70%;
+  }
+}
