@@ -44,3 +44,4 @@ It includes validation for email and password, and hashes the password before sa
 1. Execute the `git status` command in the terminal to review staged changes and ensure they are ready for commit.
 2. If any changes are not staged, please ignore them and focus only on the staged changes for the commit message.
 3. Execute the `git commit -m "your commit message"` in the terminal to create the commit with the suggested message. Ensure the commit message is valid and follows the specified pattern before executing.
+4. Execute the `git push` command in the terminal to push the new commit to the origin remote repository.
