@@ -43,10 +43,10 @@ node_modules/
 npm-debug.log
 
 # Build output
-/dist
-/build
-/out
-/public/build
+frontend/dist
+frontend/build
+frontend/out
+frontend/public/build
 
 # Frontend asset builds
 *.bundle.js
