@@ -80,7 +80,7 @@ func TestExtractTransactionsFromImage(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")
 	}
-	
+
 	// Check if we have a real API key for integration testing
 	apiKey := os.Getenv("GEMINI_API_KEY")
 	if apiKey == "" {
