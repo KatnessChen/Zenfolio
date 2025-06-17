@@ -9,15 +9,15 @@ import (
 
 // TransactionData represents extracted transaction information
 type TransactionData struct {
-	Ticker      string     `json:"ticker"`
-	TickerLabel string     `json:"ticker_label"`
-	Exchange    string     `json:"exchange"`
-	Currency    string     `json:"currency"`
-	TradeDate   string     `json:"trade_date"`
-	TradeType   TradeType  `json:"trade_type"`
-	Quantity    float64    `json:"quantity"`
-	Price       float64    `json:"price"`
-	TradeAmount float64    `json:"trade_amount"`
+	Ticker      string    `json:"ticker"`
+	TickerLabel string    `json:"ticker_label"`
+	Exchange    string    `json:"exchange"`
+	Currency    string    `json:"currency"`
+	TradeDate   string    `json:"trade_date"`
+	TradeType   TradeType `json:"trade_type"`
+	Quantity    float64   `json:"quantity"`
+	Price       float64   `json:"price"`
+	TradeAmount float64   `json:"trade_amount"`
 }
 
 // TradeType represents the type of trade transaction
@@ -48,10 +48,10 @@ type ExtractResponse struct {
 type Client interface {
 	// ExtractTransactions processes images and extracts transaction data
 	ExtractTransactions(ctx context.Context, images []ImageInput) (*ExtractResponse, error)
-	
+
 	// Health checks if the AI client is working properly
 	Health(ctx context.Context) error
-	
+
 	// Close closes the client and cleans up resources
 	Close() error
 }

@@ -24,7 +24,7 @@ const (
 type AIModelClient struct {
 	modelType ModelType
 	config    *Config
-	
+
 	// Provider-specific clients (only one will be active at a time)
 	geminiClient *genai.Client
 	geminiModel  *genai.GenerativeModel
@@ -38,7 +38,7 @@ func NewAIModelClient(config *Config) (*AIModelClient, error) {
 
 	// Determine model type from config
 	modelType := determineModelType(config.Model)
-	
+
 	client := &AIModelClient{
 		modelType: modelType,
 		config:    config,
@@ -88,23 +88,23 @@ func (c *AIModelClient) initGeminiClient() error {
 	}
 
 	model := client.GenerativeModel(modelName)
-	
+
 	// Configure model settings for better JSON responses
 	model.ResponseMIMEType = constants.MimeTypeJSON
-	
+
 	// Load system instruction from prompt file
 	systemInstruction, err := prompts.LoadPrompt("system_instruction.txt")
 	if err != nil {
 		return fmt.Errorf("failed to load system instruction: %w", err)
 	}
-	
+
 	model.SystemInstruction = &genai.Content{
 		Parts: []genai.Part{genai.Text(systemInstruction)},
 	}
 
 	c.geminiClient = client
 	c.geminiModel = model
-	
+
 	return nil
 }
 
@@ -164,7 +164,7 @@ func (c *AIModelClient) extractTransactionsGemini(ctx context.Context, images []
 	// Generate content with retry logic
 	var resp *genai.GenerateContentResponse
 	var err error
-	
+
 	maxRetry := c.config.MaxRetry
 	if maxRetry <= 0 {
 		maxRetry = constants.DefaultAIMaxRetry
@@ -175,7 +175,7 @@ func (c *AIModelClient) extractTransactionsGemini(ctx context.Context, images []
 		if err == nil {
 			break
 		}
-		
+
 		if attempt < maxRetry-1 {
 			log.Printf("Attempt %d failed, retrying: %v", attempt+1, err)
 			time.Sleep(time.Duration(attempt+1) * time.Second)
@@ -199,7 +199,7 @@ func (c *AIModelClient) extractTransactionsGemini(ctx context.Context, images []
 
 	// Extract the text response
 	responseText := fmt.Sprintf("%v", resp.Candidates[0].Content.Parts[0])
-	
+
 	return c.parseTransactionResponse(responseText)
 }
 
@@ -239,7 +239,7 @@ func (c *AIModelClient) Health(ctx context.Context) error {
 func (c *AIModelClient) healthCheckGemini(ctx context.Context) error {
 	// Simple health check by making a minimal request
 	parts := []genai.Part{genai.Text("Health check - please respond with 'OK'")}
-	
+
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 

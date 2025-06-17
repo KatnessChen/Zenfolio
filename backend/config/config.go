@@ -17,10 +17,10 @@ type Config struct {
 	RateLimitRequests  int
 	RateLimitDuration  time.Duration
 	// AI Model Configuration
-	AIAPIKey     string
-	AIModel      string
-	AITimeout    int
-	AIMaxRetry   int
+	AIAPIKey   string
+	AIModel    string
+	AITimeout  int
+	AIMaxRetry int
 }
 
 // Load loads the configuration from environment variables

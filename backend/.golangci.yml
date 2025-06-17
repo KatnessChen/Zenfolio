@@ -1,0 +1,17 @@
+linters:
+  enable:
+    - gofmt
+    - govet
+    - ineffassign
+    - unused
+    - gosimple
+    - staticcheck
+  disable:
+    - typecheck # Disable due to Go 1.23 compatibility issues
+
+run:
+  timeout: 5m
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
