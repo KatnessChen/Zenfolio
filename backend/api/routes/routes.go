@@ -15,6 +15,7 @@ func SetupRouter(cfg *config.Config) *gin.Engine {
 	rateLimiter := middlewares.NewClientRateLimiter(cfg)
 
 	r.GET(constants.HealthEndpoint, handlers.GetHealthCheck)
+	r.GET("/health/database", handlers.DatabaseHealthHandler)
 
 	r.POST(constants.APIVersion+constants.LoginEndpoint, middlewares.RateLimitMiddleware(rateLimiter), handlers.Login(cfg))
 
@@ -24,6 +25,7 @@ func SetupRouter(cfg *config.Config) *gin.Engine {
 	{
 		api.GET(constants.HelloWorldEndpoint, handlers.HelloWorld)
 		api.POST(constants.ExtractTransEndpoint, handlers.ExtractTransactionsHandler(cfg))
+		api.GET("/health/database/detailed", handlers.DetailedDatabaseHealthHandler)
 	}
 
 	return r
