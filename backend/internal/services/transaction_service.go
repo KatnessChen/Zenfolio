@@ -11,20 +11,20 @@ import (
 
 // TransactionFilter represents filters for transaction queries
 type TransactionFilter struct {
-	UserID          *uint
-	Symbol          *string
-	Type            *string
-	Status          *string
-	Broker          *string
-	StartDate       *time.Time
-	EndDate         *time.Time
-	MinAmount       *float64
-	MaxAmount       *float64
-	ExtractedFrom   *string
-	Limit           int
-	Offset          int
-	OrderBy         string
-	OrderDirection  string
+	UserID         *uint
+	Symbol         *string
+	Type           *string
+	Status         *string
+	Broker         *string
+	StartDate      *time.Time
+	EndDate        *time.Time
+	MinAmount      *float64
+	MaxAmount      *float64
+	ExtractedFrom  *string
+	Limit          int
+	Offset         int
+	OrderBy        string
+	OrderDirection string
 }
 
 // TransactionService handles transaction-related database operations
@@ -50,7 +50,7 @@ func (s *TransactionService) CreateTransactions(transactions []models.Transactio
 	if len(transactions) == 0 {
 		return nil
 	}
-	
+
 	if err := s.db.CreateInBatches(transactions, 100).Error; err != nil {
 		return fmt.Errorf("failed to create transactions: %w", err)
 	}
@@ -73,18 +73,18 @@ func (s *TransactionService) GetTransactionByID(id uint) (*models.Transaction, e
 func (s *TransactionService) GetTransactionsByUser(userID uint, limit, offset int) ([]models.Transaction, error) {
 	var transactions []models.Transaction
 	query := s.db.Where("user_id = ?", userID).Order("transaction_date DESC")
-	
+
 	if limit > 0 {
 		query = query.Limit(limit)
 	}
 	if offset > 0 {
 		query = query.Offset(offset)
 	}
-	
+
 	if err := query.Find(&transactions).Error; err != nil {
 		return nil, fmt.Errorf("failed to get user transactions: %w", err)
 	}
-	
+
 	return transactions, nil
 }
 
@@ -92,7 +92,7 @@ func (s *TransactionService) GetTransactionsByUser(userID uint, limit, offset in
 func (s *TransactionService) GetTransactionsWithFilter(filter TransactionFilter) ([]models.Transaction, error) {
 	var transactions []models.Transaction
 	query := s.db.Model(&models.Transaction{})
-	
+
 	// Apply filters
 	if filter.UserID != nil {
 		query = query.Where("user_id = ?", *filter.UserID)
@@ -124,7 +124,7 @@ func (s *TransactionService) GetTransactionsWithFilter(filter TransactionFilter)
 	if filter.ExtractedFrom != nil {
 		query = query.Where("extracted_from = ?", *filter.ExtractedFrom)
 	}
-	
+
 	// Apply ordering
 	orderBy := "transaction_date"
 	orderDirection := "DESC"
@@ -135,7 +135,7 @@ func (s *TransactionService) GetTransactionsWithFilter(filter TransactionFilter)
 		orderDirection = filter.OrderDirection
 	}
 	query = query.Order(fmt.Sprintf("%s %s", orderBy, orderDirection))
-	
+
 	// Apply pagination
 	if filter.Limit > 0 {
 		query = query.Limit(filter.Limit)
@@ -143,14 +143,14 @@ func (s *TransactionService) GetTransactionsWithFilter(filter TransactionFilter)
 	if filter.Offset > 0 {
 		query = query.Offset(filter.Offset)
 	}
-	
+
 	// Preload user data
 	query = query.Preload("User")
-	
+
 	if err := query.Find(&transactions).Error; err != nil {
 		return nil, fmt.Errorf("failed to get filtered transactions: %w", err)
 	}
-	
+
 	return transactions, nil
 }
 
@@ -174,18 +174,18 @@ func (s *TransactionService) DeleteTransaction(id uint) error {
 func (s *TransactionService) GetTransactionsBySymbol(symbol string, limit, offset int) ([]models.Transaction, error) {
 	var transactions []models.Transaction
 	query := s.db.Where("symbol = ?", symbol).Order("transaction_date DESC")
-	
+
 	if limit > 0 {
 		query = query.Limit(limit)
 	}
 	if offset > 0 {
 		query = query.Offset(offset)
 	}
-	
+
 	if err := query.Preload("User").Find(&transactions).Error; err != nil {
 		return nil, fmt.Errorf("failed to get symbol transactions: %w", err)
 	}
-	
+
 	return transactions, nil
 }
 
@@ -193,18 +193,18 @@ func (s *TransactionService) GetTransactionsBySymbol(symbol string, limit, offse
 func (s *TransactionService) GetTransactionsByDateRange(startDate, endDate time.Time, limit, offset int) ([]models.Transaction, error) {
 	var transactions []models.Transaction
 	query := s.db.Where("transaction_date BETWEEN ? AND ?", startDate, endDate).Order("transaction_date DESC")
-	
+
 	if limit > 0 {
 		query = query.Limit(limit)
 	}
 	if offset > 0 {
 		query = query.Offset(offset)
 	}
-	
+
 	if err := query.Preload("User").Find(&transactions).Error; err != nil {
 		return nil, fmt.Errorf("failed to get transactions by date range: %w", err)
 	}
-	
+
 	return transactions, nil
 }
 
@@ -216,27 +216,27 @@ func (s *TransactionService) GetPortfolioSummary(userID uint) (map[string]interf
 		TotalSellAmount   float64 `json:"total_sell_amount"`
 		UniqueSymbols     int64   `json:"unique_symbols"`
 	}
-	
+
 	// Count total transactions
 	if err := s.db.Model(&models.Transaction{}).Where("user_id = ?", userID).Count(&result.TotalTransactions).Error; err != nil {
 		return nil, fmt.Errorf("failed to count transactions: %w", err)
 	}
-	
+
 	// Sum buy amounts
 	if err := s.db.Model(&models.Transaction{}).Where("user_id = ? AND type = ?", userID, "buy").Select("COALESCE(SUM(amount), 0)").Scan(&result.TotalBuyAmount).Error; err != nil {
 		return nil, fmt.Errorf("failed to sum buy amounts: %w", err)
 	}
-	
+
 	// Sum sell amounts
 	if err := s.db.Model(&models.Transaction{}).Where("user_id = ? AND type = ?", userID, "sell").Select("COALESCE(SUM(amount), 0)").Scan(&result.TotalSellAmount).Error; err != nil {
 		return nil, fmt.Errorf("failed to sum sell amounts: %w", err)
 	}
-	
+
 	// Count unique symbols
 	if err := s.db.Model(&models.Transaction{}).Where("user_id = ?", userID).Distinct("symbol").Count(&result.UniqueSymbols).Error; err != nil {
 		return nil, fmt.Errorf("failed to count unique symbols: %w", err)
 	}
-	
+
 	return map[string]interface{}{
 		"total_transactions": result.TotalTransactions,
 		"total_buy_amount":   result.TotalBuyAmount,
@@ -256,7 +256,7 @@ func (s *TransactionService) GetSymbolHoldings(userID uint) ([]map[string]interf
 		AvgBuyPrice  float64 `json:"avg_buy_price"`
 		AvgSellPrice float64 `json:"avg_sell_price"`
 	}
-	
+
 	query := `
 		SELECT 
 			symbol,
@@ -271,11 +271,11 @@ func (s *TransactionService) GetSymbolHoldings(userID uint) ([]map[string]interf
 		HAVING net_quantity != 0
 		ORDER BY symbol
 	`
-	
+
 	if err := s.db.Raw(query, userID).Scan(&holdings).Error; err != nil {
 		return nil, fmt.Errorf("failed to get symbol holdings: %w", err)
 	}
-	
+
 	result := make([]map[string]interface{}, len(holdings))
 	for i, holding := range holdings {
 		result[i] = map[string]interface{}{
@@ -287,7 +287,7 @@ func (s *TransactionService) GetSymbolHoldings(userID uint) ([]map[string]interf
 			"avg_sell_price": holding.AvgSellPrice,
 		}
 	}
-	
+
 	return result, nil
 }
 
@@ -295,7 +295,7 @@ func (s *TransactionService) GetSymbolHoldings(userID uint) ([]map[string]interf
 func (s *TransactionService) CountTransactions(filter TransactionFilter) (int64, error) {
 	var count int64
 	query := s.db.Model(&models.Transaction{})
-	
+
 	// Apply same filters as GetTransactionsWithFilter
 	if filter.UserID != nil {
 		query = query.Where("user_id = ?", *filter.UserID)
@@ -327,10 +327,10 @@ func (s *TransactionService) CountTransactions(filter TransactionFilter) (int64,
 	if filter.ExtractedFrom != nil {
 		query = query.Where("extracted_from = ?", *filter.ExtractedFrom)
 	}
-	
+
 	if err := query.Count(&count).Error; err != nil {
 		return 0, fmt.Errorf("failed to count transactions: %w", err)
 	}
-	
+
 	return count, nil
 }

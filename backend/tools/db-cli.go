@@ -83,48 +83,48 @@ func printUsage() {
 
 func runMigrations(dm *database.DatabaseManager) error {
 	log.Println("Running database migrations...")
-	
+
 	migrator := migrations.NewMigrator(dm.GetDB())
-	
+
 	// Add all migrations
 	for _, migration := range migrations.GetAllMigrations() {
 		migrator.AddMigration(migration)
 	}
-	
+
 	return migrator.Up()
 }
 
 func rollbackMigration(dm *database.DatabaseManager) error {
 	log.Println("Rolling back last migration...")
-	
+
 	migrator := migrations.NewMigrator(dm.GetDB())
-	
+
 	// Add all migrations
 	for _, migration := range migrations.GetAllMigrations() {
 		migrator.AddMigration(migration)
 	}
-	
+
 	return migrator.Down()
 }
 
 func showMigrationStatus(dm *database.DatabaseManager) error {
 	log.Println("Checking migration status...")
-	
+
 	migrator := migrations.NewMigrator(dm.GetDB())
-	
+
 	// Add all migrations
 	for _, migration := range migrations.GetAllMigrations() {
 		migrator.AddMigration(migration)
 	}
-	
+
 	return migrator.Status()
 }
 
 func seedDatabase(dm *database.DatabaseManager, env string) error {
 	log.Printf("Seeding database for environment: %s", env)
-	
+
 	seeder := database.NewSeeder(dm.GetDB())
-	
+
 	switch env {
 	case "development":
 		return seeder.SeedDevelopmentData()
@@ -148,15 +148,15 @@ func seedDatabase(dm *database.DatabaseManager, env string) error {
 
 func checkHealth(dm *database.DatabaseManager) error {
 	log.Println("Checking database health...")
-	
+
 	// Test connection
 	if err := dm.HealthCheck(); err != nil {
 		log.Printf("❌ Database health check failed: %v", err)
 		return err
 	}
-	
+
 	log.Println("✅ Database connection is healthy")
-	
+
 	// Get connection statistics
 	stats, err := dm.GetConnectionStats()
 	if err != nil {
@@ -173,6 +173,6 @@ func checkHealth(dm *database.DatabaseManager) error {
 		log.Printf("   Max Idle Time Closed: %d", stats.MaxIdleTimeClosed)
 		log.Printf("   Max Lifetime Closed: %d", stats.MaxLifetimeClosed)
 	}
-	
+
 	return nil
 }

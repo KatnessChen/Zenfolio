@@ -45,17 +45,15 @@ func TestDatabaseManager_Connect(t *testing.T) {
 
 	dm := database.NewDatabaseManager(invalidConfig)
 	err := dm.Connect()
-	
+
 	// Should fail with invalid config
 	assert.Error(t, err)
 }
 
 func TestDatabaseManager_HealthCheck(t *testing.T) {
-	db, err := setupTestDB()
+	_, err := setupTestDB()
 	require.NoError(t, err)
 
-	// Create a DatabaseManager with the test database
-	dm := &database.DatabaseManager{}
 	// We'll need to set the db field via reflection or create a test method
 	// For now, let's skip this complex test
 	t.Skip("Skipping health check test - requires refactoring to access private db field")
@@ -66,7 +64,7 @@ func TestDatabaseManager_DetailedHealthCheck(t *testing.T) {
 	require.NoError(t, err)
 
 	dm := &DatabaseManager{db: db}
-	
+
 	// Test detailed health check
 	health := dm.DetailedHealthCheck()
 	assert.True(t, health.Connected)
@@ -78,15 +76,15 @@ func TestDatabaseManager_DetailedHealthCheck(t *testing.T) {
 func TestUser_ValidatePassword(t *testing.T) {
 	user := &models.User{}
 	password := "testpassword123"
-	
+
 	// Hash password
 	err := user.HashPassword(password)
 	require.NoError(t, err)
-	
+
 	// Test correct password
 	valid := user.ValidatePassword(password)
 	assert.True(t, valid)
-	
+
 	// Test incorrect password
 	invalid := user.ValidatePassword("wrongpassword")
 	assert.False(t, invalid)
@@ -108,7 +106,7 @@ func TestUser_BeforeCreate(t *testing.T) {
 
 	// Password should be hashed
 	assert.NotEqual(t, "password123", user.Password)
-	
+
 	// Should be able to validate original password
 	assert.True(t, user.ValidatePassword("password123"))
 }
@@ -127,19 +125,19 @@ func TestTransaction_CalculateValue(t *testing.T) {
 func TestTransaction_IsProfit(t *testing.T) {
 	// Test profit scenario
 	profitTransaction := &models.Transaction{
-		Type:         "sell",
-		Quantity:     100,
-		Price:        30.00,
-		CostBasis:    25.00,
+		Type:      "sell",
+		Quantity:  100,
+		Price:     30.00,
+		CostBasis: 25.00,
 	}
 	assert.True(t, profitTransaction.IsProfit())
 
 	// Test loss scenario
 	lossTransaction := &models.Transaction{
-		Type:         "sell",
-		Quantity:     100,
-		Price:        20.00,
-		CostBasis:    25.00,
+		Type:      "sell",
+		Quantity:  100,
+		Price:     20.00,
+		CostBasis: 25.00,
 	}
 	assert.False(t, lossTransaction.IsProfit())
 
@@ -155,10 +153,10 @@ func TestTransaction_IsProfit(t *testing.T) {
 func TestTransaction_ProfitLoss(t *testing.T) {
 	// Test profit calculation
 	profitTransaction := &models.Transaction{
-		Type:         "sell",
-		Quantity:     100,
-		Price:        30.00,
-		CostBasis:    25.00,
+		Type:      "sell",
+		Quantity:  100,
+		Price:     30.00,
+		CostBasis: 25.00,
 	}
 	profit := profitTransaction.ProfitLoss()
 	expected := (30.00 - 25.00) * 100
@@ -166,10 +164,10 @@ func TestTransaction_ProfitLoss(t *testing.T) {
 
 	// Test loss calculation
 	lossTransaction := &models.Transaction{
-		Type:         "sell",
-		Quantity:     100,
-		Price:        20.00,
-		CostBasis:    25.00,
+		Type:      "sell",
+		Quantity:  100,
+		Price:     20.00,
+		CostBasis: 25.00,
 	}
 	loss := lossTransaction.ProfitLoss()
 	expected = (20.00 - 25.00) * 100
@@ -190,11 +188,11 @@ func TestTransaction_BeforeCreate(t *testing.T) {
 	require.NoError(t, err)
 
 	transaction := &models.Transaction{
-		UserID:       user.ID,
-		Symbol:       "AAPL",
-		Type:         "buy",
-		Quantity:     100,
-		Price:        150.00,
+		UserID:          user.ID,
+		Symbol:          "AAPL",
+		Type:            "buy",
+		Quantity:        100,
+		Price:           150.00,
 		TransactionDate: time.Now(),
 	}
 
@@ -211,7 +209,7 @@ func TestSeeder_SeedDevelopmentData(t *testing.T) {
 	require.NoError(t, err)
 
 	seeder := NewSeeder(db)
-	
+
 	// Seed development data
 	err = seeder.SeedDevelopmentData()
 	assert.NoError(t, err)
@@ -234,7 +232,7 @@ func TestSeeder_SeedStagingData(t *testing.T) {
 	require.NoError(t, err)
 
 	seeder := NewSeeder(db)
-	
+
 	// Seed staging data
 	err = seeder.SeedStagingData()
 	assert.NoError(t, err)
@@ -251,7 +249,7 @@ func TestSeeder_SeedTestData(t *testing.T) {
 	require.NoError(t, err)
 
 	seeder := NewSeeder(db)
-	
+
 	// Seed test data
 	err = seeder.SeedTestData()
 	assert.NoError(t, err)

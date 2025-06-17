@@ -34,7 +34,7 @@ func NewDatabaseManager(cfg *config.DatabaseConfig) *DatabaseManager {
 // Connect establishes a connection to the database
 func (dm *DatabaseManager) Connect() error {
 	var err error
-	
+
 	// Configure GORM logger
 	gormLogger := logger.Default
 	if dm.config.SSLMode != "disable" {
@@ -48,7 +48,7 @@ func (dm *DatabaseManager) Connect() error {
 			return time.Now().UTC()
 		},
 	})
-	
+
 	if err != nil {
 		return fmt.Errorf("failed to connect to database: %w", err)
 	}
@@ -67,7 +67,7 @@ func (dm *DatabaseManager) Connect() error {
 
 	// Set global DB variable
 	DB = dm.db
-	
+
 	log.Println("Database connection established successfully")
 	return nil
 }
@@ -75,22 +75,22 @@ func (dm *DatabaseManager) Connect() error {
 // ConnectWithRetry establishes a connection to the database with retry logic
 func (dm *DatabaseManager) ConnectWithRetry(maxRetries int, retryDelay time.Duration) error {
 	var err error
-	
+
 	for i := 0; i < maxRetries; i++ {
 		err = dm.Connect()
 		if err == nil {
 			return nil
 		}
-		
+
 		log.Printf("Database connection attempt %d failed: %v", i+1, err)
-		
+
 		if i < maxRetries-1 {
 			log.Printf("Retrying in %v...", retryDelay)
 			time.Sleep(retryDelay)
 			retryDelay *= 2 // Exponential backoff
 		}
 	}
-	
+
 	return fmt.Errorf("failed to connect to database after %d attempts: %w", maxRetries, err)
 }
 
@@ -104,19 +104,19 @@ func (dm *DatabaseManager) HealthCheck() error {
 	if dm.db == nil {
 		return fmt.Errorf("database connection is nil")
 	}
-	
+
 	sqlDB, err := dm.db.DB()
 	if err != nil {
 		return fmt.Errorf("failed to get underlying sql.DB: %w", err)
 	}
-	
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	
+
 	if err := sqlDB.PingContext(ctx); err != nil {
 		return fmt.Errorf("database ping failed: %w", err)
 	}
-	
+
 	return nil
 }
 
@@ -125,12 +125,12 @@ func (dm *DatabaseManager) Close() error {
 	if dm.db == nil {
 		return nil
 	}
-	
+
 	sqlDB, err := dm.db.DB()
 	if err != nil {
 		return fmt.Errorf("failed to get underlying sql.DB: %w", err)
 	}
-	
+
 	log.Println("Closing database connection...")
 	return sqlDB.Close()
 }
@@ -140,19 +140,19 @@ func (dm *DatabaseManager) AutoMigrate() error {
 	if dm.db == nil {
 		return fmt.Errorf("database connection is nil")
 	}
-	
+
 	log.Println("Running database migrations...")
-	
+
 	// Run auto-migration for all models
 	err := dm.db.AutoMigrate(
 		&models.User{},
 		&models.Transaction{},
 	)
-	
+
 	if err != nil {
 		return fmt.Errorf("failed to run auto-migration: %w", err)
 	}
-	
+
 	log.Println("Database migrations completed successfully")
 	return nil
 }
@@ -162,9 +162,9 @@ func (dm *DatabaseManager) CreateIndexes() error {
 	if dm.db == nil {
 		return fmt.Errorf("database connection is nil")
 	}
-	
+
 	log.Println("Creating additional database indexes...")
-	
+
 	// Create composite indexes for common queries
 	indexes := []string{
 		"CREATE INDEX idx_transactions_user_date ON transactions(user_id, transaction_date)",
@@ -172,13 +172,13 @@ func (dm *DatabaseManager) CreateIndexes() error {
 		"CREATE INDEX idx_transactions_type_status ON transactions(type, status)",
 		"CREATE INDEX idx_users_email_active ON users(email, is_active)",
 	}
-	
+
 	for _, index := range indexes {
 		if err := dm.db.Exec(index).Error; err != nil {
 			log.Printf("Warning: Failed to create index: %v", err)
 		}
 	}
-	
+
 	log.Println("Database indexes created successfully")
 	return nil
 }
@@ -188,12 +188,12 @@ func (dm *DatabaseManager) GetConnectionStats() (*sql.DBStats, error) {
 	if dm.db == nil {
 		return nil, fmt.Errorf("database connection is nil")
 	}
-	
+
 	sqlDB, err := dm.db.DB()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get underlying sql.DB: %w", err)
 	}
-	
+
 	stats := sqlDB.Stats()
 	return &stats, nil
 }
@@ -202,21 +202,21 @@ func (dm *DatabaseManager) GetConnectionStats() (*sql.DBStats, error) {
 func Initialize(cfg *config.Config) (*DatabaseManager, error) {
 	dbConfig := config.GetDatabaseConfig(cfg)
 	dm := NewDatabaseManager(dbConfig)
-	
+
 	// Connect with retry logic
 	if err := dm.ConnectWithRetry(5, 2*time.Second); err != nil {
 		return nil, err
 	}
-	
+
 	// Run migrations
 	if err := dm.AutoMigrate(); err != nil {
 		return nil, err
 	}
-	
+
 	// Create additional indexes
 	if err := dm.CreateIndexes(); err != nil {
 		log.Printf("Warning: Failed to create indexes: %v", err)
 	}
-	
+
 	return dm, nil
 }

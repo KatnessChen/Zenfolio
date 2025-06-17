@@ -43,5 +43,13 @@ It includes validation for email and password, and hashes the password before sa
 
 1. Execute the `git status` command in the terminal to review staged changes and ensure they are ready for commit.
 2. If any changes are not staged, please ignore them and focus only on the staged changes for the commit message.
-3. Execute the `git commit -m "your commit message"` in the terminal to create the commit with the suggested message. Ensure the commit message is valid and follows the specified pattern before executing.
-4. Execute the `git push` command in the terminal to push the new commit to the origin remote repository.
+3. **Backend CI Pre-Commit Checks**: If there are any code changes in the `backend/` directory, examine the `.github/workflows/backend-ci.yml` file to identify the specific checks that need to be performed locally. Run the equivalent local commands for each CI step to ensure the changes can pass the backend CI process:
+
+   - Review the CI workflow steps in `backend-ci.yml`
+   - Execute the corresponding local commands (adjusting paths and environment as needed)
+   - Ensure all checks pass before proceeding
+
+   If any of these checks fail, fix the issues before proceeding with the commit. Only proceed to step 4 if all backend CI checks pass or if there are no backend code changes.
+
+4. Execute the `git commit -m "your commit message"` in the terminal to create the commit with the suggested message. Ensure the commit message is valid and follows the specified pattern before executing.
+5. Execute the `git push` command in the terminal to push the new commit to the origin remote repository.

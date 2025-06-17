@@ -49,7 +49,7 @@ func GetAllMigrations() []Migration {
 					"CREATE INDEX idx_transactions_type_status ON transactions(type, status)",
 					"CREATE INDEX idx_users_email_active ON users(email, is_active)",
 				}
-				
+
 				for _, index := range indexes {
 					if err := db.Exec(index).Error; err != nil {
 						// Ignore error if index already exists
@@ -58,7 +58,7 @@ func GetAllMigrations() []Migration {
 						}
 					}
 				}
-				
+
 				return nil
 			},
 			Down: func(db *gorm.DB) error {
@@ -69,7 +69,7 @@ func GetAllMigrations() []Migration {
 					"DROP INDEX idx_transactions_type_status ON transactions",
 					"DROP INDEX idx_users_email_active ON users",
 				}
-				
+
 				for _, index := range indexes {
 					if err := db.Exec(index).Error; err != nil {
 						// Ignore error if index doesn't exist
@@ -78,7 +78,7 @@ func GetAllMigrations() []Migration {
 						}
 					}
 				}
-				
+
 				return nil
 			},
 		},

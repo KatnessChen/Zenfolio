@@ -100,18 +100,18 @@ func (s *UserService) DeleteUser(userID uint) error {
 func (s *UserService) GetActiveUsers(limit, offset int) ([]models.User, error) {
 	var users []models.User
 	query := s.db.Where("is_active = ? AND deleted_at IS NULL", true)
-	
+
 	if limit > 0 {
 		query = query.Limit(limit)
 	}
 	if offset > 0 {
 		query = query.Offset(offset)
 	}
-	
+
 	if err := query.Find(&users).Error; err != nil {
 		return nil, fmt.Errorf("failed to get active users: %w", err)
 	}
-	
+
 	return users, nil
 }
 

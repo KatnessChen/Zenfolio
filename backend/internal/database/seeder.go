@@ -23,17 +23,17 @@ func NewSeeder(db *gorm.DB) *Seeder {
 // SeedDevelopmentData seeds the database with development data
 func (s *Seeder) SeedDevelopmentData() error {
 	log.Println("Seeding development data...")
-	
+
 	// Seed users
 	if err := s.seedUsers(); err != nil {
 		return err
 	}
-	
+
 	// Seed transactions
 	if err := s.seedTransactions(); err != nil {
 		return err
 	}
-	
+
 	log.Println("Development data seeded successfully")
 	return nil
 }
@@ -45,20 +45,20 @@ func (s *Seeder) seedUsers() error {
 	if err := s.db.Model(&models.User{}).Count(&count).Error; err != nil {
 		return err
 	}
-	
+
 	if count > 0 {
 		log.Println("Users already exist, skipping user seeding")
 		return nil
 	}
-	
+
 	log.Println("Seeding users...")
-	
+
 	// Hash password for demo users
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
-	
+
 	users := []models.User{
 		{
 			Username:     "demo_user",
@@ -85,14 +85,14 @@ func (s *Seeder) seedUsers() error {
 			IsActive:     true,
 		},
 	}
-	
+
 	for _, user := range users {
 		if err := s.db.Create(&user).Error; err != nil {
 			return err
 		}
 		log.Printf("Created user: %s", user.Username)
 	}
-	
+
 	return nil
 }
 
@@ -103,20 +103,20 @@ func (s *Seeder) seedTransactions() error {
 	if err := s.db.Model(&models.Transaction{}).Count(&count).Error; err != nil {
 		return err
 	}
-	
+
 	if count > 0 {
 		log.Println("Transactions already exist, skipping transaction seeding")
 		return nil
 	}
-	
+
 	log.Println("Seeding transactions...")
-	
+
 	// Get the demo user
 	var demoUser models.User
 	if err := s.db.Where("username = ?", "demo_user").First(&demoUser).Error; err != nil {
 		return err
 	}
-	
+
 	// Sample transaction data
 	transactions := []models.Transaction{
 		{
@@ -239,13 +239,13 @@ func (s *Seeder) seedTransactions() error {
 			Metadata:        "{}",
 		},
 	}
-	
+
 	// Get the john_doe user for additional transactions
 	var johnUser models.User
 	if err := s.db.Where("username = ?", "john_doe").First(&johnUser).Error; err != nil {
 		return err
 	}
-	
+
 	// Add some transactions for john_doe
 	johnTransactions := []models.Transaction{
 		{
@@ -283,14 +283,14 @@ func (s *Seeder) seedTransactions() error {
 			Metadata:        "{}",
 		},
 	}
-	
+
 	transactions = append(transactions, johnTransactions...)
-	
+
 	// Create transactions in batches
 	if err := s.db.CreateInBatches(transactions, 10).Error; err != nil {
 		return err
 	}
-	
+
 	log.Printf("Created %d sample transactions", len(transactions))
 	return nil
 }
@@ -298,13 +298,13 @@ func (s *Seeder) seedTransactions() error {
 // SeedTestData seeds the database with test data
 func (s *Seeder) SeedTestData() error {
 	log.Println("Seeding test data...")
-	
+
 	// Create a test user
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte("testpass"), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
-	
+
 	testUser := models.User{
 		Username:     "test_user",
 		Email:        "test@example.com",
@@ -313,11 +313,11 @@ func (s *Seeder) SeedTestData() error {
 		LastName:     "User",
 		IsActive:     true,
 	}
-	
+
 	if err := s.db.Create(&testUser).Error; err != nil {
 		return err
 	}
-	
+
 	// Create test transactions
 	testTransaction := models.Transaction{
 		UserID:          testUser.ID,
@@ -336,11 +336,11 @@ func (s *Seeder) SeedTestData() error {
 		ExtractedFrom:   "test",
 		Metadata:        "{}",
 	}
-	
+
 	if err := s.db.Create(&testTransaction).Error; err != nil {
 		return err
 	}
-	
+
 	log.Println("Test data seeded successfully")
 	return nil
 }
@@ -348,17 +348,17 @@ func (s *Seeder) SeedTestData() error {
 // ClearTestData removes all test data
 func (s *Seeder) ClearTestData() error {
 	log.Println("Clearing test data...")
-	
+
 	// Delete test transactions
 	if err := s.db.Unscoped().Where("extracted_from = ?", "test").Delete(&models.Transaction{}).Error; err != nil {
 		return err
 	}
-	
+
 	// Delete test user
 	if err := s.db.Unscoped().Where("username = ?", "test_user").Delete(&models.User{}).Error; err != nil {
 		return err
 	}
-	
+
 	log.Println("Test data cleared successfully")
 	return nil
 }
