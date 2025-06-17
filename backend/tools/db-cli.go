@@ -135,7 +135,10 @@ func seedDatabase(dm *database.DatabaseManager, env string) error {
 		log.Println("Warning: Seeding production database is not recommended")
 		fmt.Print("Are you sure you want to seed production data? (yes/no): ")
 		var response string
-		fmt.Scanln(&response)
+		if _, err := fmt.Scanln(&response); err != nil {
+			log.Printf("Error reading input: %v", err)
+			return err
+		}
 		if response != "yes" {
 			log.Println("Seeding cancelled")
 			return nil

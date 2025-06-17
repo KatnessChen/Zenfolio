@@ -95,13 +95,3 @@ func getEnvOrDefaultInt(key string, defaultValue int) int {
 	}
 	return defaultValue
 }
-
-// getEnvOrDefaultBool returns environment variable as bool or default if not set
-func getEnvOrDefaultBool(key string, defaultValue bool) bool {
-	if value := os.Getenv(key); value != "" {
-		if boolValue, err := strconv.ParseBool(value); err == nil {
-			return boolValue
-		}
-	}
-	return defaultValue
-}
