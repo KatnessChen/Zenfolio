@@ -2,91 +2,91 @@ package constants
 
 // Default Configuration
 const (
-	DefaultAIModel = "gemini-2.0-flash"
-	DefaultAPIKey = "GEMINI_API_KEY"
-	DefaultAITimeout = 30
+	DefaultAIModel    = "gemini-2.0-flash"
+	DefaultAPIKey     = "GEMINI_API_KEY"
+	DefaultAITimeout  = 30
 	DefaultAIMaxRetry = 3
 	DefaultServerAddr = ":8080"
-	DefaultJWTExpiry = 24
+	DefaultJWTExpiry  = 24
 )
 
 // API Routes and Endpoints
 const (
-	APIVersion = "/api/v1"
-	HealthEndpoint = "/health"
-	LoginEndpoint = "/login"
-	HelloWorldEndpoint = "/hello-world"
+	APIVersion           = "/api/v1"
+	HealthEndpoint       = "/health"
+	LoginEndpoint        = "/login"
+	HelloWorldEndpoint   = "/hello-world"
 	ExtractTransEndpoint = "/extract-transactions"
 )
 
 // HTTP Headers
 const (
 	AuthorizationHeader = "Authorization"
-	ContentTypeHeader = "Content-Type"
-	BearerTokenPrefix = "Bearer"
+	ContentTypeHeader   = "Content-Type"
+	BearerTokenPrefix   = "Bearer"
 )
 
 // MIME Types
 const (
-	MimeTypePNG = "image/png"
+	MimeTypePNG  = "image/png"
 	MimeTypeJPEG = "image/jpeg"
-	MimeTypeGIF = "image/gif"
+	MimeTypeGIF  = "image/gif"
 	MimeTypeWebP = "image/webp"
-	
+
 	MimeTypeJSON = "application/json"
 	MimeTypeForm = "multipart/form-data"
 )
 
 // Transaction Types
 const (
-	TradeTypeBuy = "Buy"
-	TradeTypeSell = "Sell"
+	TradeTypeBuy       = "Buy"
+	TradeTypeSell      = "Sell"
 	TradeTypeDividends = "Dividends"
 )
 
 // Error Messages
 const (
-	ErrMsgAuthHeaderRequired = "Authorization header is required"
-	ErrMsgInvalidAuthFormat = "Invalid Authorization header format"
-	ErrMsgInvalidToken = "Invalid token"
-	ErrMsgTokenExpired = "Token expired"
+	ErrMsgAuthHeaderRequired   = "Authorization header is required"
+	ErrMsgInvalidAuthFormat    = "Invalid Authorization header format"
+	ErrMsgInvalidToken         = "Invalid token"
+	ErrMsgTokenExpired         = "Token expired"
 	ErrMsgInvalidSigningMethod = "Invalid signing method"
-	
-	ErrMsgNoImagesProvided = "No images provided"
+
+	ErrMsgNoImagesProvided      = "No images provided"
 	ErrMsgImageProcessingFailed = "Image processing failed"
-	ErrMsgAIRequestFailed = "AI request failed"
-	
-	ErrMsgInvalidTradeType = "Invalid trade type, must be Buy, Sell, or Dividends"
-	ErrMsgTickerRequired = "Ticker should not be empty"
+	ErrMsgAIRequestFailed       = "AI request failed"
+
+	ErrMsgInvalidTradeType  = "Invalid trade type, must be Buy, Sell, or Dividends"
+	ErrMsgTickerRequired    = "Ticker should not be empty"
 	ErrMsgTradeDateRequired = "TradeDate should not be empty"
 	ErrMsgTradeTypeRequired = "TradeType should not be empty"
-	ErrMsgNegativePrice = "Price should not be negative"
-	
-	ErrMsgInternalServer = "Internal server error"
-	ErrMsgBadRequest = "Bad request"
-	ErrMsgUnauthorized = "Unauthorized"
-	ErrMsgForbidden = "Forbidden"
-	ErrMsgNotFound = "Not found"
+	ErrMsgNegativePrice     = "Price should not be negative"
+
+	ErrMsgInternalServer  = "Internal server error"
+	ErrMsgBadRequest      = "Bad request"
+	ErrMsgUnauthorized    = "Unauthorized"
+	ErrMsgForbidden       = "Forbidden"
+	ErrMsgNotFound        = "Not found"
 	ErrMsgTooManyRequests = "Too many requests"
 )
 
 // Success Messages
 const (
 	MsgTransactionsExtracted = "Transactions extracted successfully"
-	MsgHealthCheckOK = "API is healthy"
-	MsgLoginSuccessful = "Login successful"
-	MsgHelloWorld = "Hello, World! You are authenticated."
+	MsgHealthCheckOK         = "API is healthy"
+	MsgLoginSuccessful       = "Login successful"
+	MsgHelloWorld            = "Hello, World! You are authenticated."
 )
 
 // Rate Limiting
 const (
-	DefaultRateLimit = 100
+	DefaultRateLimit       = 100
 	DefaultRateLimitWindow = 60
 )
 
 // File Upload Limits
 const (
-	MaxFileSize = 10 << 20
+	MaxFileSize      = 10 << 20
 	MaxFilesPerBatch = 10
 )
 

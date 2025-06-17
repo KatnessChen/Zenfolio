@@ -76,6 +76,11 @@ func TestExtractTransactionsValidation(t *testing.T) {
 // TestExtractTransactionsFromImage tests the complete image-to-JSON transformation workflow
 // This is an integration test that requires a valid GEMINI_API_KEY environment variable
 func TestExtractTransactionsFromImage(t *testing.T) {
+	// Skip integration tests in short mode (CI/CD)
+	if testing.Short() {
+		t.Skip("Skipping integration test in short mode")
+	}
+	
 	// Check if we have a real API key for integration testing
 	apiKey := os.Getenv("GEMINI_API_KEY")
 	if apiKey == "" {
@@ -290,5 +295,3 @@ func TestAIClientWithMockedSuccessResponse(t *testing.T) {
 
 	t.Logf("Configuration validation passed")
 }
-
-

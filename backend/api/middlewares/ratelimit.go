@@ -44,7 +44,7 @@ func RateLimitMiddleware(rateLimiter *ClientRateLimiter) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Use IP address as client identifier
 		clientID := c.ClientIP()
-		
+
 		// For authenticated routes, you can use the user ID as the client identifier
 		if userID, exists := c.Get("userID"); exists {
 			if id, ok := userID.(string); ok {

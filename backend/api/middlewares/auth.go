@@ -79,6 +79,6 @@ func GenerateToken(userID string, cfg *config.Config) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString([]byte(cfg.JWTSecret))
-	
+
 	return tokenString, err
 }
