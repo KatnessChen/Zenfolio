@@ -8,6 +8,7 @@ import (
 	"github.com/transaction-tracker/backend/config"
 	"github.com/transaction-tracker/backend/internal/ai"
 	"github.com/transaction-tracker/backend/internal/constants"
+	"github.com/transaction-tracker/backend/internal/types"
 )
 
 // ExtractTransactionsHandler handles the image upload and transaction extraction
@@ -25,7 +26,7 @@ func ExtractTransactionsHandler(cfg *config.Config) gin.HandlerFunc {
 			return
 		}
 
-		var imageInputs []ai.ImageInput
+		var imageInputs []types.ImageInput
 
 		for _, fileHeader := range files {
 			// Log the received file
@@ -40,7 +41,7 @@ func ExtractTransactionsHandler(cfg *config.Config) gin.HandlerFunc {
 			// For a large number of files, consider processing them in batches or streaming.
 			defer func(f multipart.File) { _ = f.Close() }(src)
 
-			imageInputs = append(imageInputs, ai.ImageInput{
+			imageInputs = append(imageInputs, types.ImageInput{
 				Data:     src,
 				Filename: fileHeader.Filename,
 				MimeType: fileHeader.Header.Get(constants.ContentTypeHeader),

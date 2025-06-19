@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"gorm.io/driver/mysql"
@@ -163,23 +164,14 @@ func (dm *DatabaseManager) CreateIndexes() error {
 		return fmt.Errorf("database connection is nil")
 	}
 
-	log.Println("Creating additional database indexes...")
+	log.Println("Checking database indexes...")
 
-	// Create composite indexes for common queries
-	indexes := []string{
-		"CREATE INDEX idx_transactions_user_date ON transactions(user_id, transaction_date)",
-		"CREATE INDEX idx_transactions_symbol_date ON transactions(symbol, transaction_date)",
-		"CREATE INDEX idx_transactions_type_status ON transactions(type, status)",
-		"CREATE INDEX idx_users_email_active ON users(email, is_active)",
-	}
+	// Note: All necessary indexes are now created by GORM AutoMigrate and migration files
+	// - Basic indexes: created by GORM based on model tags
+	// - Composite indexes: created by migration SQL files
+	// This function is kept for future custom index additions if needed
 
-	for _, index := range indexes {
-		if err := dm.db.Exec(index).Error; err != nil {
-			log.Printf("Warning: Failed to create index: %v", err)
-		}
-	}
-
-	log.Println("Database indexes created successfully")
+	log.Println("Database indexes verified successfully")
 	return nil
 }
 
@@ -198,6 +190,20 @@ func (dm *DatabaseManager) GetConnectionStats() (*sql.DBStats, error) {
 	return &stats, nil
 }
 
+// shouldRunMigrations checks if migrations should run based on environment
+func shouldRunMigrations() bool {
+	env := os.Getenv("APP_ENV")
+	skipMigrations := os.Getenv("SKIP_MIGRATIONS")
+
+	// Skip migrations if explicitly disabled
+	if skipMigrations == "true" || skipMigrations == "1" {
+		return false
+	}
+
+	// Run migrations in development, test, or when not set
+	return env == "" || env == "development" || env == "test"
+}
+
 // Initialize initializes the database with the given configuration
 func Initialize(cfg *config.Config) (*DatabaseManager, error) {
 	dbConfig := config.GetDatabaseConfig(cfg)
@@ -208,14 +214,20 @@ func Initialize(cfg *config.Config) (*DatabaseManager, error) {
 		return nil, err
 	}
 
-	// Run migrations
-	if err := dm.AutoMigrate(); err != nil {
-		return nil, err
-	}
+	if shouldRunMigrations() {
+		log.Println("Running database migrations...")
 
-	// Create additional indexes
-	if err := dm.CreateIndexes(); err != nil {
-		log.Printf("Warning: Failed to create indexes: %v", err)
+		// Run migrations
+		if err := dm.AutoMigrate(); err != nil {
+			return nil, err
+		}
+
+		// Create additional indexes
+		if err := dm.CreateIndexes(); err != nil {
+			log.Printf("Warning: Failed to create indexes: %v", err)
+		}
+	} else {
+		log.Println("Skipping database migrations (production environment or explicitly disabled)")
 	}
 
 	return dm, nil

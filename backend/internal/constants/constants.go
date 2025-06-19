@@ -1,5 +1,7 @@
 package constants
 
+import "github.com/transaction-tracker/backend/internal/types"
+
 // Default Configuration
 const (
 	DefaultAIModel    = "gemini-2.0-flash"
@@ -35,13 +37,6 @@ const (
 
 	MimeTypeJSON = "application/json"
 	MimeTypeForm = "multipart/form-data"
-)
-
-// Transaction Types
-const (
-	TradeTypeBuy       = "Buy"
-	TradeTypeSell      = "Sell"
-	TradeTypeDividends = "Dividends"
 )
 
 // Error Messages
@@ -92,15 +87,19 @@ const (
 
 // ValidTradeTypes returns a slice of valid trade types
 func ValidTradeTypes() []string {
-	return []string{TradeTypeBuy, TradeTypeSell, TradeTypeDividends}
+	return []string{
+		string(types.TradeTypeBuy),
+		string(types.TradeTypeSell),
+		string(types.TradeTypeDividend),
+	}
 }
 
 // ValidTradeTypesMap returns a map of valid trade types for quick lookup
 func ValidTradeTypesMap() map[string]bool {
 	return map[string]bool{
-		TradeTypeBuy:       true,
-		TradeTypeSell:      true,
-		TradeTypeDividends: true,
+		string(types.TradeTypeBuy):      true,
+		string(types.TradeTypeSell):     true,
+		string(types.TradeTypeDividend): true,
 	}
 }
 

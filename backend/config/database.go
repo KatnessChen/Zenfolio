@@ -29,7 +29,7 @@ func GetDatabaseConfig(cfg *Config) *DatabaseConfig {
 		Port:            getEnvOrDefault("DB_PORT", "3306"),
 		Name:            getEnvOrDefault("DB_NAME", "transaction_tracker_dev"),
 		User:            getEnvOrDefault("DB_USER", "root"),
-		Password:        getEnvOrDefault("DB_PASSWORD", ""),
+		Password:        getEnvOrDefault("DB_PASSWORD", "root"),
 		SSLMode:         getEnvOrDefault("DB_SSL_MODE", "disable"),
 		MaxConnections:  getEnvOrDefaultInt("DB_MAX_CONNECTIONS", 100),
 		MaxIdle:         getEnvOrDefaultInt("DB_MAX_IDLE", 10),

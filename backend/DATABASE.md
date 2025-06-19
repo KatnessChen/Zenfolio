@@ -529,8 +529,7 @@ if err := transactionService.CreateTransaction(transaction); err != nil {
 ### Health Check Endpoints
 
 - `GET /health` - Basic application health
-- `GET /api/v1/health/database` - Basic database health check
-- `GET /api/v1/health/database/detailed` - Detailed database health with connection stats (requires authentication)
+- `GET /api/v1/health/database` - Database health check with connection stats (requires authentication)
 
 ### Performance Monitoring
 
@@ -538,24 +537,9 @@ if err := transactionService.CreateTransaction(transaction); err != nil {
 # Load testing with hey
 go install github.com/rakyll/hey@latest
 
-# Test health endpoint
-hey -n 1000 -c 10 http://localhost:8080/health
-
 # Test database health
 hey -n 100 -c 5 http://localhost:8080/api/v1/health/database
 ```
-
-### Security Features
-
-- **Connection Security**: SSL/TLS encryption, environment variable-based credentials
-- **Data Security**: Row-level security, soft delete, parameterized queries, bcrypt password hashing
-- **Access Control**: Database user isolation, restricted foreign keys, audit trails
-
-### Performance Optimizations
-
-- **Indexing Strategy**: Primary keys, composite indexes, foreign key indexes
-- **Connection Pooling**: Configurable settings, lifetime management, idle timeouts
-- **Query Optimization**: Efficient JOINs, batch operations, pagination support
 
 ---
 
@@ -674,7 +658,6 @@ You've successfully set up the database when:
 - **Postman Collection**: `docs/postman_collection.json`
 - **Migration Files**: `migrations/` directory
 - **Test Suite**: `test/database_test.go`
-- **Useful Queries**: `scripts/database/useful_queries.sql`
 
 ---
 

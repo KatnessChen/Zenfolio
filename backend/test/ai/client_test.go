@@ -9,6 +9,7 @@ import (
 
 	"github.com/transaction-tracker/backend/internal/ai"
 	"github.com/transaction-tracker/backend/internal/constants"
+	"github.com/transaction-tracker/backend/internal/types"
 )
 
 func TestAIModelClientCreation(t *testing.T) {
@@ -58,7 +59,7 @@ func TestExtractTransactionsValidation(t *testing.T) {
 
 	// Test with no images
 	ctx := context.Background()
-	resp, err := client.ExtractTransactions(ctx, []ai.ImageInput{})
+	resp, err := client.ExtractTransactions(ctx, []types.ImageInput{})
 
 	if err != nil {
 		t.Errorf("Should not return error for empty image list: %v", err)
@@ -106,7 +107,7 @@ func TestExtractTransactionsFromImage(t *testing.T) {
 		"Firstrade-total_3_row.png",
 	}
 
-	var imageInputs []ai.ImageInput
+	var imageInputs []types.ImageInput
 
 	// Load all test images
 	for i, imageName := range testImages {
@@ -117,7 +118,7 @@ func TestExtractTransactionsFromImage(t *testing.T) {
 		}
 		defer imageFile.Close()
 
-		imageInputs = append(imageInputs, ai.ImageInput{
+		imageInputs = append(imageInputs, types.ImageInput{
 			Data:     imageFile,
 			Filename: imageName,
 			MimeType: constants.MimeTypePNG,
@@ -153,38 +154,33 @@ func TestExtractTransactionsFromImage(t *testing.T) {
 	// Validate transaction data structure
 	for i, transaction := range resp.Transactions {
 		t.Logf("Transaction %d:", i+1)
-		t.Logf("  Ticker: %s", transaction.Ticker)
-		t.Logf("  Ticker Label: %s", transaction.TickerLabel)
+		t.Logf("  Symbol: %s", transaction.Symbol)
 		t.Logf("  Exchange: %s", transaction.Exchange)
 		t.Logf("  Currency: %s", transaction.Currency)
-		t.Logf("  Trade Date: %s", transaction.TradeDate)
-		t.Logf("  Trade Type: %s", transaction.TradeType)
+		t.Logf("  Transaction Date: %s", transaction.TransactionDate)
+		t.Logf("  Trade Type: %s", transaction.Type)
 		t.Logf("  Quantity: %.2f", transaction.Quantity)
 		t.Logf("  Price: %.2f", transaction.Price)
-		t.Logf("  Trade Amount: %.2f", transaction.TradeAmount)
+		t.Logf("  Amount: %.2f", transaction.Amount)
 		t.Logf("  ---")
 
 		// Check that required fields are not empty
-		if transaction.Ticker == "" {
-			t.Errorf("Transaction %d: Ticker should not be empty", i+1)
+		if transaction.Symbol == "" {
+			t.Errorf("Transaction %d: Symbol should not be empty", i+1)
 		}
 
-		if transaction.TickerLabel == "" {
-			t.Logf("Transaction %d: TickerLabel is empty (this may be expected for some tickers)", i+1)
-		}
-
-		if transaction.TradeType == "" {
-			t.Errorf("Transaction %d: TradeType should not be empty", i+1)
+		if transaction.Type == "" {
+			t.Errorf("Transaction %d: Type should not be empty", i+1)
 		}
 
 		// Validate trade type is one of the allowed values
 		validTradeTypes := constants.ValidTradeTypesMap()
-		if !validTradeTypes[string(transaction.TradeType)] {
-			t.Errorf("Transaction %d: Invalid trade type '%s', must be %v", i+1, transaction.TradeType, constants.ValidTradeTypes())
+		if !validTradeTypes[string(transaction.Type)] {
+			t.Errorf("Transaction %d: Invalid trade type '%s', must be %v", i+1, transaction.Type, constants.ValidTradeTypes())
 		}
 
-		if transaction.TradeDate == "" {
-			t.Errorf("Transaction %d: TradeDate should not be empty", i+1)
+		if transaction.TransactionDate == "" {
+			t.Errorf("Transaction %d: TransactionDate should not be empty", i+1)
 		}
 
 		// Validate numeric fields are reasonable (allow negative for sell transactions)
@@ -215,26 +211,24 @@ func TestParseTransactionResponse(t *testing.T) {
 	mockJSONResponse := `{
 		"transactions": [
 			{
-				"ticker": "AAPL",
-				"ticker_label": "Apple Inc.",
+				"symbol": "AAPL",
 				"exchange": "NASDAQ",
 				"currency": "USD",
-				"trade_date": "2024-06-14",
-				"trade_type": "Buy",
+				"transaction_date": "2024-06-14",
+				"type": "buy",
 				"quantity": 10.0,
 				"price": 150.25,
-				"trade_amount": 1502.50
+				"amount": 1502.50
 			},
 			{
-				"ticker": "GOOGL",
-				"ticker_label": "Alphabet Inc.",
+				"symbol": "GOOGL",
 				"exchange": "NASDAQ",
 				"currency": "USD",
-				"trade_date": "2024-06-14",
-				"trade_type": "Sell",
+				"transaction_date": "2024-06-14",
+				"type": "sell",
 				"quantity": 5.0,
 				"price": 2800.00,
-				"trade_amount": 14000.00
+				"amount": 14000.00
 			}
 		]
 	}`
@@ -270,8 +264,8 @@ func TestAIClientWithMockedSuccessResponse(t *testing.T) {
 
 	// Test data validation - verify our expected response structure
 	expectedFields := []string{
-		"ticker", "ticker_label", "exchange", "currency",
-		"trade_date", "trade_type", "quantity", "price", "trade_amount",
+		"symbol", "exchange", "currency",
+		"transaction_date", "type", "quantity", "price", "amount",
 	}
 
 	t.Logf("Testing that AI response should contain the following fields: %v", expectedFields)

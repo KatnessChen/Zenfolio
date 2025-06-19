@@ -46,7 +46,6 @@ func GetAllMigrations() []Migration {
 				indexes := []string{
 					"CREATE INDEX idx_transactions_user_date ON transactions(user_id, transaction_date)",
 					"CREATE INDEX idx_transactions_symbol_date ON transactions(symbol, transaction_date)",
-					"CREATE INDEX idx_transactions_type_status ON transactions(type, status)",
 					"CREATE INDEX idx_users_email_active ON users(email, is_active)",
 				}
 
@@ -66,8 +65,6 @@ func GetAllMigrations() []Migration {
 				indexes := []string{
 					"DROP INDEX idx_transactions_user_date ON transactions",
 					"DROP INDEX idx_transactions_symbol_date ON transactions",
-					"DROP INDEX idx_transactions_type_status ON transactions",
-					"DROP INDEX idx_users_email_active ON users",
 				}
 
 				for _, index := range indexes {
