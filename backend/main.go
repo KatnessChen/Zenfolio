@@ -13,14 +13,14 @@ import (
 
 func main() {
 	// Load configuration
-	config, err := config.Load()
+	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}
 
 	// Initialize database
 	log.Println("Initializing database...")
-	dm, err := database.Initialize(config)
+	dm, err := database.Initialize(cfg)
 	if err != nil {
 		log.Fatalf("Failed to initialize database: %v", err)
 	}
@@ -32,7 +32,7 @@ func main() {
 	}()
 
 	// Initialize router
-	router := routes.SetupRouter(config)
+	router := routes.SetupRouter(cfg)
 
 	// Setup graceful shutdown
 	c := make(chan os.Signal, 1)
@@ -45,8 +45,8 @@ func main() {
 	}()
 
 	// Start server
-	log.Printf("Server starting on %s", config.ServerAddress)
-	if err := router.Run(config.ServerAddress); err != nil {
+	log.Printf("Server starting on %s", cfg.ServerAddress)
+	if err := router.Run(cfg.ServerAddress); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
 }
