@@ -8,6 +8,7 @@ import (
 	"github.com/transaction-tracker/backend/config"
 	"github.com/transaction-tracker/backend/internal/ai"
 	"github.com/transaction-tracker/backend/internal/constants"
+	"github.com/transaction-tracker/backend/internal/types"
 )
 
 // ExtractTransactionsHandler handles the image upload and transaction extraction
@@ -25,7 +26,15 @@ func ExtractTransactionsHandler(cfg *config.Config) gin.HandlerFunc {
 			return
 		}
 
-		var imageInputs []ai.ImageInput
+		var imageInputs []types.ImageInput
+		var filesToClose []multipart.File
+
+		// Ensure all opened files are closed after processing
+		defer func() {
+			for _, f := range filesToClose {
+				_ = f.Close()
+			}
+		}()
 
 		for _, fileHeader := range files {
 			// Log the received file
@@ -36,11 +45,11 @@ func ExtractTransactionsHandler(cfg *config.Config) gin.HandlerFunc {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to open uploaded image " + fileHeader.Filename + ": " + err.Error()})
 				return
 			}
-			// Defer close inside the loop, but be mindful of resource limits if many files are processed.
-			// For a large number of files, consider processing them in batches or streaming.
-			defer func(f multipart.File) { _ = f.Close() }(src)
 
-			imageInputs = append(imageInputs, ai.ImageInput{
+			// Collect files for deferred closure outside the loop
+			filesToClose = append(filesToClose, src)
+
+			imageInputs = append(imageInputs, types.ImageInput{
 				Data:     src,
 				Filename: fileHeader.Filename,
 				MimeType: fileHeader.Header.Get(constants.ContentTypeHeader),

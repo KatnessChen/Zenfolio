@@ -11,6 +11,7 @@ import (
 	"github.com/google/generative-ai-go/genai"
 	"github.com/transaction-tracker/backend/internal/constants"
 	"github.com/transaction-tracker/backend/internal/prompts"
+	"github.com/transaction-tracker/backend/internal/types"
 	"google.golang.org/api/option"
 )
 
@@ -109,9 +110,9 @@ func (c *AIModelClient) initGeminiClient() error {
 }
 
 // ExtractTransactions processes images and extracts transaction data using the configured AI model
-func (c *AIModelClient) ExtractTransactions(ctx context.Context, images []ImageInput) (*ExtractResponse, error) {
+func (c *AIModelClient) ExtractTransactions(ctx context.Context, images []types.ImageInput) (*types.ExtractResponse, error) {
 	if len(images) == 0 {
-		return &ExtractResponse{
+		return &types.ExtractResponse{
 			Success: false,
 			Message: constants.ErrMsgNoImagesProvided,
 		}, nil
@@ -122,7 +123,7 @@ func (c *AIModelClient) ExtractTransactions(ctx context.Context, images []ImageI
 	case ModelTypeGemini:
 		return c.extractTransactionsGemini(ctx, images)
 	default:
-		return &ExtractResponse{
+		return &types.ExtractResponse{
 			Success: false,
 			Message: fmt.Sprintf("Unsupported model type: %s", c.modelType),
 		}, fmt.Errorf("unsupported model type: %s", c.modelType)
@@ -130,11 +131,11 @@ func (c *AIModelClient) ExtractTransactions(ctx context.Context, images []ImageI
 }
 
 // extractTransactionsGemini handles transaction extraction using Gemini models
-func (c *AIModelClient) extractTransactionsGemini(ctx context.Context, images []ImageInput) (*ExtractResponse, error) {
+func (c *AIModelClient) extractTransactionsGemini(ctx context.Context, images []types.ImageInput) (*types.ExtractResponse, error) {
 	// Load the transaction extraction prompt
 	prompt, promptErr := prompts.LoadPrompt("transaction_extraction.txt")
 	if promptErr != nil {
-		return &ExtractResponse{
+		return &types.ExtractResponse{
 			Success: false,
 			Message: fmt.Sprintf("Failed to load extraction prompt: %v", promptErr),
 		}, fmt.Errorf("failed to load extraction prompt: %w", promptErr)
@@ -183,7 +184,7 @@ func (c *AIModelClient) extractTransactionsGemini(ctx context.Context, images []
 	}
 
 	if err != nil {
-		return &ExtractResponse{
+		return &types.ExtractResponse{
 			Success: false,
 			Message: fmt.Sprintf("Failed to generate content after %d attempts: %v", maxRetry, err),
 		}, err
@@ -191,7 +192,7 @@ func (c *AIModelClient) extractTransactionsGemini(ctx context.Context, images []
 
 	// Parse the response
 	if len(resp.Candidates) == 0 || len(resp.Candidates[0].Content.Parts) == 0 {
-		return &ExtractResponse{
+		return &types.ExtractResponse{
 			Success: false,
 			Message: "No response received from AI model",
 		}, nil
@@ -204,21 +205,21 @@ func (c *AIModelClient) extractTransactionsGemini(ctx context.Context, images []
 }
 
 // parseTransactionResponse parses the AI response into transaction data (generic for all models)
-func (c *AIModelClient) parseTransactionResponse(responseText string) (*ExtractResponse, error) {
+func (c *AIModelClient) parseTransactionResponse(responseText string) (*types.ExtractResponse, error) {
 	// Parse JSON response
 	var result struct {
-		Transactions []TransactionData `json:"transactions"`
+		Transactions []types.TransactionData `json:"transactions"`
 	}
 
 	if err := json.Unmarshal([]byte(responseText), &result); err != nil {
 		log.Printf("Failed to parse AI response as JSON: %v\nResponse: %s", err, responseText)
-		return &ExtractResponse{
+		return &types.ExtractResponse{
 			Success: false,
 			Message: fmt.Sprintf("Failed to parse AI response: %v", err),
 		}, nil
 	}
 
-	return &ExtractResponse{
+	return &types.ExtractResponse{
 		Transactions: result.Transactions,
 		Success:      true,
 		Message:      constants.MsgTransactionsExtracted,

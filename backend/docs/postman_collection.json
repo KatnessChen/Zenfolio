@@ -241,6 +241,161 @@
               ]
             },
             {
+              "name": "health/database",
+              "description": "",
+              "item": [
+                {
+                  "id": "f8d2a3b5-1c9e-4f7a-b6d8-2e4c6a9f1b3d",
+                  "name": "Database health check",
+                  "request": {
+                    "name": "Database health check",
+                    "description": {
+                      "content": "Returns database health status with connection statistics",
+                      "type": "text/plain"
+                    },
+                    "url": {
+                      "path": ["api", "v1", "health", "database"],
+                      "host": ["{{baseUrl}}"],
+                      "query": [],
+                      "variable": []
+                    },
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "application/json"
+                      }
+                    ],
+                    "method": "GET",
+                    "body": {},
+                    "auth": {
+                      "type": "bearer",
+                      "bearer": [
+                        {
+                          "key": "token",
+                          "value": "{{bearerToken}}"
+                        }
+                      ]
+                    }
+                  },
+                  "response": [
+                    {
+                      "id": "c7b4f2e1-8d6a-4e9f-a3c5-7b1d9e2f4a6b",
+                      "name": "Database is healthy",
+                      "originalRequest": {
+                        "url": {
+                          "path": ["api", "v1", "health", "database"],
+                          "host": ["{{baseUrl}}"],
+                          "query": [],
+                          "variable": []
+                        },
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "application/json"
+                          },
+                          {
+                            "description": {
+                              "content": "Added as a part of security scheme: bearer",
+                              "type": "text/plain"
+                            },
+                            "key": "Authorization",
+                            "value": "Bearer <token>"
+                          }
+                        ],
+                        "method": "GET",
+                        "body": {}
+                      },
+                      "status": "OK",
+                      "code": 200,
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "application/json"
+                        }
+                      ],
+                      "body": "{\n  \"status\": \"healthy\",\n  \"timestamp\": \"2025-06-17T10:00:00Z\",\n  \"database\": {\n    \"connected\": true,\n    \"max_connections\": 100,\n    \"open_connections\": 5,\n    \"in_use\": 2,\n    \"idle\": 3\n  },\n  \"performance\": {\n    \"response_time_ms\": 25\n  }\n}",
+                      "cookie": [],
+                      "_postman_previewlanguage": "json"
+                    },
+                    {
+                      "id": "a9e4b7c2-5f8d-4a1e-9c6b-3d7e2f5a8b1c",
+                      "name": "Unauthorized",
+                      "originalRequest": {
+                        "url": {
+                          "path": ["api", "v1", "health", "database"],
+                          "host": ["{{baseUrl}}"],
+                          "query": [],
+                          "variable": []
+                        },
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "application/json"
+                          }
+                        ],
+                        "method": "GET",
+                        "body": {}
+                      },
+                      "status": "Unauthorized",
+                      "code": 401,
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "application/json"
+                        }
+                      ],
+                      "body": "{\n  \"error\": \"Unauthorized\"\n}",
+                      "cookie": [],
+                      "_postman_previewlanguage": "json"
+                    },
+                    {
+                      "id": "e2f6a9c4-7b1d-4e8f-a5c7-9b3e6f2a8d1c",
+                      "name": "Database is unhealthy",
+                      "originalRequest": {
+                        "url": {
+                          "path": ["api", "v1", "health", "database"],
+                          "host": ["{{baseUrl}}"],
+                          "query": [],
+                          "variable": []
+                        },
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "application/json"
+                          },
+                          {
+                            "description": {
+                              "content": "Added as a part of security scheme: bearer",
+                              "type": "text/plain"
+                            },
+                            "key": "Authorization",
+                            "value": "Bearer <token>"
+                          }
+                        ],
+                        "method": "GET",
+                        "body": {}
+                      },
+                      "status": "Service Unavailable",
+                      "code": 503,
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "application/json"
+                        }
+                      ],
+                      "body": "{\n  \"status\": \"unhealthy\",\n  \"timestamp\": \"2025-06-17T10:00:00Z\",\n  \"database\": {\n    \"connected\": false,\n    \"max_connections\": 0,\n    \"open_connections\": 0,\n    \"in_use\": 0,\n    \"idle\": 0\n  },\n  \"error\": \"database ping failed: connection refused\"\n}",
+                      "cookie": [],
+                      "_postman_previewlanguage": "json"
+                    }
+                  ],
+                  "event": [],
+                  "protocolProfileBehavior": {
+                    "disableBodyPruning": true
+                  }
+                }
+              ]
+            },
+            {
               "name": "login",
               "description": "",
               "item": [

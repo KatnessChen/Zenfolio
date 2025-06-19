@@ -57,6 +57,37 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /api/v1/health/database:
+    get:
+      summary: Database health check
+      description: Returns database health status with connection statistics
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Database is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DatabaseHealthResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Database is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DatabaseHealthResponse"
   /api/v1/login:
     post:
       summary: User login
@@ -232,3 +263,41 @@ components:
         message:
           type: string
           example: "Transactions extracted successfully."
+    DatabaseHealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: ["healthy", "unhealthy"]
+          example: "healthy"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-06-17T10:00:00Z"
+        database:
+          type: object
+          properties:
+            connected:
+              type: boolean
+              example: true
+            max_connections:
+              type: integer
+              example: 100
+            open_connections:
+              type: integer
+              example: 5
+            in_use:
+              type: integer
+              example: 2
+            idle:
+              type: integer
+              example: 3
+        performance:
+          type: object
+          properties:
+            response_time_ms:
+              type: integer
+              example: 25
+        error:
+          type: string
+          example: "database ping failed: connection refused"
