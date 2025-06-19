@@ -1,10 +1,13 @@
 package migrations
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 
-	"github.com/transaction-tracker/backend/internal/models"
 	"gorm.io/gorm"
 )
 
@@ -13,71 +16,87 @@ func GetAllMigrations() []Migration {
 	return []Migration{
 		{
 			ID:          "001_create_users_table",
-			Description: "Create users table with authentication and profile information",
+			Description: "Create users table with authentication and profile information (simplified schema)",
 			CreatedAt:   time.Date(2025, 6, 16, 0, 0, 0, 0, time.UTC),
 			Up: func(db *gorm.DB) error {
-				// Create users table using GORM AutoMigrate
-				return db.AutoMigrate(&models.User{})
+				return executeSQLFile(db, "001_create_users_table.sql")
 			},
 			Down: func(db *gorm.DB) error {
-				// Drop users table
-				return db.Migrator().DropTable(&models.User{})
+				// Drop users table and its indexes
+				return db.Exec("DROP TABLE IF EXISTS users").Error
 			},
 		},
 		{
 			ID:          "002_create_transactions_table",
-			Description: "Create transactions table with comprehensive financial transaction tracking",
+			Description: "Create transactions table with simplified financial transaction tracking",
 			CreatedAt:   time.Date(2025, 6, 16, 0, 1, 0, 0, time.UTC),
 			Up: func(db *gorm.DB) error {
-				// Create transactions table using GORM AutoMigrate
-				return db.AutoMigrate(&models.Transaction{})
+				return executeSQLFile(db, "002_create_transactions_table.sql")
 			},
 			Down: func(db *gorm.DB) error {
-				// Drop transactions table
-				return db.Migrator().DropTable(&models.Transaction{})
-			},
-		},
-		{
-			ID:          "003_create_indexes",
-			Description: "Create additional indexes for performance optimization",
-			CreatedAt:   time.Date(2025, 6, 16, 0, 2, 0, 0, time.UTC),
-			Up: func(db *gorm.DB) error {
-				// Create composite indexes for common queries
-				indexes := []string{
-					"CREATE INDEX idx_transactions_user_date ON transactions(user_id, transaction_date)",
-					"CREATE INDEX idx_transactions_symbol_date ON transactions(symbol, transaction_date)",
-					"CREATE INDEX idx_users_email_active ON users(email, is_active)",
-				}
-
-				for _, index := range indexes {
-					if err := db.Exec(index).Error; err != nil {
-						// Ignore error if index already exists
-						if !strings.Contains(err.Error(), "Duplicate key name") {
-							return err
-						}
-					}
-				}
-
-				return nil
-			},
-			Down: func(db *gorm.DB) error {
-				// Drop additional indexes
-				indexes := []string{
-					"DROP INDEX idx_transactions_user_date ON transactions",
-					"DROP INDEX idx_transactions_symbol_date ON transactions",
-				}
-
-				for _, index := range indexes {
-					if err := db.Exec(index).Error; err != nil {
-						// Ignore error if index doesn't exist
-						if !strings.Contains(err.Error(), "check that it exists") {
-							return err
-						}
-					}
-				}
-
-				return nil
+				// Drop transactions table and its indexes
+				return db.Exec("DROP TABLE IF EXISTS transactions").Error
 			},
 		},
 	}
+}
+
+// executeSQLFile reads and executes a SQL migration file
+func executeSQLFile(db *gorm.DB, filename string) error {
+	// Get the directory where this Go file is located
+	_, currentFile, _, ok := runtime.Caller(0)
+	if !ok {
+		return fmt.Errorf("failed to get current file path")
+	}
+
+	migrationsDir := filepath.Dir(currentFile)
+	sqlFilePath := filepath.Join(migrationsDir, filename)
+
+	// Read the SQL file
+	sqlBytes, err := os.ReadFile(sqlFilePath)
+	if err != nil {
+		return fmt.Errorf("failed to read SQL file %s: %w", filename, err)
+	}
+
+	sqlContent := string(sqlBytes)
+
+	// Remove comments and empty lines
+	lines := strings.Split(sqlContent, "\n")
+	var cleanLines []string
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		// Skip empty lines and comment lines
+		if line == "" || strings.HasPrefix(line, "--") || strings.HasPrefix(line, "//") {
+			continue
+		}
+		cleanLines = append(cleanLines, line)
+	}
+
+	if len(cleanLines) == 0 {
+		return fmt.Errorf("no SQL statements found in file %s", filename)
+	}
+
+	// Join lines and split by semicolon to get individual statements
+	fullSQL := strings.Join(cleanLines, " ")
+	statements := strings.Split(fullSQL, ";")
+
+	// Execute each statement
+	for _, statement := range statements {
+		statement = strings.TrimSpace(statement)
+		if statement == "" {
+			continue
+		}
+
+		if err := db.Exec(statement).Error; err != nil {
+			// For CREATE TABLE IF NOT EXISTS and CREATE INDEX, ignore "already exists" errors
+			if strings.Contains(strings.ToLower(statement), "if not exists") &&
+				(strings.Contains(err.Error(), "already exists") ||
+					strings.Contains(err.Error(), "Duplicate key name")) {
+				continue
+			}
+			return fmt.Errorf("failed to execute SQL statement: %s\nError: %w", statement, err)
+		}
+	}
+
+	return nil
 }

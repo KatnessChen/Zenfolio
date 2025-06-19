@@ -1,12 +1,6 @@
 -- Useful SQL Queries for Transaction Tracker Database
 -- Copy and paste these into Sequel Ace's Query tab or MySQL CLI
 -- 
--- SCHEMA NOTES (Updated after refactoring):
--- Users table: Removed last_login_at field
--- Transactions table: Simplified schema with only core fields:
---   - Removed: fee, settlement_date, description, reference, status, tags, metadata, extracted_from, processing_notes
---   - Kept: id, user_id, type, symbol, quantity, price, amount, currency, broker, account, transaction_date, user_notes
---   - Trade types: 'buy', 'sell', 'dividend'
 
 -- 1. Check all users
 SELECT id, username, email, first_name, last_name, is_active, created_at, updated_at

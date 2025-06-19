@@ -14,11 +14,12 @@ const (
 
 // API Routes and Endpoints
 const (
-	APIVersion           = "/api/v1"
-	HealthEndpoint       = "/health"
-	LoginEndpoint        = "/login"
-	HelloWorldEndpoint   = "/hello-world"
-	ExtractTransEndpoint = "/extract-transactions"
+	APIVersion             = "/api/v1"
+	HealthEndpoint         = "/health"
+	DatabaseHealthEndpoint = "/health/database"
+	LoginEndpoint          = "/login"
+	HelloWorldEndpoint     = "/hello-world"
+	ExtractTransEndpoint   = "/extract-transactions"
 )
 
 // HTTP Headers

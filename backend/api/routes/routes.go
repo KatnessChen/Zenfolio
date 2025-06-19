@@ -24,7 +24,7 @@ func SetupRouter(cfg *config.Config) *gin.Engine {
 	{
 		api.GET(constants.HelloWorldEndpoint, handlers.HelloWorld)
 		api.POST(constants.ExtractTransEndpoint, handlers.ExtractTransactionsHandler(cfg))
-		api.GET("/health/database", handlers.DatabaseHealthHandler)
+		api.GET(constants.DatabaseHealthEndpoint, handlers.DatabaseHealthHandler)
 	}
 
 	return r

@@ -1,7 +1,6 @@
 package services
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
@@ -14,13 +13,11 @@ type TransactionFilter struct {
 	UserID         *uint
 	Symbol         *string
 	Type           *string
-	Status         *string
 	Broker         *string
 	StartDate      *time.Time
 	EndDate        *time.Time
 	MinAmount      *float64
 	MaxAmount      *float64
-	ExtractedFrom  *string
 	Limit          int
 	Offset         int
 	OrderBy        string
@@ -35,177 +32,6 @@ type TransactionService struct {
 // NewTransactionService creates a new transaction service
 func NewTransactionService(db *gorm.DB) *TransactionService {
 	return &TransactionService{db: db}
-}
-
-// CreateTransaction creates a new transaction
-func (s *TransactionService) CreateTransaction(transaction *models.Transaction) error {
-	if err := s.db.Create(transaction).Error; err != nil {
-		return fmt.Errorf("failed to create transaction: %w", err)
-	}
-	return nil
-}
-
-// CreateTransactions creates multiple transactions in a batch
-func (s *TransactionService) CreateTransactions(transactions []models.Transaction) error {
-	if len(transactions) == 0 {
-		return nil
-	}
-
-	if err := s.db.CreateInBatches(transactions, 100).Error; err != nil {
-		return fmt.Errorf("failed to create transactions: %w", err)
-	}
-	return nil
-}
-
-// GetTransactionByID retrieves a transaction by ID
-func (s *TransactionService) GetTransactionByID(id uint) (*models.Transaction, error) {
-	var transaction models.Transaction
-	if err := s.db.Preload("User").First(&transaction, id).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, fmt.Errorf("transaction not found")
-		}
-		return nil, fmt.Errorf("failed to get transaction: %w", err)
-	}
-	return &transaction, nil
-}
-
-// GetTransactionsByUser retrieves transactions for a specific user
-func (s *TransactionService) GetTransactionsByUser(userID uint, limit, offset int) ([]models.Transaction, error) {
-	var transactions []models.Transaction
-	query := s.db.Where("user_id = ?", userID).Order("transaction_date DESC")
-
-	if limit > 0 {
-		query = query.Limit(limit)
-	}
-	if offset > 0 {
-		query = query.Offset(offset)
-	}
-
-	if err := query.Find(&transactions).Error; err != nil {
-		return nil, fmt.Errorf("failed to get user transactions: %w", err)
-	}
-
-	return transactions, nil
-}
-
-// GetTransactionsWithFilter retrieves transactions with advanced filtering
-func (s *TransactionService) GetTransactionsWithFilter(filter TransactionFilter) ([]models.Transaction, error) {
-	var transactions []models.Transaction
-	query := s.db.Model(&models.Transaction{})
-
-	// Apply filters
-	if filter.UserID != nil {
-		query = query.Where("user_id = ?", *filter.UserID)
-	}
-	if filter.Symbol != nil {
-		query = query.Where("symbol = ?", *filter.Symbol)
-	}
-	if filter.Type != nil {
-		query = query.Where("type = ?", *filter.Type)
-	}
-	if filter.Status != nil {
-		query = query.Where("status = ?", *filter.Status)
-	}
-	if filter.Broker != nil {
-		query = query.Where("broker = ?", *filter.Broker)
-	}
-	if filter.StartDate != nil {
-		query = query.Where("transaction_date >= ?", *filter.StartDate)
-	}
-	if filter.EndDate != nil {
-		query = query.Where("transaction_date <= ?", *filter.EndDate)
-	}
-	if filter.MinAmount != nil {
-		query = query.Where("amount >= ?", *filter.MinAmount)
-	}
-	if filter.MaxAmount != nil {
-		query = query.Where("amount <= ?", *filter.MaxAmount)
-	}
-	if filter.ExtractedFrom != nil {
-		query = query.Where("extracted_from = ?", *filter.ExtractedFrom)
-	}
-
-	// Apply ordering
-	orderBy := "transaction_date"
-	orderDirection := "DESC"
-	if filter.OrderBy != "" {
-		orderBy = filter.OrderBy
-	}
-	if filter.OrderDirection != "" {
-		orderDirection = filter.OrderDirection
-	}
-	query = query.Order(fmt.Sprintf("%s %s", orderBy, orderDirection))
-
-	// Apply pagination
-	if filter.Limit > 0 {
-		query = query.Limit(filter.Limit)
-	}
-	if filter.Offset > 0 {
-		query = query.Offset(filter.Offset)
-	}
-
-	// Preload user data
-	query = query.Preload("User")
-
-	if err := query.Find(&transactions).Error; err != nil {
-		return nil, fmt.Errorf("failed to get filtered transactions: %w", err)
-	}
-
-	return transactions, nil
-}
-
-// UpdateTransaction updates a transaction
-func (s *TransactionService) UpdateTransaction(transaction *models.Transaction) error {
-	if err := s.db.Save(transaction).Error; err != nil {
-		return fmt.Errorf("failed to update transaction: %w", err)
-	}
-	return nil
-}
-
-// DeleteTransaction soft deletes a transaction
-func (s *TransactionService) DeleteTransaction(id uint) error {
-	if err := s.db.Delete(&models.Transaction{}, id).Error; err != nil {
-		return fmt.Errorf("failed to delete transaction: %w", err)
-	}
-	return nil
-}
-
-// GetTransactionsBySymbol retrieves transactions for a specific symbol
-func (s *TransactionService) GetTransactionsBySymbol(symbol string, limit, offset int) ([]models.Transaction, error) {
-	var transactions []models.Transaction
-	query := s.db.Where("symbol = ?", symbol).Order("transaction_date DESC")
-
-	if limit > 0 {
-		query = query.Limit(limit)
-	}
-	if offset > 0 {
-		query = query.Offset(offset)
-	}
-
-	if err := query.Preload("User").Find(&transactions).Error; err != nil {
-		return nil, fmt.Errorf("failed to get symbol transactions: %w", err)
-	}
-
-	return transactions, nil
-}
-
-// GetTransactionsByDateRange retrieves transactions within a date range
-func (s *TransactionService) GetTransactionsByDateRange(startDate, endDate time.Time, limit, offset int) ([]models.Transaction, error) {
-	var transactions []models.Transaction
-	query := s.db.Where("transaction_date BETWEEN ? AND ?", startDate, endDate).Order("transaction_date DESC")
-
-	if limit > 0 {
-		query = query.Limit(limit)
-	}
-	if offset > 0 {
-		query = query.Offset(offset)
-	}
-
-	if err := query.Preload("User").Find(&transactions).Error; err != nil {
-		return nil, fmt.Errorf("failed to get transactions by date range: %w", err)
-	}
-
-	return transactions, nil
 }
 
 // GetPortfolioSummary returns portfolio summary for a user
@@ -258,14 +84,14 @@ func (s *TransactionService) GetSymbolHoldings(userID uint) ([]map[string]interf
 	}
 
 	query := `
-		SELECT 
+		SELECT
 			symbol,
 			COALESCE(SUM(CASE WHEN type = 'buy' THEN quantity ELSE 0 END), 0) as total_bought,
 			COALESCE(SUM(CASE WHEN type = 'sell' THEN quantity ELSE 0 END), 0) as total_sold,
 			COALESCE(SUM(CASE WHEN type = 'buy' THEN quantity WHEN type = 'sell' THEN -quantity ELSE 0 END), 0) as net_quantity,
 			COALESCE(AVG(CASE WHEN type = 'buy' THEN price ELSE NULL END), 0) as avg_buy_price,
 			COALESCE(AVG(CASE WHEN type = 'sell' THEN price ELSE NULL END), 0) as avg_sell_price
-		FROM transactions 
+		FROM transactions
 		WHERE user_id = ? AND deleted_at IS NULL
 		GROUP BY symbol
 		HAVING net_quantity != 0
@@ -291,12 +117,12 @@ func (s *TransactionService) GetSymbolHoldings(userID uint) ([]map[string]interf
 	return result, nil
 }
 
-// CountTransactions returns the count of transactions based on filter
-func (s *TransactionService) CountTransactions(filter TransactionFilter) (int64, error) {
-	var count int64
+// GetTransactionsWithFilter retrieves transactions with advanced filtering (business logic method)
+func (s *TransactionService) GetTransactionsWithFilter(filter TransactionFilter) ([]models.Transaction, error) {
+	var transactions []models.Transaction
 	query := s.db.Model(&models.Transaction{})
 
-	// Apply same filters as GetTransactionsWithFilter
+	// Apply filters
 	if filter.UserID != nil {
 		query = query.Where("user_id = ?", *filter.UserID)
 	}
@@ -305,9 +131,6 @@ func (s *TransactionService) CountTransactions(filter TransactionFilter) (int64,
 	}
 	if filter.Type != nil {
 		query = query.Where("type = ?", *filter.Type)
-	}
-	if filter.Status != nil {
-		query = query.Where("status = ?", *filter.Status)
 	}
 	if filter.Broker != nil {
 		query = query.Where("broker = ?", *filter.Broker)
@@ -324,8 +147,65 @@ func (s *TransactionService) CountTransactions(filter TransactionFilter) (int64,
 	if filter.MaxAmount != nil {
 		query = query.Where("amount <= ?", *filter.MaxAmount)
 	}
-	if filter.ExtractedFrom != nil {
-		query = query.Where("extracted_from = ?", *filter.ExtractedFrom)
+
+	// Apply ordering
+	orderBy := "transaction_date"
+	orderDirection := "DESC"
+	if filter.OrderBy != "" {
+		orderBy = filter.OrderBy
+	}
+	if filter.OrderDirection != "" {
+		orderDirection = filter.OrderDirection
+	}
+	query = query.Order(fmt.Sprintf("%s %s", orderBy, orderDirection))
+
+	// Apply pagination
+	if filter.Limit > 0 {
+		query = query.Limit(filter.Limit)
+	}
+	if filter.Offset > 0 {
+		query = query.Offset(filter.Offset)
+	}
+
+	// Preload user data
+	query = query.Preload("User")
+
+	if err := query.Find(&transactions).Error; err != nil {
+		return nil, fmt.Errorf("failed to get filtered transactions: %w", err)
+	}
+
+	return transactions, nil
+}
+
+// CountTransactions returns the count of transactions based on filter
+func (s *TransactionService) CountTransactions(filter TransactionFilter) (int64, error) {
+	var count int64
+	query := s.db.Model(&models.Transaction{})
+
+	// Apply same filters as GetTransactionsWithFilter
+	if filter.UserID != nil {
+		query = query.Where("user_id = ?", *filter.UserID)
+	}
+	if filter.Symbol != nil {
+		query = query.Where("symbol = ?", *filter.Symbol)
+	}
+	if filter.Type != nil {
+		query = query.Where("type = ?", *filter.Type)
+	}
+	if filter.Broker != nil {
+		query = query.Where("broker = ?", *filter.Broker)
+	}
+	if filter.StartDate != nil {
+		query = query.Where("transaction_date >= ?", *filter.StartDate)
+	}
+	if filter.EndDate != nil {
+		query = query.Where("transaction_date <= ?", *filter.EndDate)
+	}
+	if filter.MinAmount != nil {
+		query = query.Where("amount >= ?", *filter.MinAmount)
+	}
+	if filter.MaxAmount != nil {
+		query = query.Where("amount <= ?", *filter.MaxAmount)
 	}
 
 	if err := query.Count(&count).Error; err != nil {

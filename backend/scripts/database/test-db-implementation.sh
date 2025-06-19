@@ -53,8 +53,8 @@ fi
 
 echo ""
 echo "5. Checking Database Models..."
-if grep -q "type User struct" internal/models/models.go && grep -q "type Transaction struct" internal/models/models.go; then
-    echo "✅ Database models found (User, Transaction)"
+if [ -f "internal/models/user.go" ] && [ -f "internal/models/transaction.go" ] && [ -f "internal/models/models.go" ]; then
+    echo "✅ Database models found (User, Transaction, BaseModel)"
 else
     echo "❌ Database models missing"
     exit 1
@@ -62,8 +62,8 @@ fi
 
 echo ""
 echo "6. Checking Migration System..."
-if [ -f "migrations/migrator.go" ] && [ -f "migrations/migrations.go" ]; then
-    echo "✅ Migration system implemented"
+if [ -f "migrations/migrator.go" ] && [ -f "migrations/migrations.go" ] && [ -f "migrations/001_create_users_table.sql" ] && [ -f "migrations/002_create_transactions_table.sql" ]; then
+    echo "✅ Migration system implemented (SQL-based with Go runner)"
 else
     echo "❌ Migration system missing"
     exit 1
@@ -100,7 +100,7 @@ done
 
 echo ""
 echo "10. Checking Documentation..."
-if [ -f "docs/database.md" ]; then
+if [ -f "DATABASE.md" ]; then
     echo "✅ Database documentation exists"
 else
     echo "❌ Database documentation missing"
@@ -113,15 +113,15 @@ echo ""
 echo "Summary of implemented components:"
 echo "=================================="
 echo "✅ Database Configuration (config/database.go)"
-echo "✅ Database Models (internal/models/models.go)"
+echo "✅ Database Models (internal/models/user.go, transaction.go, models.go)"
 echo "✅ Database Connection Manager (internal/database/database.go)"
-echo "✅ Migration System (migrations/)"
+echo "✅ Migration System (SQL-based: migrations/*.sql + Go runner)"
 echo "✅ Database Services (internal/services/)"
 echo "✅ Database Seeder (internal/database/seeder.go)"
 echo "✅ Database Health Endpoints (api/handlers/database.go)"
 echo "✅ Database CLI Tool (tools/db-cli.go)"
 echo "✅ Environment Configuration (.env files)"
-echo "✅ Database Documentation (docs/database.md)"
+echo "✅ Database Documentation (DATABASE.md)"
 echo ""
 echo "Next steps:"
 echo "==========="

@@ -200,8 +200,8 @@ func shouldRunMigrations() bool {
 		return false
 	}
 
-	// Run migrations in development, test, or when not set
-	return env == "" || env == "development" || env == "test"
+	// Run migrations in development, staging, or when not set
+	return env == "" || env == "development" || env == "staging"
 }
 
 // Initialize initializes the database with the given configuration
