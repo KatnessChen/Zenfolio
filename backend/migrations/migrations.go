@@ -50,6 +50,21 @@ func GetAllMigrations() []Migration {
 				return db.Exec("DROP TABLE IF EXISTS jwt_tokens").Error
 			},
 		},
+		{
+			ID:          "004_add_deleted_at_to_jwt_tokens",
+			Description: "Add deleted_at column to jwt_tokens table for soft delete support",
+			CreatedAt:   time.Date(2025, 6, 19, 0, 1, 0, 0, time.UTC),
+			Up: func(db *gorm.DB) error {
+				return executeSQLFile(db, "004_add_deleted_at_to_jwt_tokens.sql")
+			},
+			Down: func(db *gorm.DB) error {
+				// Remove deleted_at column and its index
+				if err := db.Exec("DROP INDEX IF EXISTS idx_jwt_tokens_deleted_at ON jwt_tokens").Error; err != nil {
+					return err
+				}
+				return db.Exec("ALTER TABLE jwt_tokens DROP COLUMN deleted_at").Error
+			},
+		},
 	}
 }
 

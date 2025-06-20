@@ -48,6 +48,22 @@ type UserSummary struct {
 	Email    string `json:"email"`
 }
 
+// SignupRequest represents a signup request
+type SignupRequest struct {
+	Email           string `json:"email" binding:"required,email"`
+	FirstName       string `json:"first_name" binding:"required"`
+	LastName        string `json:"last_name"`
+	Password        string `json:"password" binding:"required,min=8"`
+	ConfirmPassword string `json:"confirm_password" binding:"required"`
+}
+
+// SignupResponse represents a signup response
+type SignupResponse struct {
+	Success bool        `json:"success"`
+	Message string      `json:"message"`
+	User    UserSummary `json:"user"`
+}
+
 // UserInfoResponse represents the response for /me endpoint
 type UserInfoResponse struct {
 	User         UserSummary `json:"user"`
@@ -235,6 +251,71 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"token": newToken,
+	})
+}
+
+// Signup handles user registration
+func (h *AuthHandler) Signup(c *gin.Context) {
+	var req SignupRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Validation failed",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	// Validate password confirmation
+	if req.Password != req.ConfirmPassword {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Passwords do not match",
+		})
+		return
+	}
+
+	// Check if user already exists
+	existingUser, err := h.userRepo.FindByEmail(req.Email)
+	if err == nil && existingUser != nil {
+		c.JSON(http.StatusConflict, gin.H{
+			"error": "Email already registered",
+		})
+		return
+	}
+
+	// Create new user
+	user := &models.User{
+		Email:     req.Email,
+		FirstName: req.FirstName,
+		LastName:  req.LastName,
+		Username:  req.Email, // Use email as username for now
+		IsActive:  true,
+	}
+
+	// Set password (will be hashed automatically by BeforeCreate hook)
+	if err := user.SetPassword(req.Password); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to process password",
+		})
+		return
+	}
+
+	// Save user to database
+	if err := h.userRepo.Create(user); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to create user account",
+		})
+		return
+	}
+
+	// Return success response
+	c.JSON(http.StatusCreated, SignupResponse{
+		Success: true,
+		Message: "User registered successfully",
+		User: UserSummary{
+			ID:       user.ID,
+			Username: user.Username,
+			Email:    user.Email,
+		},
 	})
 }
 

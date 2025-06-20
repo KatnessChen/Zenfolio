@@ -29,6 +29,7 @@ func SetupRouter(cfg *config.Config) *gin.Engine {
 	{
 		publicApi.GET(constants.HealthEndpoint, handlers.GetHealthCheck)
 		publicApi.POST(constants.LoginEndpoint, authHandler.Login)
+		publicApi.POST(constants.SignupEndpoint, authHandler.Signup)
 	}
 
 	// Protected API routes
