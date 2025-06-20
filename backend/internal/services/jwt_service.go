@@ -57,6 +57,11 @@ func NewJWTService(cfg *config.Config, jwtRepo repositories.JWTRepository) JWTSe
 
 // GenerateToken generates a new JWT token and stores it in the database
 func (s *jwtService) GenerateToken(user *models.User, deviceInfo DeviceInfo) (string, error) {
+	// Validate input
+	if user == nil {
+		return "", fmt.Errorf("user cannot be nil")
+	}
+
 	// Calculate expiration time (24 hours from now)
 	expiresAt := time.Now().Add(time.Duration(s.cfg.JWTExpirationHours) * time.Hour)
 
