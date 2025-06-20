@@ -38,6 +38,18 @@ func GetAllMigrations() []Migration {
 				return db.Exec("DROP TABLE IF EXISTS transactions").Error
 			},
 		},
+		{
+			ID:          "003_create_jwt_tokens_table",
+			Description: "Create JWT tokens table for token lifecycle management",
+			CreatedAt:   time.Date(2025, 6, 19, 0, 0, 0, 0, time.UTC),
+			Up: func(db *gorm.DB) error {
+				return executeSQLFile(db, "003_create_jwt_tokens_table.sql")
+			},
+			Down: func(db *gorm.DB) error {
+				// Drop jwt_tokens table and its indexes
+				return db.Exec("DROP TABLE IF EXISTS jwt_tokens").Error
+			},
+		},
 	}
 }
 

@@ -1,25 +1,23 @@
 package middlewares
 
 import (
-	"errors"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/transaction-tracker/backend/config"
 	"github.com/transaction-tracker/backend/internal/constants"
+	"github.com/transaction-tracker/backend/internal/repositories"
+	"github.com/transaction-tracker/backend/internal/services"
+	"gorm.io/gorm"
 )
 
-// JWTClaims represents the claims in the JWT
-type JWTClaims struct {
-	UserID string `json:"user_id"`
-	jwt.RegisteredClaims
-}
+// AuthMiddleware returns a middleware for JWT authentication with database validation
+// This middleware requires a database connection to be available as a parameter
+func AuthMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
+	jwtRepo := repositories.NewJWTRepository(db)
+	jwtService := services.NewJWTService(cfg, jwtRepo)
 
-// AuthMiddleware returns a middleware for authentication
-func AuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Get the Authorization header
 		authHeader := c.GetHeader(constants.AuthorizationHeader)
@@ -42,43 +40,20 @@ func AuthMiddleware(cfg *config.Config) gin.HandlerFunc {
 			return
 		}
 
-		// Parse and validate the token
-		token, err := jwt.ParseWithClaims(tokenString, &JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
-			// Validate signing method
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, errors.New(constants.ErrMsgInvalidSigningMethod)
-			}
-			return []byte(cfg.JWTSecret), nil
-		})
-
-		if err != nil || !token.Valid {
+		// Validate token using the JWT service
+		claims, err := jwtService.ValidateToken(tokenString)
+		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"error": constants.ErrMsgInvalidToken,
 			})
 			return
 		}
 
-		// Get claims and add userID to context
-		if claims, ok := token.Claims.(*JWTClaims); ok {
-			c.Set("userID", claims.UserID)
-		}
+		// Set user information in context
+		c.Set("user_id", claims.UserID)
+		c.Set("username", claims.Username)
+		c.Set("token_id", claims.TokenID)
 
 		c.Next()
 	}
-}
-
-// GenerateToken generates a JWT token for the given user ID
-func GenerateToken(userID string, cfg *config.Config) (string, error) {
-	claims := &JWTClaims{
-		UserID: userID,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * time.Duration(cfg.JWTExpirationHours))),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
-		},
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString([]byte(cfg.JWTSecret))
-
-	return tokenString, err
 }

@@ -18,6 +18,10 @@ const (
 	HealthEndpoint         = "/health"
 	DatabaseHealthEndpoint = "/health/database"
 	LoginEndpoint          = "/login"
+	LogoutEndpoint         = "/logout"
+	LogoutAllEndpoint      = "/logout-all"
+	RefreshTokenEndpoint   = "/refresh-token"
+	MeEndpoint             = "/me"
 	HelloWorldEndpoint     = "/hello-world"
 	ExtractTransEndpoint   = "/extract-transactions"
 )
