@@ -1,20 +1,296 @@
 {
   "item": [
     {
-      "name": "health",
-      "description": "",
+      "name": "Authentication",
+      "description": "User authentication and JWT token management endpoints",
       "item": [
         {
-          "id": "613d1908-9863-48e7-af7e-d12d49ae2c19",
-          "name": "Health check endpoint",
+          "id": "signup",
+          "name": "User Signup",
           "request": {
-            "name": "Health check endpoint",
+            "name": "User Signup",
+            "description": {
+              "content": "Register a new user account",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": ["api", "v1", "signup"],
+              "host": ["{{baseUrl}}"],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"user@example.com\",\n  \"password\": \"securePassword123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": null
+          },
+          "response": [],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "login",
+          "name": "User Login",
+          "request": {
+            "name": "User Login",
+            "description": {
+              "content": "Authenticate user with username/email and password, returns JWT token",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": ["api", "v1", "login"],
+              "host": ["{{baseUrl}}"],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"securePassword123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": null
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.collectionVariables.set('jwtToken', responseJson.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "get-current-user",
+          "name": "Get Current User",
+          "request": {
+            "name": "Get Current User",
+            "description": {
+              "content": "Get information about the currently authenticated user",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": ["api", "v1", "me"],
+              "host": ["{{baseUrl}}"],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "body": {},
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwtToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "refresh-token",
+          "name": "Refresh Token",
+          "request": {
+            "name": "Refresh Token",
+            "description": {
+              "content": "Generate new JWT token with extended expiration",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": ["api", "v1", "refresh-token"],
+              "host": ["{{baseUrl}}"],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {},
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwtToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.collectionVariables.set('jwtToken', responseJson.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "logout",
+          "name": "Logout Current Session",
+          "request": {
+            "name": "Logout Current Session",
+            "description": {
+              "content": "Invalidate current JWT token and remove from database",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": ["api", "v1", "logout"],
+              "host": ["{{baseUrl}}"],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {},
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwtToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "logout-all",
+          "name": "Logout All Sessions",
+          "request": {
+            "name": "Logout All Sessions",
+            "description": {
+              "content": "Invalidate all JWT tokens for current user across all devices",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": ["api", "v1", "logout-all"],
+              "host": ["{{baseUrl}}"],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {},
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwtToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "description": "API health check endpoints",
+      "item": [
+        {
+          "id": "health-check",
+          "name": "API Health Check",
+          "request": {
+            "name": "API Health Check",
             "description": {
               "content": "Returns a status to verify the API is running",
               "type": "text/plain"
             },
             "url": {
-              "path": ["health"],
+              "path": ["api", "v1", "health"],
               "host": ["{{baseUrl}}"],
               "query": [],
               "variable": []
@@ -31,11 +307,11 @@
           },
           "response": [
             {
-              "id": "d82c5d25-4ac0-475b-a724-92f5fad86113",
+              "id": "health-ok",
               "name": "OK",
               "originalRequest": {
                 "url": {
-                  "path": ["health"],
+                  "path": ["api", "v1", "health"],
                   "host": ["{{baseUrl}}"],
                   "query": [],
                   "variable": []
@@ -57,7 +333,118 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"status\": \"<string>\",\n  \"time\": \"<string>\"\n}",
+              "body": "{\n  \"status\": \"healthy\",\n  \"time\": \"2025-06-20T10:00:00Z\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "database-health-check",
+          "name": "Database Health Check",
+          "request": {
+            "name": "Database Health Check",
+            "description": {
+              "content": "Returns database health status with connection statistics - requires authentication",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": ["api", "v1", "health", "database"],
+              "host": ["{{baseUrl}}"],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "body": {},
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwtToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "db-health-ok",
+              "name": "Database is healthy",
+              "originalRequest": {
+                "url": {
+                  "path": ["api", "v1", "health", "database"],
+                  "host": ["{{baseUrl}}"],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"healthy\",\n  \"timestamp\": \"2025-06-20T10:00:00Z\",\n  \"database\": {\n    \"connected\": true,\n    \"max_connections\": 100,\n    \"open_connections\": 5,\n    \"in_use\": 2,\n    \"idle\": 3\n  },\n  \"performance\": {\n    \"response_time_ms\": 25\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "db-health-unauthorized",
+              "name": "Unauthorized",
+              "originalRequest": {
+                "url": {
+                  "path": ["api", "v1", "health", "database"],
+                  "host": ["{{baseUrl}}"],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"Unauthorized\"\n}",
               "cookie": [],
               "_postman_previewlanguage": "json"
             }
@@ -70,902 +457,462 @@
       ]
     },
     {
-      "name": "api",
-      "description": "",
+      "name": "Protected Endpoints",
+      "description": "API endpoints that require authentication",
       "item": [
         {
-          "name": "v1",
-          "description": "",
-          "item": [
-            {
-              "name": "hello-world",
-              "description": "",
-              "item": [
-                {
-                  "id": "84ece697-c0e2-4830-a87b-50ab7e31cf6e",
-                  "name": "Hello World endpoint",
-                  "request": {
-                    "name": "Hello World endpoint",
-                    "description": {
-                      "content": "Test endpoint that requires authentication",
-                      "type": "text/plain"
-                    },
-                    "url": {
-                      "path": ["api", "v1", "hello-world"],
-                      "host": ["{{baseUrl}}"],
-                      "query": [],
-                      "variable": []
-                    },
-                    "header": [
-                      {
-                        "key": "Accept",
-                        "value": "application/json"
-                      }
-                    ],
-                    "method": "GET",
-                    "body": {},
-                    "auth": {
-                      "type": "bearer",
-                      "bearer": [
-                        {
-                          "key": "token",
-                          "value": "{{bearerToken}}"
-                        }
-                      ]
-                    }
-                  },
-                  "response": [
-                    {
-                      "id": "a6f26ab4-ec51-4add-8ce4-ff6d44b19928",
-                      "name": "OK",
-                      "originalRequest": {
-                        "url": {
-                          "path": ["api", "v1", "hello-world"],
-                          "host": ["{{baseUrl}}"],
-                          "query": [],
-                          "variable": []
-                        },
-                        "header": [
-                          {
-                            "key": "Accept",
-                            "value": "application/json"
-                          },
-                          {
-                            "description": {
-                              "content": "Added as a part of security scheme: bearer",
-                              "type": "text/plain"
-                            },
-                            "key": "Authorization",
-                            "value": "Bearer <token>"
-                          }
-                        ],
-                        "method": "GET",
-                        "body": {}
-                      },
-                      "status": "OK",
-                      "code": 200,
-                      "header": [
-                        {
-                          "key": "Content-Type",
-                          "value": "application/json"
-                        }
-                      ],
-                      "body": "{\n  \"message\": \"<string>\",\n  \"user\": \"<string>\"\n}",
-                      "cookie": [],
-                      "_postman_previewlanguage": "json"
-                    },
-                    {
-                      "id": "cf76ca36-af29-4204-a05f-1ab1851e447f",
-                      "name": "Unauthorized",
-                      "originalRequest": {
-                        "url": {
-                          "path": ["api", "v1", "hello-world"],
-                          "host": ["{{baseUrl}}"],
-                          "query": [],
-                          "variable": []
-                        },
-                        "header": [
-                          {
-                            "key": "Accept",
-                            "value": "application/json"
-                          },
-                          {
-                            "description": {
-                              "content": "Added as a part of security scheme: bearer",
-                              "type": "text/plain"
-                            },
-                            "key": "Authorization",
-                            "value": "Bearer <token>"
-                          }
-                        ],
-                        "method": "GET",
-                        "body": {}
-                      },
-                      "status": "Unauthorized",
-                      "code": 401,
-                      "header": [
-                        {
-                          "key": "Content-Type",
-                          "value": "application/json"
-                        }
-                      ],
-                      "body": "{\n  \"error\": \"<string>\"\n}",
-                      "cookie": [],
-                      "_postman_previewlanguage": "json"
-                    },
-                    {
-                      "id": "df24b8d5-478a-4807-87f2-a529d0b17033",
-                      "name": "Rate limit exceeded",
-                      "originalRequest": {
-                        "url": {
-                          "path": ["api", "v1", "hello-world"],
-                          "host": ["{{baseUrl}}"],
-                          "query": [],
-                          "variable": []
-                        },
-                        "header": [
-                          {
-                            "key": "Accept",
-                            "value": "application/json"
-                          },
-                          {
-                            "description": {
-                              "content": "Added as a part of security scheme: bearer",
-                              "type": "text/plain"
-                            },
-                            "key": "Authorization",
-                            "value": "Bearer <token>"
-                          }
-                        ],
-                        "method": "GET",
-                        "body": {}
-                      },
-                      "status": "Too Many Requests",
-                      "code": 429,
-                      "header": [
-                        {
-                          "key": "Content-Type",
-                          "value": "application/json"
-                        }
-                      ],
-                      "body": "{\n  \"error\": \"<string>\"\n}",
-                      "cookie": [],
-                      "_postman_previewlanguage": "json"
-                    }
-                  ],
-                  "event": [],
-                  "protocolProfileBehavior": {
-                    "disableBodyPruning": true
-                  }
-                }
-              ]
+          "id": "hello-world",
+          "name": "Hello World",
+          "request": {
+            "name": "Hello World",
+            "description": {
+              "content": "Test endpoint that requires authentication",
+              "type": "text/plain"
             },
-            {
-              "name": "health/database",
-              "description": "",
-              "item": [
-                {
-                  "id": "f8d2a3b5-1c9e-4f7a-b6d8-2e4c6a9f1b3d",
-                  "name": "Database health check",
-                  "request": {
-                    "name": "Database health check",
-                    "description": {
-                      "content": "Returns database health status with connection statistics",
-                      "type": "text/plain"
-                    },
-                    "url": {
-                      "path": ["api", "v1", "health", "database"],
-                      "host": ["{{baseUrl}}"],
-                      "query": [],
-                      "variable": []
-                    },
-                    "header": [
-                      {
-                        "key": "Accept",
-                        "value": "application/json"
-                      }
-                    ],
-                    "method": "GET",
-                    "body": {},
-                    "auth": {
-                      "type": "bearer",
-                      "bearer": [
-                        {
-                          "key": "token",
-                          "value": "{{bearerToken}}"
-                        }
-                      ]
-                    }
-                  },
-                  "response": [
-                    {
-                      "id": "c7b4f2e1-8d6a-4e9f-a3c5-7b1d9e2f4a6b",
-                      "name": "Database is healthy",
-                      "originalRequest": {
-                        "url": {
-                          "path": ["api", "v1", "health", "database"],
-                          "host": ["{{baseUrl}}"],
-                          "query": [],
-                          "variable": []
-                        },
-                        "header": [
-                          {
-                            "key": "Accept",
-                            "value": "application/json"
-                          },
-                          {
-                            "description": {
-                              "content": "Added as a part of security scheme: bearer",
-                              "type": "text/plain"
-                            },
-                            "key": "Authorization",
-                            "value": "Bearer <token>"
-                          }
-                        ],
-                        "method": "GET",
-                        "body": {}
-                      },
-                      "status": "OK",
-                      "code": 200,
-                      "header": [
-                        {
-                          "key": "Content-Type",
-                          "value": "application/json"
-                        }
-                      ],
-                      "body": "{\n  \"status\": \"healthy\",\n  \"timestamp\": \"2025-06-17T10:00:00Z\",\n  \"database\": {\n    \"connected\": true,\n    \"max_connections\": 100,\n    \"open_connections\": 5,\n    \"in_use\": 2,\n    \"idle\": 3\n  },\n  \"performance\": {\n    \"response_time_ms\": 25\n  }\n}",
-                      "cookie": [],
-                      "_postman_previewlanguage": "json"
-                    },
-                    {
-                      "id": "a9e4b7c2-5f8d-4a1e-9c6b-3d7e2f5a8b1c",
-                      "name": "Unauthorized",
-                      "originalRequest": {
-                        "url": {
-                          "path": ["api", "v1", "health", "database"],
-                          "host": ["{{baseUrl}}"],
-                          "query": [],
-                          "variable": []
-                        },
-                        "header": [
-                          {
-                            "key": "Accept",
-                            "value": "application/json"
-                          }
-                        ],
-                        "method": "GET",
-                        "body": {}
-                      },
-                      "status": "Unauthorized",
-                      "code": 401,
-                      "header": [
-                        {
-                          "key": "Content-Type",
-                          "value": "application/json"
-                        }
-                      ],
-                      "body": "{\n  \"error\": \"Unauthorized\"\n}",
-                      "cookie": [],
-                      "_postman_previewlanguage": "json"
-                    },
-                    {
-                      "id": "e2f6a9c4-7b1d-4e8f-a5c7-9b3e6f2a8d1c",
-                      "name": "Database is unhealthy",
-                      "originalRequest": {
-                        "url": {
-                          "path": ["api", "v1", "health", "database"],
-                          "host": ["{{baseUrl}}"],
-                          "query": [],
-                          "variable": []
-                        },
-                        "header": [
-                          {
-                            "key": "Accept",
-                            "value": "application/json"
-                          },
-                          {
-                            "description": {
-                              "content": "Added as a part of security scheme: bearer",
-                              "type": "text/plain"
-                            },
-                            "key": "Authorization",
-                            "value": "Bearer <token>"
-                          }
-                        ],
-                        "method": "GET",
-                        "body": {}
-                      },
-                      "status": "Service Unavailable",
-                      "code": 503,
-                      "header": [
-                        {
-                          "key": "Content-Type",
-                          "value": "application/json"
-                        }
-                      ],
-                      "body": "{\n  \"status\": \"unhealthy\",\n  \"timestamp\": \"2025-06-17T10:00:00Z\",\n  \"database\": {\n    \"connected\": false,\n    \"max_connections\": 0,\n    \"open_connections\": 0,\n    \"in_use\": 0,\n    \"idle\": 0\n  },\n  \"error\": \"database ping failed: connection refused\"\n}",
-                      "cookie": [],
-                      "_postman_previewlanguage": "json"
-                    }
-                  ],
-                  "event": [],
-                  "protocolProfileBehavior": {
-                    "disableBodyPruning": true
-                  }
-                }
-              ]
+            "url": {
+              "path": ["api", "v1", "hello-world"],
+              "host": ["{{baseUrl}}"],
+              "query": [],
+              "variable": []
             },
-            {
-              "name": "login",
-              "description": "",
-              "item": [
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "body": {},
+            "auth": {
+              "type": "bearer",
+              "bearer": [
                 {
-                  "id": "e7fd81b0-c244-4869-971f-3d6e77c446fb",
-                  "name": "User login",
-                  "request": {
-                    "name": "User login",
-                    "description": {
-                      "content": "Authenticates a user and returns a JWT token",
-                      "type": "text/plain"
-                    },
-                    "url": {
-                      "path": ["api", "v1", "login"],
-                      "host": ["{{baseUrl}}"],
-                      "query": [],
-                      "variable": []
-                    },
-                    "header": [
-                      {
-                        "key": "Content-Type",
-                        "value": "application/json"
-                      },
-                      {
-                        "key": "Accept",
-                        "value": "application/json"
-                      }
-                    ],
-                    "method": "POST",
-                    "body": {
-                      "mode": "raw",
-                      "raw": "{\n  \"username\": \"<string>\",\n  \"password\": \"<string>\"\n}",
-                      "options": {
-                        "raw": {
-                          "headerFamily": "json",
-                          "language": "json"
-                        }
-                      }
-                    },
-                    "auth": null
-                  },
-                  "response": [
-                    {
-                      "id": "aededa59-2515-4f8a-a9d7-1db62310bc00",
-                      "name": "Successful login",
-                      "originalRequest": {
-                        "url": {
-                          "path": ["api", "v1", "login"],
-                          "host": ["{{baseUrl}}"],
-                          "query": [],
-                          "variable": []
-                        },
-                        "header": [
-                          {
-                            "key": "Content-Type",
-                            "value": "application/json"
-                          },
-                          {
-                            "key": "Accept",
-                            "value": "application/json"
-                          }
-                        ],
-                        "method": "POST",
-                        "body": {
-                          "mode": "raw",
-                          "raw": "{\n  \"username\": \"<string>\",\n  \"password\": \"<string>\"\n}",
-                          "options": {
-                            "raw": {
-                              "headerFamily": "json",
-                              "language": "json"
-                            }
-                          }
-                        }
-                      },
-                      "status": "OK",
-                      "code": 200,
-                      "header": [
-                        {
-                          "key": "Content-Type",
-                          "value": "application/json"
-                        }
-                      ],
-                      "body": "{\n  \"token\": \"<string>\"\n}",
-                      "cookie": [],
-                      "_postman_previewlanguage": "json"
-                    },
-                    {
-                      "id": "5aeea801-396e-4233-bbd0-de7e2150d763",
-                      "name": "Invalid request",
-                      "originalRequest": {
-                        "url": {
-                          "path": ["api", "v1", "login"],
-                          "host": ["{{baseUrl}}"],
-                          "query": [],
-                          "variable": []
-                        },
-                        "header": [
-                          {
-                            "key": "Content-Type",
-                            "value": "application/json"
-                          },
-                          {
-                            "key": "Accept",
-                            "value": "application/json"
-                          }
-                        ],
-                        "method": "POST",
-                        "body": {
-                          "mode": "raw",
-                          "raw": "{\n  \"username\": \"<string>\",\n  \"password\": \"<string>\"\n}",
-                          "options": {
-                            "raw": {
-                              "headerFamily": "json",
-                              "language": "json"
-                            }
-                          }
-                        }
-                      },
-                      "status": "Bad Request",
-                      "code": 400,
-                      "header": [
-                        {
-                          "key": "Content-Type",
-                          "value": "application/json"
-                        }
-                      ],
-                      "body": "{\n  \"error\": \"<string>\"\n}",
-                      "cookie": [],
-                      "_postman_previewlanguage": "json"
-                    },
-                    {
-                      "id": "beffcee4-3653-49a2-8e4e-5f2dc60536e2",
-                      "name": "Authentication failed",
-                      "originalRequest": {
-                        "url": {
-                          "path": ["api", "v1", "login"],
-                          "host": ["{{baseUrl}}"],
-                          "query": [],
-                          "variable": []
-                        },
-                        "header": [
-                          {
-                            "key": "Content-Type",
-                            "value": "application/json"
-                          },
-                          {
-                            "key": "Accept",
-                            "value": "application/json"
-                          }
-                        ],
-                        "method": "POST",
-                        "body": {
-                          "mode": "raw",
-                          "raw": "{\n  \"username\": \"<string>\",\n  \"password\": \"<string>\"\n}",
-                          "options": {
-                            "raw": {
-                              "headerFamily": "json",
-                              "language": "json"
-                            }
-                          }
-                        }
-                      },
-                      "status": "Unauthorized",
-                      "code": 401,
-                      "header": [
-                        {
-                          "key": "Content-Type",
-                          "value": "application/json"
-                        }
-                      ],
-                      "body": "{\n  \"error\": \"<string>\"\n}",
-                      "cookie": [],
-                      "_postman_previewlanguage": "json"
-                    },
-                    {
-                      "id": "ab5e50c6-2a61-42ac-8ad3-06949efa1186",
-                      "name": "Rate limit exceeded",
-                      "originalRequest": {
-                        "url": {
-                          "path": ["api", "v1", "login"],
-                          "host": ["{{baseUrl}}"],
-                          "query": [],
-                          "variable": []
-                        },
-                        "header": [
-                          {
-                            "key": "Content-Type",
-                            "value": "application/json"
-                          },
-                          {
-                            "key": "Accept",
-                            "value": "application/json"
-                          }
-                        ],
-                        "method": "POST",
-                        "body": {
-                          "mode": "raw",
-                          "raw": "{\n  \"username\": \"<string>\",\n  \"password\": \"<string>\"\n}",
-                          "options": {
-                            "raw": {
-                              "headerFamily": "json",
-                              "language": "json"
-                            }
-                          }
-                        }
-                      },
-                      "status": "Too Many Requests",
-                      "code": 429,
-                      "header": [
-                        {
-                          "key": "Content-Type",
-                          "value": "application/json"
-                        }
-                      ],
-                      "body": "{\n  \"error\": \"<string>\"\n}",
-                      "cookie": [],
-                      "_postman_previewlanguage": "json"
-                    }
-                  ],
-                  "event": [],
-                  "protocolProfileBehavior": {
-                    "disableBodyPruning": true
-                  }
-                }
-              ]
-            },
-            {
-              "name": "extract-transactions",
-              "description": "",
-              "item": [
-                {
-                  "id": "1536eff8-009e-43f7-81c5-b4e87c4efaa1",
-                  "name": "Extract transactions from images",
-                  "request": {
-                    "name": "Extract transactions from images",
-                    "description": {
-                      "content": "Uploads one or more images and extracts transaction data using AI.",
-                      "type": "text/plain"
-                    },
-                    "url": {
-                      "path": ["api", "v1", "extract-transactions"],
-                      "host": ["{{baseUrl}}"],
-                      "query": [],
-                      "variable": []
-                    },
-                    "header": [
-                      {
-                        "key": "Content-Type",
-                        "value": "multipart/form-data"
-                      },
-                      {
-                        "key": "Accept",
-                        "value": "application/json"
-                      }
-                    ],
-                    "method": "POST",
-                    "body": {
-                      "mode": "formdata",
-                      "formdata": [
-                        {
-                          "description": {
-                            "content": "One or more image files to process.",
-                            "type": "text/plain"
-                          },
-                          "key": "images",
-                          "value": "<binary>,<binary>",
-                          "type": "text"
-                        }
-                      ]
-                    },
-                    "auth": {
-                      "type": "bearer",
-                      "bearer": [
-                        {
-                          "key": "token",
-                          "value": "{{bearerToken}}"
-                        }
-                      ]
-                    }
-                  },
-                  "response": [
-                    {
-                      "id": "3d27faa4-64d1-4dcc-880d-f2c41ede510d",
-                      "name": "Successful extraction",
-                      "originalRequest": {
-                        "url": {
-                          "path": ["api", "v1", "extract-transactions"],
-                          "host": ["{{baseUrl}}"],
-                          "query": [],
-                          "variable": []
-                        },
-                        "header": [
-                          {
-                            "key": "Content-Type",
-                            "value": "multipart/form-data"
-                          },
-                          {
-                            "key": "Accept",
-                            "value": "application/json"
-                          },
-                          {
-                            "description": {
-                              "content": "Added as a part of security scheme: bearer",
-                              "type": "text/plain"
-                            },
-                            "key": "Authorization",
-                            "value": "Bearer <token>"
-                          }
-                        ],
-                        "method": "POST",
-                        "body": {
-                          "mode": "formdata",
-                          "formdata": [
-                            {
-                              "description": {
-                                "content": "One or more image files to process.",
-                                "type": "text/plain"
-                              },
-                              "key": "images",
-                              "value": "<binary>,<binary>",
-                              "type": "text"
-                            }
-                          ]
-                        }
-                      },
-                      "status": "OK",
-                      "code": 200,
-                      "header": [
-                        {
-                          "key": "Content-Type",
-                          "value": "application/json"
-                        }
-                      ],
-                      "body": "{\n  \"transactions\": [\n    {\n      \"ticker\": \"<string>\",\n      \"exchange\": \"<string>\",\n      \"currency\": \"<string>\",\n      \"trade_date\": \"<date>\",\n      \"trade_type\": \"Buy\",\n      \"quantity\": \"<double>\",\n      \"price\": \"<double>\",\n      \"trade_amount\": \"<double>\"\n    },\n    {\n      \"ticker\": \"<string>\",\n      \"exchange\": \"<string>\",\n      \"currency\": \"<string>\",\n      \"trade_date\": \"<date>\",\n      \"trade_type\": \"Dividends\",\n      \"quantity\": \"<double>\",\n      \"price\": \"<double>\",\n      \"trade_amount\": \"<double>\"\n    }\n  ],\n  \"success\": \"<boolean>\",\n  \"message\": \"<string>\"\n}",
-                      "cookie": [],
-                      "_postman_previewlanguage": "json"
-                    },
-                    {
-                      "id": "7140353f-181f-43b3-84da-318fb5af2b96",
-                      "name": "Invalid request (e.g., no images uploaded, bad image format)",
-                      "originalRequest": {
-                        "url": {
-                          "path": ["api", "v1", "extract-transactions"],
-                          "host": ["{{baseUrl}}"],
-                          "query": [],
-                          "variable": []
-                        },
-                        "header": [
-                          {
-                            "key": "Content-Type",
-                            "value": "multipart/form-data"
-                          },
-                          {
-                            "key": "Accept",
-                            "value": "application/json"
-                          },
-                          {
-                            "description": {
-                              "content": "Added as a part of security scheme: bearer",
-                              "type": "text/plain"
-                            },
-                            "key": "Authorization",
-                            "value": "Bearer <token>"
-                          }
-                        ],
-                        "method": "POST",
-                        "body": {
-                          "mode": "formdata",
-                          "formdata": [
-                            {
-                              "description": {
-                                "content": "One or more image files to process.",
-                                "type": "text/plain"
-                              },
-                              "key": "images",
-                              "value": "<binary>,<binary>",
-                              "type": "text"
-                            }
-                          ]
-                        }
-                      },
-                      "status": "Bad Request",
-                      "code": 400,
-                      "header": [
-                        {
-                          "key": "Content-Type",
-                          "value": "application/json"
-                        }
-                      ],
-                      "body": "{\n  \"error\": \"<string>\"\n}",
-                      "cookie": [],
-                      "_postman_previewlanguage": "json"
-                    },
-                    {
-                      "id": "bb18d39d-dac1-4853-a444-229e1f2ec4be",
-                      "name": "Unauthorized",
-                      "originalRequest": {
-                        "url": {
-                          "path": ["api", "v1", "extract-transactions"],
-                          "host": ["{{baseUrl}}"],
-                          "query": [],
-                          "variable": []
-                        },
-                        "header": [
-                          {
-                            "key": "Content-Type",
-                            "value": "multipart/form-data"
-                          },
-                          {
-                            "key": "Accept",
-                            "value": "application/json"
-                          },
-                          {
-                            "description": {
-                              "content": "Added as a part of security scheme: bearer",
-                              "type": "text/plain"
-                            },
-                            "key": "Authorization",
-                            "value": "Bearer <token>"
-                          }
-                        ],
-                        "method": "POST",
-                        "body": {
-                          "mode": "formdata",
-                          "formdata": [
-                            {
-                              "description": {
-                                "content": "One or more image files to process.",
-                                "type": "text/plain"
-                              },
-                              "key": "images",
-                              "value": "<binary>,<binary>",
-                              "type": "text"
-                            }
-                          ]
-                        }
-                      },
-                      "status": "Unauthorized",
-                      "code": 401,
-                      "header": [
-                        {
-                          "key": "Content-Type",
-                          "value": "application/json"
-                        }
-                      ],
-                      "body": "{\n  \"error\": \"<string>\"\n}",
-                      "cookie": [],
-                      "_postman_previewlanguage": "json"
-                    },
-                    {
-                      "id": "187c837e-47e0-42c3-be86-4b89e1592803",
-                      "name": "Rate limit exceeded",
-                      "originalRequest": {
-                        "url": {
-                          "path": ["api", "v1", "extract-transactions"],
-                          "host": ["{{baseUrl}}"],
-                          "query": [],
-                          "variable": []
-                        },
-                        "header": [
-                          {
-                            "key": "Content-Type",
-                            "value": "multipart/form-data"
-                          },
-                          {
-                            "key": "Accept",
-                            "value": "application/json"
-                          },
-                          {
-                            "description": {
-                              "content": "Added as a part of security scheme: bearer",
-                              "type": "text/plain"
-                            },
-                            "key": "Authorization",
-                            "value": "Bearer <token>"
-                          }
-                        ],
-                        "method": "POST",
-                        "body": {
-                          "mode": "formdata",
-                          "formdata": [
-                            {
-                              "description": {
-                                "content": "One or more image files to process.",
-                                "type": "text/plain"
-                              },
-                              "key": "images",
-                              "value": "<binary>,<binary>",
-                              "type": "text"
-                            }
-                          ]
-                        }
-                      },
-                      "status": "Too Many Requests",
-                      "code": 429,
-                      "header": [
-                        {
-                          "key": "Content-Type",
-                          "value": "application/json"
-                        }
-                      ],
-                      "body": "{\n  \"error\": \"<string>\"\n}",
-                      "cookie": [],
-                      "_postman_previewlanguage": "json"
-                    },
-                    {
-                      "id": "c5c349ec-82ef-436f-8c6d-13569509187e",
-                      "name": "Internal server error (e.g., AI processing failed)",
-                      "originalRequest": {
-                        "url": {
-                          "path": ["api", "v1", "extract-transactions"],
-                          "host": ["{{baseUrl}}"],
-                          "query": [],
-                          "variable": []
-                        },
-                        "header": [
-                          {
-                            "key": "Content-Type",
-                            "value": "multipart/form-data"
-                          },
-                          {
-                            "key": "Accept",
-                            "value": "application/json"
-                          },
-                          {
-                            "description": {
-                              "content": "Added as a part of security scheme: bearer",
-                              "type": "text/plain"
-                            },
-                            "key": "Authorization",
-                            "value": "Bearer <token>"
-                          }
-                        ],
-                        "method": "POST",
-                        "body": {
-                          "mode": "formdata",
-                          "formdata": [
-                            {
-                              "description": {
-                                "content": "One or more image files to process.",
-                                "type": "text/plain"
-                              },
-                              "key": "images",
-                              "value": "<binary>,<binary>",
-                              "type": "text"
-                            }
-                          ]
-                        }
-                      },
-                      "status": "Internal Server Error",
-                      "code": 500,
-                      "header": [
-                        {
-                          "key": "Content-Type",
-                          "value": "application/json"
-                        }
-                      ],
-                      "body": "{\n  \"error\": \"<string>\"\n}",
-                      "cookie": [],
-                      "_postman_previewlanguage": "json"
-                    }
-                  ],
-                  "event": [],
-                  "protocolProfileBehavior": {
-                    "disableBodyPruning": true
-                  }
+                  "key": "token",
+                  "value": "{{jwtToken}}",
+                  "type": "string"
                 }
               ]
             }
-          ]
+          },
+          "response": [
+            {
+              "id": "hello-world-ok",
+              "name": "OK",
+              "originalRequest": {
+                "url": {
+                  "path": ["api", "v1", "hello-world"],
+                  "host": ["{{baseUrl}}"],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Hello, World! You are authenticated.\",\n  \"user\": \"username\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "hello-world-unauthorized",
+              "name": "Unauthorized",
+              "originalRequest": {
+                "url": {
+                  "path": ["api", "v1", "hello-world"],
+                  "host": ["{{baseUrl}}"],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"Unauthorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "hello-world-rate-limit",
+              "name": "Rate limit exceeded",
+              "originalRequest": {
+                "url": {
+                  "path": ["api", "v1", "hello-world"],
+                  "host": ["{{baseUrl}}"],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Too Many Requests",
+              "code": 429,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"Too Many Requests\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "extract-transactions",
+          "name": "Extract Transactions from Images",
+          "request": {
+            "name": "Extract Transactions from Images",
+            "description": {
+              "content": "Uploads one or more images and extracts transaction data using AI",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": ["api", "v1", "extract-transactions"],
+              "host": ["{{baseUrl}}"],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "description": {
+                    "content": "One or more image files to process (PNG, JPEG, GIF, WebP)",
+                    "type": "text/plain"
+                  },
+                  "key": "images",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwtToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "extract-success",
+              "name": "Successful extraction",
+              "originalRequest": {
+                "url": {
+                  "path": ["api", "v1", "extract-transactions"],
+                  "host": ["{{baseUrl}}"],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "multipart/form-data"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "images",
+                      "type": "file",
+                      "src": []
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"transactions\": [\n    {\n      \"ticker\": \"AAPL\",\n      \"exchange\": \"NASDAQ\",\n      \"currency\": \"USD\",\n      \"trade_date\": \"2025-06-20\",\n      \"trade_type\": \"Buy\",\n      \"quantity\": 10.0,\n      \"price\": 150.50,\n      \"trade_amount\": 1505.00\n    }\n  ],\n  \"success\": true,\n  \"message\": \"Transactions extracted successfully\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "extract-bad-request",
+              "name": "Invalid request",
+              "originalRequest": {
+                "url": {
+                  "path": ["api", "v1", "extract-transactions"],
+                  "host": ["{{baseUrl}}"],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "multipart/form-data"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "formdata",
+                  "formdata": []
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"No images provided\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "extract-unauthorized",
+              "name": "Unauthorized",
+              "originalRequest": {
+                "url": {
+                  "path": ["api", "v1", "extract-transactions"],
+                  "host": ["{{baseUrl}}"],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "multipart/form-data"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "images",
+                      "type": "file",
+                      "src": []
+                    }
+                  ]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"Unauthorized\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "extract-rate-limit",
+              "name": "Rate limit exceeded",
+              "originalRequest": {
+                "url": {
+                  "path": ["api", "v1", "extract-transactions"],
+                  "host": ["{{baseUrl}}"],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "multipart/form-data"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "images",
+                      "type": "file",
+                      "src": []
+                    }
+                  ]
+                }
+              },
+              "status": "Too Many Requests",
+              "code": 429,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"Too Many Requests\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "extract-server-error",
+              "name": "Internal server error",
+              "originalRequest": {
+                "url": {
+                  "path": ["api", "v1", "extract-transactions"],
+                  "host": ["{{baseUrl}}"],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "multipart/form-data"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "images",
+                      "type": "file",
+                      "src": []
+                    }
+                  ]
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"AI processing failed\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
         }
       ]
     }
@@ -974,15 +921,22 @@
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:8080"
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "jwtToken",
+      "value": "",
+      "type": "string",
+      "description": "JWT token obtained from login endpoint"
     }
   ],
   "info": {
     "_postman_id": "5ede5532-db9e-4088-bdfc-c729df66fdee",
-    "name": "Transaction Tracker API",
+    "name": "Transaction Tracker API with JWT Auth",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "description": {
-      "content": "RESTful API for tracking financial transactions",
+      "content": "RESTful API for tracking financial transactions with JWT Token Management System",
       "type": "text/plain"
     }
   }

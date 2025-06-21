@@ -34,23 +34,13 @@ func setupJWTRepositoryTest(t *testing.T) (*gorm.DB, repositories.JWTRepository,
 		Username: "testuser",
 		Email:    "test@example.com",
 	}
-	testUser.SetPassword("password123")
+	err = testUser.SetPassword("password123")
+	require.NoError(t, err)
 
 	err = db.Create(testUser).Error
 	require.NoError(t, err)
 
 	return db, jwtRepo, testUser
-}
-
-// createTestJWTToken creates a test JWT token
-func createTestJWTToken(userID uint) *models.JWTToken {
-	return &models.JWTToken{
-		ID:         uuid.New().String(),
-		UserID:     userID,
-		TokenHash:  "test_hash_" + uuid.New().String(),
-		ExpiresAt:  time.Now().Add(24 * time.Hour),
-		DeviceInfo: `{"device": "test", "browser": "test"}`,
-	}
 }
 
 // Test 2.1: Token Storage Tests
@@ -175,46 +165,13 @@ func TestJWTRepository_RevokeToken_NotFound(t *testing.T) {
 	assert.NoError(t, err) // This succeeds but affects 0 rows
 }
 
-func TestJWTRepository_RevokeAllUserTokens(t *testing.T) {
-	db, jwtRepo, testUser := setupJWTRepositoryTest(t)
-
-	// Create multiple tokens for the user
-	tokenHashes := []string{}
-	for i := 0; i < 3; i++ {
-		tokenHash := "test_hash_" + uuid.New().String()
-		tokenHashes = append(tokenHashes, tokenHash)
-		expiresAt := time.Now().Add(24 * time.Hour)
-		deviceInfo := `{"device": "test", "browser": "test"}`
-
-		_, err := jwtRepo.Create(testUser.ID, tokenHash, expiresAt, deviceInfo)
-		require.NoError(t, err)
-	}
-
-	// Revoke all tokens for the user
-	err := jwtRepo.RevokeAllUserTokens(testUser.ID)
-	assert.NoError(t, err)
-
-	// Verify all tokens are revoked
-	var allTokens []models.JWTToken
-	err = db.Where("user_id = ?", testUser.ID).Find(&allTokens).Error
-	assert.NoError(t, err)
-	assert.Len(t, allTokens, 3)
-
-	for _, token := range allTokens {
-		assert.True(t, token.IsRevoked())
-		assert.NotNil(t, token.RevokedAt)
-	}
-}
-
 // Test 2.4: Token Listing Tests
 func TestJWTRepository_FindActiveTokensByUserID(t *testing.T) {
 	_, jwtRepo, testUser := setupJWTRepositoryTest(t)
 
 	// Create multiple tokens: some active, some revoked
-	activeHashes := []string{}
 	for i := 0; i < 2; i++ {
 		tokenHash := "active_hash_" + uuid.New().String()
-		activeHashes = append(activeHashes, tokenHash)
 		expiresAt := time.Now().Add(24 * time.Hour)
 		deviceInfo := `{"device": "test", "browser": "test"}`
 
@@ -302,30 +259,7 @@ func TestJWTRepository_CleanupExpiredTokens_NoExpiredTokens(t *testing.T) {
 	assert.NoError(t, err) // Should succeed even with no expired tokens
 }
 
-// Test 2.6: Token Count and Maintenance Tests
-func TestJWTRepository_GetUserTokenCount(t *testing.T) {
-	_, jwtRepo, testUser := setupJWTRepositoryTest(t)
-
-	// Initially no tokens
-	count, err := jwtRepo.GetUserTokenCount(testUser.ID)
-	assert.NoError(t, err)
-	assert.Equal(t, int64(0), count)
-
-	// Create some tokens
-	for i := 0; i < 3; i++ {
-		tokenHash := "test_hash_" + uuid.New().String()
-		expiresAt := time.Now().Add(24 * time.Hour)
-		deviceInfo := `{"device": "test", "browser": "test"}`
-
-		_, err := jwtRepo.Create(testUser.ID, tokenHash, expiresAt, deviceInfo)
-		require.NoError(t, err)
-	}
-
-	// Check count
-	count, err = jwtRepo.GetUserTokenCount(testUser.ID)
-	assert.NoError(t, err)
-	assert.Equal(t, int64(3), count)
-}
+// Test 2.6: Maintenance Tests
 
 func TestJWTRepository_UpdateLastUsed(t *testing.T) {
 	db, jwtRepo, testUser := setupJWTRepositoryTest(t)

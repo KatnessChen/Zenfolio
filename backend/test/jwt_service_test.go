@@ -233,46 +233,6 @@ func TestJWTService_RevokeToken(t *testing.T) {
 	assert.Contains(t, err.Error(), "revoked")
 }
 
-func TestJWTService_RevokeAllUserTokens(t *testing.T) {
-	_, _, jwtService, testUser := setupJWTServiceTest(t)
-	deviceInfo1 := createTestDeviceInfo()
-	deviceInfo2 := services.DeviceInfo{
-		UserAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 15_0)",
-		IPAddress: "192.168.1.101",
-		Browser:   "Safari",
-		OS:        "iOS",
-	}
-
-	// Generate multiple tokens for the user
-	token1, err := jwtService.GenerateToken(testUser, deviceInfo1)
-	require.NoError(t, err)
-
-	token2, err := jwtService.GenerateToken(testUser, deviceInfo2)
-	require.NoError(t, err)
-
-	// Verify both tokens are valid
-	claims1, err := jwtService.ValidateToken(token1)
-	assert.NoError(t, err)
-	assert.NotNil(t, claims1)
-
-	claims2, err := jwtService.ValidateToken(token2)
-	assert.NoError(t, err)
-	assert.NotNil(t, claims2)
-
-	// Revoke all user tokens
-	err = jwtService.RevokeAllUserTokens(testUser.ID)
-	assert.NoError(t, err)
-
-	// Verify both tokens are now invalid
-	claims1, err = jwtService.ValidateToken(token1)
-	assert.Error(t, err)
-	assert.Nil(t, claims1)
-
-	claims2, err = jwtService.ValidateToken(token2)
-	assert.Error(t, err)
-	assert.Nil(t, claims2)
-}
-
 // Test 1.4: Token Refresh Tests
 func TestJWTService_RefreshToken(t *testing.T) {
 	_, _, jwtService, testUser := setupJWTServiceTest(t)

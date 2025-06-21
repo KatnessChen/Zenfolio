@@ -152,7 +152,7 @@ DB_LOC=Local
 SERVER_ADDR=:8080
 
 # JWT Configuration
-JWT_SECRET=dev-jwt-secret-key-change-in-production
+JWT_SECRET=
 JWT_EXPIRATION_HOURS=24
 
 # Rate Limiting

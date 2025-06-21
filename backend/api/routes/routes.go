@@ -40,7 +40,6 @@ func SetupRouter(cfg *config.Config) *gin.Engine {
 		// TODO: only allowed admin users to access these routes
 		api.GET(constants.HelloWorldEndpoint, handlers.HelloWorld)
 		api.GET(constants.DatabaseHealthEndpoint, handlers.DatabaseHealthHandler)
-		api.POST(constants.LogoutAllEndpoint, authHandler.LogoutAll)
 
 		api.POST(constants.LogoutEndpoint, authHandler.Logout)
 		api.POST(constants.RefreshTokenEndpoint, authHandler.RefreshToken)

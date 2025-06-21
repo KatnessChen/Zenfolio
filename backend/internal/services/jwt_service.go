@@ -35,7 +35,6 @@ type JWTService interface {
 	ValidateToken(tokenString string) (*JWTClaims, error)
 	RefreshToken(tokenString string, deviceInfo DeviceInfo) (string, error)
 	RevokeToken(tokenString string) error
-	RevokeAllUserTokens(userID uint) error
 	GetActiveTokens(userID uint) ([]models.JWTToken, error)
 	CleanupExpiredTokens() error
 	ExtractTokenID(tokenString string) (string, error)
@@ -62,7 +61,7 @@ func (s *jwtService) GenerateToken(user *models.User, deviceInfo DeviceInfo) (st
 		return "", fmt.Errorf("user cannot be nil")
 	}
 
-	// Calculate expiration time (24 hours from now)
+	// Calculate expiration time
 	expiresAt := time.Now().Add(time.Duration(s.cfg.JWTExpirationHours) * time.Hour)
 
 	// Create device info JSON
@@ -145,13 +144,17 @@ func (s *jwtService) ValidateToken(tokenString string) (*JWTClaims, error) {
 		return nil, fmt.Errorf("token not found in database: %w", err)
 	}
 
-	// Validate token status - check if expired or revoked
+	// Validate token status - check if expired, revoked, or soft deleted
 	if jwtToken.IsExpired() {
 		return nil, fmt.Errorf("token has expired")
 	}
 
 	if jwtToken.IsRevoked() {
 		return nil, fmt.Errorf("token has been revoked")
+	}
+
+	if jwtToken.IsDeleted() {
+		return nil, fmt.Errorf("token has been deleted")
 	}
 
 	// Update last used timestamp
@@ -207,11 +210,6 @@ func (s *jwtService) RevokeToken(tokenString string) error {
 	}
 
 	return s.jwtRepository.RevokeToken(jwtToken.ID)
-}
-
-// RevokeAllUserTokens revokes all tokens for a specific user
-func (s *jwtService) RevokeAllUserTokens(userID uint) error {
-	return s.jwtRepository.RevokeAllUserTokens(userID)
 }
 
 // GetActiveTokens returns all active tokens for a user

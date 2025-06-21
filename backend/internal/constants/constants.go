@@ -20,7 +20,6 @@ const (
 	LoginEndpoint          = "/login"
 	SignupEndpoint         = "/signup"
 	LogoutEndpoint         = "/logout"
-	LogoutAllEndpoint      = "/logout-all"
 	RefreshTokenEndpoint   = "/refresh-token"
 	MeEndpoint             = "/me"
 	HelloWorldEndpoint     = "/hello-world"
@@ -47,7 +46,7 @@ const (
 
 // Error Messages
 const (
-	ErrMsgAuthHeaderRequired   = "Authorization header is required"
+	ErrMsgAuthHeaderRequired   = "Authorization header required"
 	ErrMsgInvalidAuthFormat    = "Invalid Authorization header format"
 	ErrMsgInvalidToken         = "Invalid token"
 	ErrMsgTokenExpired         = "Token expired"

@@ -12,8 +12,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// AuthMiddleware returns a middleware for JWT authentication with database validation
-// This middleware requires a database connection to be available as a parameter
+// AuthMiddleware returns a middleware for JWT authentication
 func AuthMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 	jwtRepo := repositories.NewJWTRepository(db)
 	jwtService := services.NewJWTService(cfg, jwtRepo)
@@ -29,11 +28,17 @@ func AuthMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 		}
 
 		// Check if it's a Bearer token
-		tokenString := ""
-		parts := strings.Split(authHeader, " ")
-		if len(parts) == 2 && parts[0] == constants.BearerTokenPrefix {
-			tokenString = parts[1]
-		} else {
+		parts := strings.SplitN(authHeader, " ", 2)
+		if len(parts) != 2 || parts[0] != constants.BearerTokenPrefix {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"error": constants.ErrMsgInvalidAuthFormat,
+			})
+			return
+		}
+		tokenString := parts[1]
+
+		// Special handling for tokens that are only whitespace 
+		if strings.TrimSpace(tokenString) == "" && tokenString != "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"error": constants.ErrMsgInvalidAuthFormat,
 			})

@@ -43,7 +43,6 @@ type LoginResponse struct {
 
 // UserSummary represents user information returned in responses
 type UserSummary struct {
-	ID       uint   `json:"id"`
 	Username string `json:"username"`
 	Email    string `json:"email"`
 }
@@ -115,7 +114,6 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, LoginResponse{
 		Token: token,
 		User: UserSummary{
-			ID:       user.ID,
 			Username: user.Username,
 			Email:    user.Email,
 		},
@@ -143,38 +141,6 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Successfully logged out",
-	})
-}
-
-// LogoutAll handles revoking all user tokens
-func (h *AuthHandler) LogoutAll(c *gin.Context) {
-	// Get user ID from context (set by auth middleware)
-	userIDInterface, exists := c.Get("user_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "User not authenticated",
-		})
-		return
-	}
-
-	userID, ok := userIDInterface.(uint)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Invalid user ID",
-		})
-		return
-	}
-
-	// Revoke all user tokens
-	if err := h.jwtService.RevokeAllUserTokens(userID); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to revoke all tokens",
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Successfully logged out from all devices",
 	})
 }
 
@@ -206,20 +172,11 @@ func (h *AuthHandler) Me(c *gin.Context) {
 		return
 	}
 
-	// Get active token count
-	tokens, err := h.jwtService.GetActiveTokens(userID)
-	if err != nil {
-		// Log error but don't fail the request
-		tokens = []models.JWTToken{}
-	}
-
 	c.JSON(http.StatusOK, UserInfoResponse{
 		User: UserSummary{
-			ID:       user.ID,
 			Username: user.Username,
 			Email:    user.Email,
 		},
-		ActiveTokens: len(tokens),
 	})
 }
 
@@ -287,7 +244,7 @@ func (h *AuthHandler) Signup(c *gin.Context) {
 		Email:     req.Email,
 		FirstName: req.FirstName,
 		LastName:  req.LastName,
-		Username:  req.Email, // Use email as username for now
+		Username:  req.FirstName + " " + req.LastName,
 		IsActive:  true,
 	}
 
@@ -312,7 +269,6 @@ func (h *AuthHandler) Signup(c *gin.Context) {
 		Success: true,
 		Message: "User registered successfully",
 		User: UserSummary{
-			ID:       user.ID,
 			Username: user.Username,
 			Email:    user.Email,
 		},

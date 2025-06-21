@@ -46,7 +46,8 @@ func setupAuthMiddlewareTest(t *testing.T) (*gin.Engine, services.JWTService, *m
 		Username: "testuser",
 		Email:    "test@example.com",
 	}
-	testUser.SetPassword("password123")
+	err = testUser.SetPassword("password123")
+	require.NoError(t, err)
 
 	err = db.Create(testUser).Error
 	require.NoError(t, err)
@@ -119,7 +120,7 @@ func TestAuthMiddleware_MissingAuthHeader(t *testing.T) {
 
 	// Check response
 	assert.Equal(t, http.StatusUnauthorized, w.Code)
-	assert.Contains(t, w.Body.String(), "Authorization header is required")
+	assert.Contains(t, w.Body.String(), "Authorization header required")
 }
 
 // Test 3.3: Invalid Authorization Header Format

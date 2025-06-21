@@ -17,9 +17,7 @@ type JWTRepository interface {
 	FindActiveTokensByUserID(userID uint) ([]models.JWTToken, error)
 	UpdateLastUsed(tokenID string) error
 	RevokeToken(tokenID string) error
-	RevokeAllUserTokens(userID uint) error
 	CleanupExpiredTokens() error
-	GetUserTokenCount(userID uint) (int64, error)
 }
 
 // jwtRepository implements JWTRepository
@@ -106,20 +104,6 @@ func (r *jwtRepository) RevokeToken(tokenID string) error {
 	return nil
 }
 
-// RevokeAllUserTokens revokes all tokens for a specific user
-func (r *jwtRepository) RevokeAllUserTokens(userID uint) error {
-	now := time.Now()
-	err := r.db.Model(&models.JWTToken{}).
-		Where("user_id = ? AND revoked_at IS NULL", userID).
-		Update("revoked_at", now).Error
-
-	if err != nil {
-		return fmt.Errorf("failed to revoke all user tokens: %w", err)
-	}
-
-	return nil
-}
-
 // CleanupExpiredTokens removes expired tokens from the database
 func (r *jwtRepository) CleanupExpiredTokens() error {
 	err := r.db.Where("expires_at < ?", time.Now()).Delete(&models.JWTToken{}).Error
@@ -128,21 +112,6 @@ func (r *jwtRepository) CleanupExpiredTokens() error {
 	}
 
 	return nil
-}
-
-// GetUserTokenCount returns the number of active tokens for a user
-func (r *jwtRepository) GetUserTokenCount(userID uint) (int64, error) {
-	var count int64
-	err := r.db.Model(&models.JWTToken{}).
-		Where("user_id = ? AND expires_at > ? AND revoked_at IS NULL",
-			userID, time.Now()).
-		Count(&count).Error
-
-	if err != nil {
-		return 0, fmt.Errorf("failed to count user tokens: %w", err)
-	}
-
-	return count, nil
 }
 
 // HashToken creates a SHA-256 hash of the token for secure storage
