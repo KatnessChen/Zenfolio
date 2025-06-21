@@ -18,6 +18,10 @@ const (
 	HealthEndpoint         = "/health"
 	DatabaseHealthEndpoint = "/health/database"
 	LoginEndpoint          = "/login"
+	SignupEndpoint         = "/signup"
+	LogoutEndpoint         = "/logout"
+	RefreshTokenEndpoint   = "/refresh-token"
+	MeEndpoint             = "/me"
 	HelloWorldEndpoint     = "/hello-world"
 	ExtractTransEndpoint   = "/extract-transactions"
 )
@@ -42,7 +46,7 @@ const (
 
 // Error Messages
 const (
-	ErrMsgAuthHeaderRequired   = "Authorization header is required"
+	ErrMsgAuthHeaderRequired   = "Authorization header required"
 	ErrMsgInvalidAuthFormat    = "Invalid Authorization header format"
 	ErrMsgInvalidToken         = "Invalid token"
 	ErrMsgTokenExpired         = "Token expired"

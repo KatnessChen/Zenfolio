@@ -65,10 +65,12 @@ func Load() (*Config, error) {
 		}
 	}
 
+	jwtExpirationHours := getEnvOrDefaultInt("JWT_EXPIRATION_HOURS", constants.DefaultJWTExpiry)
+
 	return &Config{
 		ServerAddress:      serverAddr,
 		JWTSecret:          jwtSecret,
-		JWTExpirationHours: constants.DefaultJWTExpiry,
+		JWTExpirationHours: jwtExpirationHours,
 		RateLimitRequests:  constants.DefaultRateLimit,
 		RateLimitDuration:  time.Minute,
 		AIAPIKey:           aiAPIKey,
