@@ -3,6 +3,7 @@ package test
 import (
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -101,7 +102,7 @@ func TestAuthMiddleware_ValidToken(t *testing.T) {
 	// Check response
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Contains(t, w.Body.String(), "success")
-	assert.Contains(t, w.Body.String(), `"user_id":`+string(rune(testUser.ID+'0')))
+	assert.Contains(t, w.Body.String(), `"user_id":`+strconv.Itoa(int(testUser.ID)))
 }
 
 // Test 3.2: Missing Authorization Header

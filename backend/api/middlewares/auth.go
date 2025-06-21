@@ -37,7 +37,7 @@ func AuthMiddleware(db *gorm.DB, cfg *config.Config) gin.HandlerFunc {
 		}
 		tokenString := parts[1]
 
-		// Special handling for tokens that are only whitespace 
+		// Special handling for tokens that are only whitespace
 		if strings.TrimSpace(tokenString) == "" && tokenString != "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"error": constants.ErrMsgInvalidAuthFormat,
