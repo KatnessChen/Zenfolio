@@ -11,6 +11,19 @@ interface PortfolioData {
   totalGainLossPercent: number
 }
 
+// Type for Recharts tooltip props
+interface CustomTooltipProps {
+  active?: boolean
+  payload?: Array<{ payload: { date: string; value: number } }>
+}
+
+// Type for Recharts dot props
+interface CustomDotProps {
+  cx?: number
+  cy?: number
+  payload: { value: number; date: string }
+}
+
 export const PortfolioSummaryCard: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('ALL')
 
@@ -72,7 +85,7 @@ export const PortfolioSummaryCard: React.FC = () => {
   const chartColor = isGaining ? 'rgb(34, 197, 94)' : 'rgb(255, 59, 48)' // profit green : loss red
 
   // Custom tooltip component
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload
       return (
@@ -92,7 +105,7 @@ export const PortfolioSummaryCard: React.FC = () => {
   }
 
   // Custom dot component for highest/lowest points
-  const CustomDot = (props: any) => {
+  const CustomDot = (props: CustomDotProps) => {
     const { cx, cy, payload } = props
     const isHighest = payload.value === highestPoint.value
     const isLowest = payload.value === lowestPoint.value

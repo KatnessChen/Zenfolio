@@ -14,6 +14,9 @@ const SecurityCard: React.FC = () => {
 
   // Simulate password validation
   const validateCurrent = () => {
+    if (!resetEnabled) {
+      return
+    }
     // Replace with real validation
     setCurrentValid(currentPassword.length > 0)
   }

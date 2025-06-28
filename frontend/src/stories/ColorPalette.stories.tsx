@@ -254,7 +254,7 @@ const chartColors = [
 
 export const ChartColors = () => (
   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24 }}>
-    {chartColors.map((color, i) => (
+    {chartColors.map((color) => (
       <div key={color.var} style={{ width: 120, textAlign: 'center' }}>
         <div
           style={{

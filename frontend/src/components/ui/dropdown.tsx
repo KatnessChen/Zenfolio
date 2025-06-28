@@ -15,7 +15,7 @@ interface DropdownItemProps {
 }
 
 const Dropdown = React.forwardRef<HTMLDivElement, DropdownProps>(
-  ({ trigger, children, className }, _ref) => {
+  ({ trigger, children, className }) => {
     const [isOpen, setIsOpen] = React.useState(false)
     const dropdownRef = React.useRef<HTMLDivElement>(null)
 
