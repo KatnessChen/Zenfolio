@@ -1,46 +1,70 @@
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Logo } from '@/components/ui/logo'
+import { GoogleIcon } from '@/components/icons'
+import { Link } from 'react-router-dom'
+import { Title } from '@/components/ui/title'
 
 export default function HomePage() {
   return (
-    <div className="container mx-auto py-10">
-      <div className="flex flex-col items-center justify-center min-h-[600px] space-y-8">
-        <div className="text-center space-y-4">
-          <h1 className="text-5xl font-extrabold tracking-tighter bg-gradient-to-r from-blue-500 to-purple-600 text-transparent bg-clip-text">
-            TradeVault
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl">
-            Trading on multiple exchanges? Upload screenshots and let AI do the work of reading and
-            organizing your transactions for you
-          </p>
-        </div>
+    <div className="min-h-screen flex flex-col">
+      {/* Hero Section - Split Layout */}
+      <main className="flex-1 flex items-center justify-center py-16">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
+            {/* Left Half - Information Area */}
+            <div className="space-y-8 text-center lg:text-left">
+              <div className="flex justify-center lg:justify-start">
+                <Logo size="lg" className="text-4xl font-bold" />
+              </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
-          <Card>
-            <CardHeader>
-              <CardTitle>Upload Screenshots</CardTitle>
-              <CardDescription>
-                Upload trading screenshots to automatically extract transaction data
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full">Start Extracting Transactions</Button>
-            </CardContent>
-          </Card>
+              <div className="space-y-6">
+                <Title as="h1" className="text-4xl lg:text-5xl font-bold leading-tight">
+                  Trade across multiple brokers?
+                </Title>
+                <p className="text-xl text-muted-foreground leading-relaxed">
+                  Unify your portfolio with Zenfolio. Upload your trade history, let our AI extract
+                  and summarize your performance effortlessly.
+                </p>
+              </div>
+            </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>View Transactions</CardTitle>
-              <CardDescription>Browse and manage your uploaded transaction history</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button variant="outline" className="w-full">
-                View Transaction History
-              </Button>
-            </CardContent>
-          </Card>
+            {/* Right Half - Action Area */}
+            <div className="space-y-6 max-w-md mx-auto lg:mx-0">
+              <div className="bg-card rounded-lg border border-border p-8 space-y-6">
+                {/* Primary Login Button */}
+                <Link to="/login" className="block">
+                  <Button size="lg" className="w-full text-lg py-6">
+                    Login
+                  </Button>
+                </Link>
+
+                {/* Secondary Sign Up Button */}
+                <Link to="/sign-up" className="block">
+                  <Button variant="outline" size="lg" className="w-full text-lg py-6">
+                    Sign Up
+                  </Button>
+                </Link>
+
+                {/* Divider */}
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-border" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground">OR</span>
+                  </div>
+                </div>
+
+                {/* Google Sign In Button */}
+                <Button variant="outline" size="lg" className="w-full text-lg py-6 space-x-3">
+                  <GoogleIcon />
+                  <span>Continue with Google</span>
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   )
 }

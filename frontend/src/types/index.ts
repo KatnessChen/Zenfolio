@@ -11,12 +11,17 @@ export interface Transaction {
   id: string
   ticker: string
   tickerLabel?: string
-  tradeType: 'Buy' | 'Sell' | 'Dividends'
+  tradeType: 'Buy' | 'Sell' | 'Dividend'
   quantity: number
   price: number
+  amount: number // Total transaction amount (price * quantity)
   tradeDate: string
+  uploadDate: string
+  broker?: string
   exchange?: string
   currency?: string
+  userNotes?: string
+  transactionHistory?: string // Brief summary/description of the transaction
 }
 
 // User authentication types

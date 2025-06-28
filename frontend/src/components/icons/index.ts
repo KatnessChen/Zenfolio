@@ -1,0 +1,5 @@
+export { default as GoogleIcon } from './GoogleIcon'
+export { default as ChevronDownIcon } from './ChevronDownIcon'
+export { PlusIcon } from './PlusIcon'
+export { EditIcon } from './EditIcon'
+export { DeleteIcon } from './DeleteIcon'
