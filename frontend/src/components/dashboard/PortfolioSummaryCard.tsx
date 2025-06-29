@@ -21,7 +21,7 @@ interface CustomTooltipProps {
 interface CustomDotProps {
   cx?: number
   cy?: number
-  payload: { value: number; date: string }
+  payload?: { value: number; date: string }
 }
 
 export const PortfolioSummaryCard: React.FC = () => {
@@ -107,6 +107,12 @@ export const PortfolioSummaryCard: React.FC = () => {
   // Custom dot component for highest/lowest points
   const CustomDot = (props: CustomDotProps) => {
     const { cx, cy, payload } = props
+    
+    // Early return if required props are undefined
+    if (cx === undefined || cy === undefined || !payload) {
+      return null
+    }
+    
     const isHighest = payload.value === highestPoint.value
     const isLowest = payload.value === lowestPoint.value
 
