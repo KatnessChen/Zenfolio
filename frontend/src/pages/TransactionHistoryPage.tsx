@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Dropdown, DropdownItem, DropdownSeparator } from '@/components/ui/dropdown'
+import { Dropdown, DropdownItem } from '@/components/ui/dropdown'
 import DropdownTrigger from '@/components/ui/dropdown-trigger'
 import {
   Table,

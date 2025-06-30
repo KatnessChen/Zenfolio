@@ -14,12 +14,9 @@ interface ButtonProps extends React.ComponentProps<'button'>, VariantProps<typeo
 function Button({ className, variant, size, asChild = false, to, ...props }: ButtonProps) {
   if (to) {
     return (
-      <Link
-        to={to}
-        data-slot="button"
-        className={cn(buttonVariants({ variant, size, className }))}
-        {...props}
-      />
+      <Link to={to} data-slot="button" className={cn(buttonVariants({ variant, size, className }))}>
+        {props.children}
+      </Link>
     )
   }
   const Comp = asChild ? Slot : 'button'

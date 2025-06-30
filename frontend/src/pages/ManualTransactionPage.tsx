@@ -88,11 +88,7 @@ export default function ManualTransactionPage() {
           // Fallback to default currencies if API fails
           setCurrencies([
             { code: CURRENCY.USD, name: 'US Dollar' },
-            { code: CURRENCY.EUR, name: 'Euro' },
-            { code: CURRENCY.GBP, name: 'British Pound' },
             { code: CURRENCY.CAD, name: 'Canadian Dollar' },
-            { code: CURRENCY.AUD, name: 'Australian Dollar' },
-            { code: CURRENCY.JPY, name: 'Japanese Yen' },
           ])
         }
       } catch (error) {
@@ -100,11 +96,7 @@ export default function ManualTransactionPage() {
         // Fallback to default currencies
         setCurrencies([
           { code: CURRENCY.USD, name: 'US Dollar' },
-          { code: CURRENCY.EUR, name: 'Euro' },
-          { code: CURRENCY.GBP, name: 'British Pound' },
           { code: CURRENCY.CAD, name: 'Canadian Dollar' },
-          { code: CURRENCY.AUD, name: 'Australian Dollar' },
-          { code: CURRENCY.JPY, name: 'Japanese Yen' },
         ])
       } finally {
         setLoading((prev) => ({ ...prev, currencies: false }))
