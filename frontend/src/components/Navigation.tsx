@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 import { Logo } from '@/components/ui/logo'
-import { ROUTES } from '@/constants/routes'
+import { ROUTES } from '@/constants'
 import { useEffect, useRef, useState, useCallback } from 'react'
 
 interface NavLinkProps {

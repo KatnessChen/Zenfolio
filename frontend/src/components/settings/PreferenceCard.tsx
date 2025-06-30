@@ -3,22 +3,14 @@ import { Dropdown, DropdownItem } from '@/components/ui/dropdown'
 import DropdownTrigger from '@/components/ui/dropdown-trigger'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
+import { CURRENCY, CURRENCY_FLAGS } from '@/constants'
+import { Button } from '@/components/ui/button'
 
-const currencies = ['USD', 'TWD', 'CAD', 'EUR', 'GBP', 'JPY', 'AUD']
+const currencies = Object.values(CURRENCY)
 const languages = ['English', '繁體中文']
 
-const currencyFlags: Record<string, string> = {
-  USD: '🇺🇸',
-  TWD: '🇹🇼',
-  CAD: '🇨🇦',
-  EUR: '🇪🇺',
-  GBP: '🇬🇧',
-  JPY: '🇯🇵',
-  AUD: '🇦🇺',
-}
-
 const PreferenceCard: React.FC = () => {
-  const [currency, setCurrency] = useState('USD')
+  const [currency, setCurrency] = useState(CURRENCY.USD)
   const [language, setLanguage] = useState('English')
   const [changed, setChanged] = useState(false)
 
@@ -43,7 +35,7 @@ const PreferenceCard: React.FC = () => {
             trigger={
               <DropdownTrigger>
                 <span className="inline-flex items-center">
-                  <span className="mt-1">{currencyFlags[currency] || ''}</span>
+                  <span className="mt-1">{CURRENCY_FLAGS[currency] || ''}</span>
                   <span className="ml-2">{currency}</span>
                 </span>
               </DropdownTrigger>
@@ -52,7 +44,7 @@ const PreferenceCard: React.FC = () => {
             {currencies.map((cur) => (
               <DropdownItem key={cur} onClick={() => handleCurrencyChange(cur)}>
                 <span className="inline-flex items-center">
-                  <span className="mt-1">{currencyFlags[cur] || ''}</span>
+                  <span className="mt-1">{CURRENCY_FLAGS[cur] || ''}</span>
                   <span className="ml-2">{cur}</span>
                 </span>
               </DropdownItem>
@@ -69,14 +61,7 @@ const PreferenceCard: React.FC = () => {
             ))}
           </Dropdown>
         </div>
-        <button
-          className={`px-6 py-2 rounded font-semibold transition text-gray-100 ${
-            changed ? 'bg-[#9DC0B2] hover:bg-[#7BAA97]' : 'bg-[#3A4A43] cursor-not-allowed'
-          }`}
-          disabled={!changed}
-        >
-          Save Changes
-        </button>
+        <Button disabled={!changed}>Save Changes</Button>
       </CardContent>
     </Card>
   )

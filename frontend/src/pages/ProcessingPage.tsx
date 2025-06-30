@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { ROUTES } from '@/constants/routes'
+import { ROUTES, CURRENCY } from '@/constants'
 
 interface LocationState {
   files: string[]
@@ -40,7 +40,7 @@ export default function ProcessingPage() {
         amount: 15025.0,
         tradeDate: '2024-01-15',
         broker: 'Fidelity',
-        currency: 'USD',
+        currency: CURRENCY.USD,
         userNotes: '',
         confidence: 0.95,
       },
@@ -53,7 +53,7 @@ export default function ProcessingPage() {
         amount: 137540.0,
         tradeDate: '2024-01-14',
         broker: 'Schwab',
-        currency: 'USD',
+        currency: CURRENCY.USD,
         userNotes: '',
         confidence: 0.92,
       },

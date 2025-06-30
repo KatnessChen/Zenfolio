@@ -99,3 +99,19 @@ export const FormExample: Story = {
     </div>
   ),
 }
+
+export const PasswordWithToggle: Story = {
+  render: () => (
+    <div className="space-y-2">
+      <Label htmlFor="password">Password</Label>
+      <Input id="password" type="password" placeholder="Enter your password..." />
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Password input with show/hide toggle button.',
+      },
+    },
+  },
+}

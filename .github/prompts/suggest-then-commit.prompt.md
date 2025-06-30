@@ -14,25 +14,14 @@ Commit messages must follow this structure for clarity and automated parsing:
 
 ## Guidelines:
 
-- **`<type>`**: Mandatory prefix categorizing the change. Choose only one:
-  - `feat`: New feature or enhancement.
-  - `fix`: Bug fix or error correction.
-  - `docs`: Documentation-only changes.
-  - `style`: Formatting or whitespace changes.
-  - `refactor`: Code restructuring without functional change.
-  - `perf`: Performance improvements.
-  - `test`: Adding or correcting tests.
-  - `chore`: Routine maintenance, tool updates, dependency upgrades.
-  - `build`: Changes affecting the build system or external dependencies.
-  - `ci`: CI configuration or script changes.
-  - `revert`: Reverts a previous commit.
-- **`<scope>` (Optional)**: Brief, descriptive phrase in parentheses indicating the affected codebase area (e.g., `(auth)`, `(UI)`). Omit if global.
-- **`<subject>`**: Concise headline (aim for max 50 chars, up to 72 if absolutely necessary), imperative, present tense. Describes _what_ the commit does. Must be in the imperative mood (e.g., 'add', 'fix', not 'added', 'fixes'). Do not capitalize the first letter, and no period at the end.
-- **Body (Optional)**: Detailed explanation after a blank line. Describes 'why' and 'how' (problem, motivation, approach, implications). Wrap lines at 72 characters.
-- **Avoid issue references**: Do not include (e.g., `Closes #123`); user adds these manually.
-- **Analyze staged changes**: Thoroughly examine staged changes to determine the correct `<type>`, `<subject>`, and if a `<body>` is needed.
+- **`<type>`**: One of: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `build`, `ci`, `revert`.
+- **`<scope>` (Optional)**: Brief phrase for affected area, e.g., `(auth)`, `(UI)`.
+- **`<subject>`**: Imperative, present tense, max 50 chars (72 if needed), no period.
+- **Body (Optional)**: Explains 'why' and 'how', wrapped at 72 chars.
+- **No issue refs**: Do not include (e.g., `Closes #123`).
+- **Analyze staged changes**: Use only staged changes to determine type/subject/body.
 
-## Example Generated Commit Message:
+## Example:
 
 feat(auth): add user registration endpoint
 
@@ -41,15 +30,11 @@ It includes validation for email and password, and hashes the password before sa
 
 ## Execution
 
-1. Execute the `git status` command in the terminal to review staged changes and ensure they are ready for commit.
-2. If any changes are not staged, please ignore them and focus only on the staged changes for the commit message.
-3. **Backend CI Pre-Commit Checks**: If there are any code changes in the `backend/` directory, examine the `.github/workflows/backend-ci.yml` file to identify the specific checks that need to be performed locally. Run the equivalent local commands for each CI step to ensure the changes can pass the backend CI process:
-
-   - Review the CI workflow steps in `backend-ci.yml`
-   - Execute the corresponding local commands (adjusting paths and environment as needed)
-   - Ensure all checks pass before proceeding
-
-   If any of these checks fail, fix the issues before proceeding with the commit. Only proceed to step 4 if all backend CI checks pass or if there are no backend code changes.
-
-4. Execute the `git commit -m "your commit message"` in the terminal to create the commit with the suggested message. Ensure the commit message is valid and follows the specified pattern before executing.
-5. Execute the `git push` command in the terminal to push the new commit to the origin remote repository.
+1. Run `git status` to review staged changes.
+2. Ignore unstaged changes for the commit message.
+3. **Pre-Commit CI Checks**:
+   - For `backend/` changes: review and run steps from `.github/workflows/backend-ci.yml`.
+   - For `frontend/` changes: review and run steps from `.github/workflows/frontend-ci.yml`.
+   - Ensure all checks pass before proceeding.
+4. Commit: `git commit -m "your commit message"` (must follow pattern).
+5. Push: `git push`.

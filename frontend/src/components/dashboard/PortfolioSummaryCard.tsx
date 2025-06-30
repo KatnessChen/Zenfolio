@@ -11,7 +11,6 @@ interface PortfolioData {
   totalGainLossPercent: number
 }
 
-// Type for Recharts tooltip props
 interface CustomTooltipProps {
   active?: boolean
   payload?: Array<{ payload: { date: string; value: number } }>
@@ -82,7 +81,7 @@ export const PortfolioSummaryCard: React.FC = () => {
 
   // Determine if portfolio is gaining or losing (compare first and last values)
   const isGaining = chartData[chartData.length - 1].value > chartData[0].value
-  const chartColor = isGaining ? 'rgb(34, 197, 94)' : 'rgb(255, 59, 48)' // profit green : loss red
+  const chartColor = isGaining ? 'hsl(var(--profit))' : 'hsl(var(--loss))'
 
   // Custom tooltip component
   const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
@@ -107,12 +106,12 @@ export const PortfolioSummaryCard: React.FC = () => {
   // Custom dot component for highest/lowest points
   const CustomDot = (props: CustomDotProps) => {
     const { cx, cy, payload } = props
-    
+
     // Early return if required props are undefined
     if (cx === undefined || cy === undefined || !payload) {
       return null
     }
-    
+
     const isHighest = payload.value === highestPoint.value
     const isLowest = payload.value === lowestPoint.value
 
@@ -123,7 +122,7 @@ export const PortfolioSummaryCard: React.FC = () => {
             cx={cx}
             cy={cy}
             r={4}
-            fill={isHighest ? 'rgb(34, 197, 94)' : 'rgb(255, 59, 48)'}
+            fill={isHighest ? 'hsl(var(--profit))' : 'hsl(var(--loss))'}
             stroke="white"
             strokeWidth={2}
           />

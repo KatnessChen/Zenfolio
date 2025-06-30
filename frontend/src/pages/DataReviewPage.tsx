@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { ROUTES } from '@/constants/routes'
+import { ROUTES, CURRENCY } from '@/constants'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -71,7 +71,7 @@ export default function DataReviewPage() {
       amount: 0,
       tradeDate: new Date().toISOString().split('T')[0],
       broker: '',
-      currency: 'USD',
+      currency: CURRENCY.USD,
       userNotes: '',
       confidence: 1.0,
     }
@@ -185,12 +185,7 @@ export default function DataReviewPage() {
                     <span>Add Row</span>
                   </Button>
                   {selectedRows.size > 0 && (
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={handleDeleteRows}
-                      className="text-destructive hover:bg-destructive/10"
-                    >
+                    <Button variant="destructive" size="sm" onClick={handleDeleteRows}>
                       <DeleteIcon size={16} />
                       <span>Delete Selected</span>
                     </Button>
@@ -315,9 +310,9 @@ export default function DataReviewPage() {
                             }
                             className={`w-full ${
                               transaction.tradeType === 'Buy'
-                                ? 'text-[#9DC0B2]'
+                                ? 'text-primary'
                                 : transaction.tradeType === 'Sell'
-                                  ? 'text-[#E6B9B3]'
+                                  ? 'text-chart-1'
                                   : 'text-foreground'
                             }`}
                           />

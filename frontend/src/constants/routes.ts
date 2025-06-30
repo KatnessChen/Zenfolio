@@ -1,4 +1,3 @@
-// Route constants to avoid duplication and ensure consistency
 export const ROUTES = {
   HOME: '/',
   DASHBOARD: '/dashboard',
@@ -12,6 +11,7 @@ export const ROUTES = {
   TRANSACTIONS_MANUAL_REVIEW: '/transactions/manual-review',
   SETTINGS: '/settings',
   UI_DEMO: '/ui-demo',
+  CONTACT: '/contact',
 } as const
 
 // Type for route values

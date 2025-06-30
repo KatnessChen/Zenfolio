@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ROUTES } from '@/constants/routes'
+import { ROUTES, CURRENCY } from '@/constants'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -51,7 +51,7 @@ export default function ManualTransactionPage() {
     quantity: '',
     amount: '',
     broker: '',
-    currency: 'USD',
+    currency: CURRENCY.USD,
     notes: '',
   })
 
@@ -87,24 +87,24 @@ export default function ManualTransactionPage() {
         } else {
           // Fallback to default currencies if API fails
           setCurrencies([
-            { code: 'USD', name: 'US Dollar' },
-            { code: 'EUR', name: 'Euro' },
-            { code: 'GBP', name: 'British Pound' },
-            { code: 'CAD', name: 'Canadian Dollar' },
-            { code: 'AUD', name: 'Australian Dollar' },
-            { code: 'JPY', name: 'Japanese Yen' },
+            { code: CURRENCY.USD, name: 'US Dollar' },
+            { code: CURRENCY.EUR, name: 'Euro' },
+            { code: CURRENCY.GBP, name: 'British Pound' },
+            { code: CURRENCY.CAD, name: 'Canadian Dollar' },
+            { code: CURRENCY.AUD, name: 'Australian Dollar' },
+            { code: CURRENCY.JPY, name: 'Japanese Yen' },
           ])
         }
       } catch (error) {
         console.error('Failed to fetch currencies:', error)
         // Fallback to default currencies
         setCurrencies([
-          { code: 'USD', name: 'US Dollar' },
-          { code: 'EUR', name: 'Euro' },
-          { code: 'GBP', name: 'British Pound' },
-          { code: 'CAD', name: 'Canadian Dollar' },
-          { code: 'AUD', name: 'Australian Dollar' },
-          { code: 'JPY', name: 'Japanese Yen' },
+          { code: CURRENCY.USD, name: 'US Dollar' },
+          { code: CURRENCY.EUR, name: 'Euro' },
+          { code: CURRENCY.GBP, name: 'British Pound' },
+          { code: CURRENCY.CAD, name: 'Canadian Dollar' },
+          { code: CURRENCY.AUD, name: 'Australian Dollar' },
+          { code: CURRENCY.JPY, name: 'Japanese Yen' },
         ])
       } finally {
         setLoading((prev) => ({ ...prev, currencies: false }))
@@ -234,7 +234,7 @@ export default function ManualTransactionPage() {
       quantity: '',
       amount: '',
       broker: '',
-      currency: 'USD',
+      currency: CURRENCY.USD,
       notes: '',
     })
   }, [transaction, calculatedAmount])
@@ -490,11 +490,7 @@ export default function ManualTransactionPage() {
                 Cancel
               </Button>
               {batch.length > 0 && (
-                <Button
-                  variant="secondary"
-                  onClick={handleReview}
-                  className="px-6 border-sage-600 text-foreground hover:bg-sage-50"
-                >
+                <Button variant="secondary" onClick={handleReview} className="px-6">
                   Review
                 </Button>
               )}
@@ -502,7 +498,7 @@ export default function ManualTransactionPage() {
                 variant="default"
                 onClick={addToBatch}
                 disabled={!isFormValid}
-                className="px-6 bg-sage-600 hover:bg-sage-700"
+                className="px-6"
               >
                 {batch.length > 0 ? 'Add Another Trade' : 'Add to Batch'}
               </Button>

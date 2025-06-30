@@ -33,14 +33,14 @@ export default function HomePage() {
               <div className="bg-card rounded-lg border border-border p-8 space-y-6">
                 {/* Primary Login Button */}
                 <Link to="/login" className="block">
-                  <Button size="lg" className="w-full text-lg py-6">
+                  <Button size="lg" className="w-full py-6">
                     Login
                   </Button>
                 </Link>
 
                 {/* Secondary Sign Up Button */}
                 <Link to="/sign-up" className="block">
-                  <Button variant="outline" size="lg" className="w-full text-lg py-6">
+                  <Button variant="outline" size="lg" className="w-full py-6">
                     Sign Up
                   </Button>
                 </Link>
@@ -56,7 +56,7 @@ export default function HomePage() {
                 </div>
 
                 {/* Google Sign In Button */}
-                <Button variant="outline" size="lg" className="w-full text-lg py-6 space-x-3">
+                <Button variant="outline" size="lg" className="w-full py-6 space-x-3">
                   <GoogleIcon />
                   <span>Continue with Google</span>
                 </Button>

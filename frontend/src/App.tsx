@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { Provider } from 'react-redux'
 import { store } from '@/store'
-import { ROUTES } from '@/constants/routes'
+import { ROUTES } from '@/constants'
 import Navigation from '@/components/Navigation'
 import Footer from '@/components/Footer'
 import ScrollToTop from '@/components/ScrollToTop'

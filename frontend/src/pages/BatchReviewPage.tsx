@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ROUTES } from '@/constants/routes'
+import { ROUTES } from '@/constants'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { EditIcon, DeleteIcon } from '@/components/icons'
@@ -237,25 +237,13 @@ export default function BatchReviewPage() {
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row justify-center gap-4 mt-8">
-              <Button
-                variant="secondary"
-                onClick={handleAddMore}
-                className="px-6 border-sage-600 text-foreground hover:bg-sage-50"
-              >
+              <Button variant="secondary" onClick={handleAddMore} className="px-6">
                 Add More Transactions
               </Button>
-              <Button
-                variant="secondary"
-                onClick={handleDiscardAll}
-                className="px-6 border-red-600 text-foreground hover:bg-red-50"
-              >
+              <Button variant="secondary" onClick={handleDiscardAll} className="px-6">
                 Discard All
               </Button>
-              <Button
-                variant="default"
-                onClick={handleConfirmAll}
-                className="px-6 bg-sage-600 hover:bg-sage-700"
-              >
+              <Button variant="default" onClick={handleConfirmAll} className="px-6">
                 Confirm All & Save
               </Button>
             </div>

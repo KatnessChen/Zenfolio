@@ -3,8 +3,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
 import { GoogleIcon } from '@/components/icons'
-import { Link } from 'react-router-dom'
 import { Title } from '@/components/ui/title'
+import { ROUTES } from '@/constants'
+import { Link } from '@/components/ui/link'
 
 export default function LoginPage() {
   return (
@@ -57,15 +58,12 @@ export default function LoginPage() {
               </Link>
             </div>
 
-            {/* Primary Login Button - Brighter Sage Green background, Pure Light Gray text */}
-            <Button
-              size="lg"
-              className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-            >
+            {/* Primary Login Button */}
+            <Button size="lg" className="w-full">
               Login
             </Button>
 
-            {/* Divider - Medium Grey-Green text */}
+            {/* Divider */}
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t border-border" />
@@ -75,26 +73,16 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Google Login Button - Pure Light Gray text */}
-            <Button
-              variant="outline"
-              size="lg"
-              className="w-full space-x-3 text-foreground border-border hover:bg-card/50"
-            >
+            {/* Google Login Button */}
+            <Button variant="outline" size="lg" className="w-full space-x-3">
               <GoogleIcon />
               <span>Login with Google</span>
             </Button>
 
-            {/* Sign Up Link - Medium Grey-Green text */}
+            {/* Sign Up Link */}
             <div className="text-center">
               <p className="text-sm text-muted-foreground">
-                Don't have an account?{' '}
-                <Link
-                  to="/sign-up"
-                  className="text-primary hover:text-primary/90 transition-colors font-medium"
-                >
-                  Sign Up now
-                </Link>
+                Don't have an account? <Link to={ROUTES.SIGN_UP}>Sign Up now</Link>
               </p>
             </div>
           </CardContent>

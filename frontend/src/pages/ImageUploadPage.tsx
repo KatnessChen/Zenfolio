@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ROUTES } from '@/constants/routes'
+import { ROUTES } from '@/constants'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import FolderPlusIcon from '@/components/icons/FolderPlusIcon'

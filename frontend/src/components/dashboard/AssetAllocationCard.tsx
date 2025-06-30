@@ -75,7 +75,6 @@ export const AssetAllocationCard: React.FC = () => {
                 label={(entry) => entry.label}
                 outerRadius={80}
                 innerRadius={48}
-                fill="#8884d8"
                 dataKey="value"
                 tabIndex={-1}
                 style={{ outline: 'none' }}

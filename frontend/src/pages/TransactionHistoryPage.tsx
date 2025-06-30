@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ROUTES } from '@/constants/routes'
+import { ROUTES } from '@/constants'
+import { TRADE_TYPE, CURRENCY } from '@/constants'
 import type { Transaction } from '@/types'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -37,7 +38,7 @@ const mockTransactions: Transaction[] = [
     id: '1',
     ticker: 'AAPL',
     tickerLabel: 'Apple Inc.',
-    tradeType: 'Buy',
+    tradeType: TRADE_TYPE.BUY,
     quantity: 100,
     price: 150.25,
     amount: 15025.0,
@@ -45,7 +46,7 @@ const mockTransactions: Transaction[] = [
     uploadDate: '2024-01-16',
     broker: 'Fidelity',
     exchange: 'NASDAQ',
-    currency: 'USD',
+    currency: CURRENCY.USD,
     userNotes: 'Long-term hold',
     transactionHistory: 'Initial position in AAPL for long-term growth strategy',
   },
@@ -53,7 +54,7 @@ const mockTransactions: Transaction[] = [
     id: '2',
     ticker: 'GOOGL',
     tickerLabel: 'Alphabet Inc.',
-    tradeType: 'Sell',
+    tradeType: TRADE_TYPE.SELL,
     quantity: 50,
     price: 2750.8,
     amount: 137540.0,
@@ -61,7 +62,7 @@ const mockTransactions: Transaction[] = [
     uploadDate: '2024-01-15',
     broker: 'Schwab',
     exchange: 'NASDAQ',
-    currency: 'USD',
+    currency: CURRENCY.USD,
     userNotes: 'Profit taking',
     transactionHistory: 'Partial profit taking on GOOGL after 40% gain',
   },
@@ -69,7 +70,7 @@ const mockTransactions: Transaction[] = [
     id: '3',
     ticker: 'MSFT',
     tickerLabel: 'Microsoft Corp.',
-    tradeType: 'Dividend',
+    tradeType: TRADE_TYPE.DIVIDEND,
     quantity: 200,
     price: 2.75,
     amount: 550.0,
@@ -77,7 +78,7 @@ const mockTransactions: Transaction[] = [
     uploadDate: '2024-01-11',
     broker: 'Fidelity',
     exchange: 'NASDAQ',
-    currency: 'USD',
+    currency: CURRENCY.USD,
     userNotes: 'Quarterly dividend',
     transactionHistory: 'Q4 2023 dividend payment from MSFT holdings',
   },
@@ -165,7 +166,7 @@ export default function TransactionHistoryPage() {
           <section className="space-y-3">
             <div className="flex flex-wrap gap-3 mb-4">
               {/* Date Range Filter */}
-              <div className="space-y-1.5">
+              <div>
                 <Label htmlFor="date-range" className="text-sm text-muted-foreground">
                   Date Range
                 </Label>
@@ -186,15 +187,11 @@ export default function TransactionHistoryPage() {
                     Last 3 Months
                   </DropdownItem>
                   <DropdownItem onClick={() => setDateRange('Last Year')}>Last Year</DropdownItem>
-                  <DropdownSeparator />
-                  <DropdownItem onClick={() => setDateRange('Custom Range')}>
-                    Custom Range
-                  </DropdownItem>
                 </Dropdown>
               </div>
 
               {/* Symbol Filter */}
-              <div className="space-y-1.5">
+              <div>
                 <Label htmlFor="symbol" className="text-sm text-muted-foreground">
                   Symbol
                 </Label>
@@ -208,7 +205,7 @@ export default function TransactionHistoryPage() {
               </div>
 
               {/* Currency Filter */}
-              <div className="space-y-1.5">
+              <div>
                 <Label htmlFor="currency" className="text-sm text-muted-foreground">
                   Currency
                 </Label>
@@ -220,14 +217,20 @@ export default function TransactionHistoryPage() {
                   }
                 >
                   <DropdownItem onClick={() => setCurrencyFilter('All')}>All</DropdownItem>
-                  <DropdownItem onClick={() => setCurrencyFilter('USD')}>USD</DropdownItem>
-                  <DropdownItem onClick={() => setCurrencyFilter('TWD')}>TWD</DropdownItem>
-                  <DropdownItem onClick={() => setCurrencyFilter('CAD')}>CAD</DropdownItem>
+                  <DropdownItem onClick={() => setCurrencyFilter(CURRENCY.USD)}>
+                    {CURRENCY.USD}
+                  </DropdownItem>
+                  <DropdownItem onClick={() => setCurrencyFilter(CURRENCY.TWD)}>
+                    {CURRENCY.TWD}
+                  </DropdownItem>
+                  <DropdownItem onClick={() => setCurrencyFilter(CURRENCY.CAD)}>
+                    {CURRENCY.CAD}
+                  </DropdownItem>
                 </Dropdown>
               </div>
 
               {/* Broker Filter */}
-              <div className="space-y-1.5">
+              <div>
                 <Label htmlFor="broker" className="text-sm text-muted-foreground">
                   Broker
                 </Label>
@@ -249,7 +252,7 @@ export default function TransactionHistoryPage() {
               </div>
 
               {/* Trade Type Filter */}
-              <div className="space-y-1.5">
+              <div>
                 <Label htmlFor="trade-type" className="text-sm text-muted-foreground">
                   Trade Type
                 </Label>
@@ -261,10 +264,14 @@ export default function TransactionHistoryPage() {
                   }
                 >
                   <DropdownItem onClick={() => setTradeTypeFilter('All')}>All</DropdownItem>
-                  <DropdownItem onClick={() => setTradeTypeFilter('Buy')}>Buy</DropdownItem>
-                  <DropdownItem onClick={() => setTradeTypeFilter('Sell')}>Sell</DropdownItem>
-                  <DropdownItem onClick={() => setTradeTypeFilter('Dividend')}>
-                    Dividend
+                  <DropdownItem onClick={() => setTradeTypeFilter(TRADE_TYPE.BUY)}>
+                    {TRADE_TYPE.BUY}
+                  </DropdownItem>
+                  <DropdownItem onClick={() => setTradeTypeFilter(TRADE_TYPE.SELL)}>
+                    {TRADE_TYPE.SELL}
+                  </DropdownItem>
+                  <DropdownItem onClick={() => setTradeTypeFilter(TRADE_TYPE.DIVIDEND)}>
+                    {TRADE_TYPE.DIVIDEND}
                   </DropdownItem>
                 </Dropdown>
               </div>
@@ -374,11 +381,11 @@ export default function TransactionHistoryPage() {
                             </TableCell>
                             <TableCell
                               className={`font-medium ${
-                                transaction.tradeType === 'Buy'
-                                  ? 'text-[#9DC0B2]' // Brighter Sage Green
-                                  : transaction.tradeType === 'Sell'
-                                    ? 'text-[#E6B9B3]' // Brighter Soft Salmon Pink
-                                    : 'text-[#A0B0A6]' // Medium Grey-Green for Dividend
+                                transaction.tradeType === TRADE_TYPE.BUY
+                                  ? 'text-primary' // Brighter Sage Green
+                                  : transaction.tradeType === TRADE_TYPE.SELL
+                                    ? 'text-chart-1' // Brighter Soft Salmon Pink
+                                    : 'text-muted' // Medium Grey-Green for Dividend
                               }`}
                             >
                               {transaction.tradeType}
@@ -386,7 +393,7 @@ export default function TransactionHistoryPage() {
                             <TableCell>{formatCurrency(transaction.price)}</TableCell>
                             <TableCell>{transaction.quantity.toLocaleString()}</TableCell>
                             <TableCell className="text-right text-muted-foreground">
-                              {transaction.tradeType === 'Sell' ? '-' : ''}
+                              {transaction.tradeType === TRADE_TYPE.SELL ? '-' : ''}
                               {formatCurrency(Math.abs(transaction.amount))}
                             </TableCell>
                             <TableCell>{transaction.currency}</TableCell>

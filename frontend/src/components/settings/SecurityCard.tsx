@@ -58,7 +58,6 @@ const SecurityCard: React.FC = () => {
             onClick={validateCurrent}
             disabled={!currentPassword}
             variant="default"
-            style={{ backgroundColor: '#9DC0B2' }}
           >
             Check Password
           </Button>
@@ -112,8 +111,7 @@ const SecurityCard: React.FC = () => {
           </div>
           <Button
             variant="outline"
-            style={{ borderColor: '#9DC0B2', color: '#fff', backgroundColor: 'transparent' }}
-            className="px-6 py-2 rounded font-semibold hover:bg-[#22332B]/80 transition"
+            className="px-6 py-2 rounded font-semibold hover:bg-card/80 transition"
             onClick={handleSendResetLink}
           >
             Send Reset Link
