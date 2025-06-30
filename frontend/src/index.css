@@ -32,30 +32,52 @@
   }
 
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    /* Zenfolio Design System - Dark Mode */
+    --background: 150 15% 18%; /* Deep Ink Green (#2D3B31) */
+    --foreground: 0 0% 90%; /* Light Off-White (#E6E6E6) */
+    --card: 150 12% 23%; /* Dark Grey-Green (#3A4B40) */
+    --card-foreground: 0 0% 90%; /* Light Off-White (#E6E6E6) */
+    --popover: 150 12% 23%; /* Dark Grey-Green (#3A4B40) */
+    --popover-foreground: 0 0% 90%; /* Light Off-White (#E6E6E6) */
+    --primary: 150 25% 68%; /* Brighter Sage Green (#9DC0B2) */
+    --primary-foreground: 0 0% 90%; /* Light Off-White (#E6E6E6) */
+    --secondary: 150 12% 23%; /* Dark Grey-Green (#3A4B40) */
+    --secondary-foreground: 150 25% 68%; /* Brighter Sage Green (#9DC0B2) */
+    --muted: 150 12% 23%; /* Dark Grey-Green (#3A4B40) */
+    --muted-foreground: 150 10% 65%; /* Medium Grey-Green (#A0B0A6) */
+    --accent: 150 25% 68%; /* Brighter Sage Green (#9DC0B2) */
+    --accent-foreground: 0 0% 90%; /* Light Off-White (#E6E6E6) */
+    --destructive: 0 100% 59%; /* Alert Red (#FF3B30) */
+    --destructive-foreground: 0 0% 90%; /* Light Off-White (#E6E6E6) */
+    --border: 150 10% 65%; /* Medium Grey-Green (#A0B0A6) - subtle borders */
+    --input: 150 12% 23%; /* Dark Grey-Green (#3A4B40) */
+    --ring: 150 25% 68%; /* Brighter Sage Green (#9DC0B2) - focus rings */
+    /* Zenfolio Chart Colors */
+    --chart-1: 7 42% 80%; /* Soft Salmon Pink #E6B9B3 */
+    --chart-2: 37 37% 66%; /* Muted Ochre #C5AE8D */
+    --chart-3: 156 24% 69%; /* Brighter Sage Green #9DC0B2 */
+    --chart-4: 144 9% 66%; /* Medium Grey-Green #A0B0A6 */
+    --chart-5: 220 60% 75%; /* Light Sky Blue #A3C5E8 */
+    --chart-6: 280 45% 70%; /* Soft Purple #B894D1 */
+    --chart-7: 25 75% 75%; /* Warm Orange #E8B794 */
+    --chart-8: 340 50% 75%; /* Rose Pink #E094B3 */
+    --chart-9: 60 45% 70%; /* Soft Yellow Green #C1D194 */
+    --chart-10: 180 40% 70%; /* Soft Cyan #94C5D1 */
+    --chart-11: 300 35% 65%; /* Muted Magenta #B394C5 */
+    --chart-12: 45 50% 65%; /* Golden Yellow #C5B394 */
+    --chart-13: 120 35% 65%; /* Muted Green #94C5A3 */
+    --chart-14: 200 45% 65%; /* Steel Blue #94A3C5 */
+    --chart-15: 15 55% 70%; /* Coral #D1A394 */
+    --chart-16: 270 40% 65%; /* Lavender #A394C5 */
+    --chart-17: 90 40% 65%; /* Lime Green #A3C594 */
+    --chart-18: 330 45% 70%; /* Pink #D194B8 */
+    --chart-19: 190 35% 65%; /* Teal #94B8C5 */
+    --chart-20: 50 40% 65%; /* Olive #B8C594 */
+    /* Additional Zenfolio Colors */
+    --profit: 120 65% 50%; /* Bright Grass Green (#34C759) */
+    --profit-foreground: 0 0% 90%; /* Light Off-White (#E6E6E6) */
+    --loss: 0 100% 59%; /* Alert Red (#FF3B30) */
+    --loss-foreground: 0 0% 90%; /* Light Off-White (#E6E6E6) */
   }
 }
 

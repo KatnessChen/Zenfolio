@@ -1,0 +1,74 @@
+/* 
+  Zenfolio Design System
+  Blending Serenity with Clarity
+  Dark Mode Theme CSS Variables
+*/
+
+:root {
+  --radius: 0.375rem; /* Slightly rounded corners */
+}
+
+.dark {
+  /* Color System - Dark Mode */
+  --background: 144 16% 18%; /* Deep Ink Green #2D3B31 */
+  --foreground: 0 0% 96%; /* Light Off-White #F4F4F4 */
+
+  --card: 144 15% 26%; /* Dark Grey-Green #3A4B40 */
+  --card-foreground: 0 0% 96%; /* Light Off-White #F4F4F4 */
+
+  --popover: 144 15% 26%; /* Dark Grey-Green #3A4B40 */
+  --popover-foreground: 0 0% 96%; /* Light Off-White #F4F4F4 */
+
+  /* Primary Action / Brand Color: Brighter Sage Green #9DC0B2 */
+  --primary: 156 24% 69%; /* Brighter Sage Green #9DC0B2 */
+  --primary-foreground: 0 0% 96%; /* Light Off-White #F4F4F4 */
+
+  /* Secondary Background */
+  --secondary: 144 15% 26%; /* Dark Grey-Green #3A4B40 */
+  --secondary-foreground: 156 24% 69%; /* Brighter Sage Green #9DC0B2 */
+
+  /* Medium Grey-Green for hint text #A0B0A6 */
+  --muted: 144 9% 66%; /* Medium Grey-Green #A0B0A6 */
+  --muted-foreground: 144 9% 66%; /* Medium Grey-Green #A0B0A6 */
+
+  --accent: 144 15% 26%; /* Dark Grey-Green #3A4B40 */
+  --accent-foreground: 0 0% 96%; /* Light Off-White #F4F4F4 */
+
+  /* Financial indicators */
+  --profit: 142 60% 39%; /* Bright Grass Green #34C759 */
+  --profit-foreground: 0 0% 96%;
+
+  --loss: 357 100% 59%; /* Alert Red #FF3B30 */
+  --loss-foreground: 0 0% 96%;
+
+  /* UI elements */
+  --border: 144 9% 66%; /* Medium Grey-Green #A0B0A6 */
+  --input: 144 15% 26%; /* Dark Grey-Green #3A4B40 */
+  --ring: 156 24% 69%; /* Brighter Sage Green #9DC0B2 */
+
+  /* Chart colors - non P&L */
+  --chart-1: 7 42% 80%; /* Soft Salmon Pink #E6B9B3 */
+  --chart-2: 37 37% 66%; /* Muted Ochre #C5AE8D */
+  --chart-3: 156 24% 69%; /* Brighter Sage Green #9DC0B2 */
+  --chart-4: 144 9% 66%; /* Medium Grey-Green #A0B0A6 */
+  --chart-5: 220 60% 75%; /* Light Sky Blue #A3C5E8 */
+  --chart-6: 280 45% 70%; /* Soft Purple #B894D1 */
+  --chart-7: 25 75% 75%; /* Warm Orange #E8B794 */
+  --chart-8: 340 50% 75%; /* Rose Pink #E094B3 */
+  --chart-9: 60 45% 70%; /* Soft Yellow Green #C1D194 */
+  --chart-10: 180 40% 70%; /* Soft Cyan #94C5D1 */
+  --chart-11: 300 35% 65%; /* Muted Magenta #B394C5 */
+  --chart-12: 45 50% 65%; /* Golden Yellow #C5B394 */
+  --chart-13: 120 35% 65%; /* Muted Green #94C5A3 */
+  --chart-14: 200 45% 65%; /* Steel Blue #94A3C5 */
+  --chart-15: 15 55% 70%; /* Coral #D1A394 */
+  --chart-16: 270 40% 65%; /* Lavender #A394C5 */
+  --chart-17: 90 40% 65%; /* Lime Green #A3C594 */
+  --chart-18: 330 45% 70%; /* Pink #D194B8 */
+  --chart-19: 190 35% 65%; /* Teal #94B8C5 */
+  --chart-20: 50 40% 65%; /* Olive #B8C594 */
+
+  /* Destructive for warnings/errors (using Alert Red) */
+  --destructive: 357 100% 59%; /* Alert Red #FF3B30 */
+  --destructive-foreground: 0 0% 96%; /* Light Off-White #F4F4F4 */
+}
