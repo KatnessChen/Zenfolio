@@ -30,16 +30,16 @@ func NewTransactionsHandler(service *services.TransactionService) *TransactionsH
 
 // TransactionRequest represents the request structure for creating transactions
 type TransactionRequest struct {
-	Symbol      string           `json:"symbol" binding:"required"`
-	Exchange    string           `json:"exchange" binding:"required"`
-	Broker      string           `json:"broker"`
-	Currency    string           `json:"currency" binding:"required"`
-	TradeDate   string           `json:"trade_date" binding:"required"`
-	TradeType   types.TradeType  `json:"trade_type" binding:"required"`
-	Quantity    float64          `json:"quantity" binding:"required,gt=0"`
-	Price       float64          `json:"price" binding:"required,gt=0"`
-	TradeAmount float64          `json:"trade_amount" binding:"required,gt=0"`
-	UserNotes   string           `json:"user_notes"`
+	Symbol      string          `json:"symbol" binding:"required"`
+	Exchange    string          `json:"exchange" binding:"required"`
+	Broker      string          `json:"broker"`
+	Currency    string          `json:"currency" binding:"required"`
+	TradeDate   string          `json:"trade_date" binding:"required"`
+	TradeType   types.TradeType `json:"trade_type" binding:"required"`
+	Quantity    float64         `json:"quantity" binding:"required,gt=0"`
+	Price       float64         `json:"price" binding:"required,gt=0"`
+	TradeAmount float64         `json:"trade_amount" binding:"required,gt=0"`
+	UserNotes   string          `json:"user_notes"`
 }
 
 // CreateTransactionsRequest represents the batch request for creating transactions
@@ -49,10 +49,10 @@ type CreateTransactionsRequest struct {
 
 // CreateTransactionsResponse represents the response for creating transactions
 type CreateTransactionsResponse struct {
-	Success bool                      `json:"success"`
-	Message string                    `json:"message"`
-	Data    *CreateTransactionsData   `json:"data,omitempty"`
-	Errors  map[string][]string       `json:"errors,omitempty"`
+	Success bool                    `json:"success"`
+	Message string                  `json:"message"`
+	Data    *CreateTransactionsData `json:"data,omitempty"`
+	Errors  map[string][]string     `json:"errors,omitempty"`
 }
 
 // CreateTransactionsData represents the data part of create transactions response
@@ -63,10 +63,10 @@ type CreateTransactionsData struct {
 
 // GetTransactionsResponse represents the response for getting transaction history
 type GetTransactionsResponse struct {
-	Success bool                    `json:"success"`
-	Message string                  `json:"message"`
-	Data    *GetTransactionsData    `json:"data,omitempty"`
-	Errors  map[string][]string     `json:"errors,omitempty"`
+	Success bool                 `json:"success"`
+	Message string               `json:"message"`
+	Data    *GetTransactionsData `json:"data,omitempty"`
+	Errors  map[string][]string  `json:"errors,omitempty"`
 }
 
 // GetTransactionsData represents the data part of get transactions response
@@ -100,11 +100,11 @@ type FiltersApplied struct {
 type TransactionQueryParams struct {
 	Page       int
 	PageSize   int
-	Symbols    []string   // Support multiple symbols
-	Types      []string   // Support multiple types
-	Exchanges  []string   // Support multiple exchanges
-	Brokers    []string   // Support multiple brokers
-	Currencies []string   // Support multiple currencies
+	Symbols    []string // Support multiple symbols
+	Types      []string // Support multiple types
+	Exchanges  []string // Support multiple exchanges
+	Brokers    []string // Support multiple brokers
+	Currencies []string // Support multiple currencies
 	StartDate  *time.Time
 	EndDate    *time.Time
 	SortBy     string

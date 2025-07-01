@@ -10,11 +10,11 @@ import (
 // TransactionFilter represents filters for transaction queries
 type TransactionFilter struct {
 	UserID         *uint
-	Symbols        []string   // Support multiple symbols
-	Types          []string   // Support multiple types
-	Exchanges      []string   // Support multiple exchanges
-	Brokers        []string   // Support multiple brokers
-	Currencies     []string   // Support multiple currencies
+	Symbols        []string // Support multiple symbols
+	Types          []string // Support multiple types
+	Exchanges      []string // Support multiple exchanges
+	Brokers        []string // Support multiple brokers
+	Currencies     []string // Support multiple currencies
 	StartDate      *time.Time
 	EndDate        *time.Time
 	MinAmount      *float64
