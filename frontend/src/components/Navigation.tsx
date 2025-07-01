@@ -79,7 +79,7 @@ export default function Navigation() {
         <div className="flex justify-between items-center">
           <Logo size="lg" />
 
-          {isAuthenticated ? (
+          {isAuthenticated && (
             <div className="flex items-center space-x-8">
               <div className="flex space-x-8 relative">
                 <NavLink
@@ -127,7 +127,7 @@ export default function Navigation() {
                 <DropdownItem onClick={handleLogout}>Logout</DropdownItem>
               </Dropdown>
             </div>
-          ) : null}
+          )}
         </div>
       </div>
     </nav>

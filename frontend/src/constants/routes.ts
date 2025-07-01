@@ -12,6 +12,8 @@ export const ROUTES = {
   SETTINGS: '/settings',
   UI_DEMO: '/ui-demo',
   CONTACT: '/contact',
+  LOGOUT: '/logout',
+  ME: '/me',
 } as const
 
 // Type for route values

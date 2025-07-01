@@ -35,78 +35,17 @@ function App() {
               <Route path={ROUTES.SIGN_UP} element={<SignUpPage />} />
 
               {/* Protected routes */}
-              <Route
-                path={ROUTES.HOME}
-                element={
-                  <ProtectedRoute>
-                    <HomePage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path={ROUTES.DASHBOARD}
-                element={
-                  <ProtectedRoute>
-                    <DashboardPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path={ROUTES.TRANSACTIONS}
-                element={
-                  <ProtectedRoute>
-                    <TransactionHistoryPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path={ROUTES.TRANSACTIONS_UPLOAD}
-                element={
-                  <ProtectedRoute>
-                    <ImageUploadPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path={ROUTES.TRANSACTIONS_UPLOAD_PROCESSING}
-                element={
-                  <ProtectedRoute>
-                    <ProcessingPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path={ROUTES.TRANSACTIONS_UPLOAD_REVIEW}
-                element={
-                  <ProtectedRoute>
-                    <DataReviewPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path={ROUTES.TRANSACTIONS_MANUAL_ADD}
-                element={
-                  <ProtectedRoute>
-                    <ManualTransactionPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path={ROUTES.TRANSACTIONS_MANUAL_REVIEW}
-                element={
-                  <ProtectedRoute>
-                    <BatchReviewPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path={ROUTES.SETTINGS}
-                element={
-                  <ProtectedRoute>
-                    <SettingsPage />
-                  </ProtectedRoute>
-                }
-              />
+              <Route element={<ProtectedRoute />}>
+                <Route path={ROUTES.HOME} element={<HomePage />} />
+                <Route path={ROUTES.DASHBOARD} element={<DashboardPage />} />
+                <Route path={ROUTES.TRANSACTIONS} element={<TransactionHistoryPage />} />
+                <Route path={ROUTES.TRANSACTIONS_UPLOAD} element={<ImageUploadPage />} />
+                <Route path={ROUTES.TRANSACTIONS_UPLOAD_PROCESSING} element={<ProcessingPage />} />
+                <Route path={ROUTES.TRANSACTIONS_UPLOAD_REVIEW} element={<DataReviewPage />} />
+                <Route path={ROUTES.TRANSACTIONS_MANUAL_ADD} element={<ManualTransactionPage />} />
+                <Route path={ROUTES.TRANSACTIONS_MANUAL_REVIEW} element={<BatchReviewPage />} />
+                <Route path={ROUTES.SETTINGS} element={<SettingsPage />} />
+              </Route>
             </Routes>
           </main>
           <Footer />

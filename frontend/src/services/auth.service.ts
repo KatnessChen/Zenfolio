@@ -1,17 +1,19 @@
 import { apiClient } from '@/lib/api-client'
-import type { LoginRequest, LoginResponse, User } from '@/types'
+import { ROUTES } from '@/constants'
+import type { LoginRequest, LoginResponse } from '@/types/auth'
+import type { User } from '@/types'
 
 export class AuthService {
   // Login user
   static async login(credentials: LoginRequest): Promise<LoginResponse> {
-    const response = await apiClient.post<LoginResponse>('/login', credentials)
+    const response = await apiClient.post<LoginResponse>(ROUTES.LOGIN, credentials)
     return response.data
   }
 
   // Logout user
   static async logout(): Promise<void> {
     try {
-      await apiClient.post('/logout')
+      await apiClient.post(ROUTES.LOGOUT)
     } catch (error) {
       // Even if logout fails on server, we should clear local data
       console.error('Logout request failed:', error)
@@ -23,7 +25,7 @@ export class AuthService {
 
   // Get current user info
   static async getCurrentUser(): Promise<User> {
-    const response = await apiClient.get<{ success: boolean; data: User }>('/me')
+    const response = await apiClient.get<{ success: boolean; data: User }>(ROUTES.ME)
     return response.data.data
   }
 

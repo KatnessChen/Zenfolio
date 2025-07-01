@@ -1,15 +1,11 @@
 import { useEffect } from 'react'
-import { Navigate, useLocation } from 'react-router-dom'
+import { Navigate, useLocation, Outlet } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import type { RootState, AppDispatch } from '@/store'
 import { getCurrentUser } from '@/store/authSlice'
 import { ROUTES } from '@/constants'
 
-interface ProtectedRouteProps {
-  children: React.ReactNode
-}
-
-export function ProtectedRoute({ children }: ProtectedRouteProps) {
+export function ProtectedRoute() {
   const dispatch = useDispatch<AppDispatch>()
   const location = useLocation()
   const { isAuthenticated, token, user, isLoading } = useSelector((state: RootState) => state.auth)
@@ -38,5 +34,5 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     )
   }
 
-  return <>{children}</>
+  return <Outlet />
 }
