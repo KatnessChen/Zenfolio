@@ -17,6 +17,7 @@ type Transaction struct {
 	Price           float64         `gorm:"type:decimal(15,4);not null" json:"price"`
 	Amount          float64         `gorm:"type:decimal(15,2);not null" json:"amount"`
 	Currency        string          `gorm:"size:3;not null;default:'USD'" json:"currency"`
+	Exchange        string          `gorm:"size:50" json:"exchange"`
 	Broker          string          `gorm:"size:100" json:"broker"`
 	Account         string          `gorm:"size:100" json:"account"`
 	TransactionDate time.Time       `gorm:"not null;index" json:"transaction_date"`

@@ -9,9 +9,9 @@ import (
 type TradeType string
 
 const (
-	TradeTypeBuy      TradeType = "buy"
-	TradeTypeSell     TradeType = "sell"
-	TradeTypeDividend TradeType = "dividend"
+	TradeTypeBuy      TradeType = "Buy"
+	TradeTypeSell     TradeType = "Sell"
+	TradeTypeDividend TradeType = "Dividends"
 )
 
 // TransactionData represents extracted transaction information from AI
@@ -27,7 +27,7 @@ type TransactionData struct {
 	Account         string    `json:"account"`          // Maps to Transaction.Account
 	TransactionDate string    `json:"transaction_date"` // Maps to Transaction.TransactionDate (as string for JSON)
 	UserNotes       string    `json:"user_notes"`       // Maps to Transaction.UserNotes
-	Exchange        string    `json:"exchange"`         // Additional field for AI extraction
+	Exchange        string    `json:"exchange"`         // Maps to Transaction.Exchange
 }
 
 // ImageInput represents an image file for processing
@@ -50,4 +50,18 @@ type AIClient interface {
 	ExtractTransactions(ctx context.Context, images []ImageInput) (*ExtractResponse, error)
 	// Close releases any resources held by the client
 	Close()
+}
+
+// TradeTypeFromString converts string to TradeType
+func TradeTypeFromString(s string) (TradeType, bool) {
+	switch s {
+	case "Buy":
+		return TradeTypeBuy, true
+	case "Sell":
+		return TradeTypeSell, true
+	case "Dividends":
+		return TradeTypeDividend, true
+	default:
+		return "", false
+	}
 }
