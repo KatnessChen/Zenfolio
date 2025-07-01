@@ -1,7 +1,12 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useSelector, useDispatch } from 'react-redux'
 import { Logo } from '@/components/ui/logo'
+import { Avatar } from '@/components/ui/avatar'
+import { Dropdown, DropdownItem, DropdownSeparator } from '@/components/ui/dropdown'
 import { ROUTES } from '@/constants'
 import { useEffect, useRef, useState, useCallback } from 'react'
+import type { RootState, AppDispatch } from '@/store'
+import { logoutUser } from '@/store/authSlice'
 
 interface NavLinkProps {
   to: string
@@ -26,6 +31,9 @@ const NavLink = ({ to, children, isActive, onLinkRef }: NavLinkProps) => {
 
 export default function Navigation() {
   const location = useLocation()
+  const navigate = useNavigate()
+  const dispatch = useDispatch<AppDispatch>()
+  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth)
   const [underlineStyle, setUnderlineStyle] = useState({ left: 0, width: 0 })
   const navLinksRef = useRef<{ [key: string]: HTMLAnchorElement | null }>({})
 
@@ -35,6 +43,14 @@ export default function Navigation() {
     },
     [location.pathname]
   )
+
+  const handleLogout = async () => {
+    await dispatch(logoutUser())
+  }
+
+  const handleSettingsClick = () => {
+    navigate(ROUTES.SETTINGS)
+  }
 
   const updateUnderline = useCallback(() => {
     const activeLink = Object.entries(navLinksRef.current).find(([path]) => isActive(path))?.[1]
@@ -63,52 +79,55 @@ export default function Navigation() {
         <div className="flex justify-between items-center">
           <Logo size="lg" />
 
-          <div className="flex space-x-8 relative">
-            <NavLink
-              to={ROUTES.HOME}
-              isActive={isActive(ROUTES.HOME)}
-              onLinkRef={(el) => (navLinksRef.current[ROUTES.HOME] = el)}
-            >
-              Home
-            </NavLink>
-            <NavLink
-              to={ROUTES.DASHBOARD}
-              isActive={isActive(ROUTES.DASHBOARD)}
-              onLinkRef={(el) => (navLinksRef.current[ROUTES.DASHBOARD] = el)}
-            >
-              Dashboard
-            </NavLink>
-            <NavLink
-              to={ROUTES.TRANSACTIONS_UPLOAD}
-              isActive={isActive(ROUTES.TRANSACTIONS_UPLOAD)}
-              onLinkRef={(el) => (navLinksRef.current[ROUTES.TRANSACTIONS_UPLOAD] = el)}
-            >
-              Upload
-            </NavLink>
-            <NavLink
-              to={ROUTES.TRANSACTIONS}
-              isActive={isActive(ROUTES.TRANSACTIONS)}
-              onLinkRef={(el) => (navLinksRef.current[ROUTES.TRANSACTIONS] = el)}
-            >
-              History
-            </NavLink>
-            <NavLink
-              to={ROUTES.SETTINGS}
-              isActive={isActive(ROUTES.SETTINGS)}
-              onLinkRef={(el) => (navLinksRef.current[ROUTES.SETTINGS] = el)}
-            >
-              Settings
-            </NavLink>
+          {isAuthenticated && (
+            <div className="flex items-center space-x-8">
+              <div className="flex space-x-8 relative">
+                <NavLink
+                  to={ROUTES.DASHBOARD}
+                  isActive={isActive(ROUTES.DASHBOARD)}
+                  onLinkRef={(el) => (navLinksRef.current[ROUTES.DASHBOARD] = el)}
+                >
+                  Dashboard
+                </NavLink>
+                <NavLink
+                  to={ROUTES.TRANSACTIONS_UPLOAD}
+                  isActive={isActive(ROUTES.TRANSACTIONS_UPLOAD)}
+                  onLinkRef={(el) => (navLinksRef.current[ROUTES.TRANSACTIONS_UPLOAD] = el)}
+                >
+                  Upload
+                </NavLink>
+                <NavLink
+                  to={ROUTES.TRANSACTIONS}
+                  isActive={isActive(ROUTES.TRANSACTIONS)}
+                  onLinkRef={(el) => (navLinksRef.current[ROUTES.TRANSACTIONS] = el)}
+                >
+                  History
+                </NavLink>
 
-            {/* Animated underline */}
-            <div
-              className="absolute bottom-1 h-0.5 bg-primary rounded-full transition-all duration-200 ease-out"
-              style={{
-                left: `${underlineStyle.left - 32}px`,
-                width: `${underlineStyle.width}px`,
-              }}
-            />
-          </div>
+                {/* Animated underline */}
+                <div
+                  className="absolute bottom-1 h-0.5 bg-primary rounded-full transition-all duration-200 ease-out"
+                  style={{
+                    left: `${underlineStyle.left - 32}px`,
+                    width: `${underlineStyle.width}px`,
+                  }}
+                />
+              </div>
+
+              <Dropdown
+                trigger={
+                  <Avatar fallback={user?.firstName?.charAt(0)?.toUpperCase() || 'U'} size="sm" />
+                }
+                className="ml-4"
+                align="right"
+                width="160px"
+              >
+                <DropdownItem onClick={handleSettingsClick}>Settings</DropdownItem>
+                <DropdownSeparator />
+                <DropdownItem onClick={handleLogout}>Logout</DropdownItem>
+              </Dropdown>
+            </div>
+          )}
         </div>
       </div>
     </nav>

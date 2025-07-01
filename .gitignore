@@ -5,6 +5,7 @@
 *.so
 *.dylib
 backend/backend
+backend/transaction-tracker
 
 # Test binary, built with `go test -c`
 *.test

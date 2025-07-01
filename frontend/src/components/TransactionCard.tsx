@@ -3,7 +3,7 @@ import { Card, CardContent } from './ui/card'
 import { Input } from './ui/input'
 import { EditIcon } from './icons/EditIcon'
 import { DeleteIcon } from './icons/DeleteIcon'
-import type { Transaction } from '../types'
+import type { Transaction } from '@/types/transaction'
 import { formatDate } from '../utils'
 import { TRADE_TYPE } from '../constants'
 
