@@ -5,6 +5,8 @@ interface DropdownProps {
   trigger: React.ReactNode
   children: React.ReactNode
   className?: string
+  align?: 'left' | 'right'
+  width?: string
 }
 
 interface DropdownItemProps {
@@ -15,7 +17,7 @@ interface DropdownItemProps {
 }
 
 const Dropdown = React.forwardRef<HTMLDivElement, DropdownProps>(
-  ({ trigger, children, className }) => {
+  ({ trigger, children, className, align = 'left', width }) => {
     const [isOpen, setIsOpen] = React.useState(false)
     const dropdownRef = React.useRef<HTMLDivElement>(null)
 
@@ -39,11 +41,14 @@ const Dropdown = React.forwardRef<HTMLDivElement, DropdownProps>(
         {isOpen && (
           <div
             className={cn(
-              'absolute top-full left-0 min-w-[200px] z-50',
+              'absolute top-full z-50',
+              align === 'right' ? 'right-0' : 'left-0',
+              width ? '' : 'min-w-[200px]',
               'bg-card border border-border/50 rounded-md shadow-lg',
               'backdrop-blur-sm bg-card/95',
               'animate-in fade-in-0 zoom-in-95 duration-200'
             )}
+            style={width ? { minWidth: width } : undefined}
           >
             <div className="p-1">{children}</div>
           </div>

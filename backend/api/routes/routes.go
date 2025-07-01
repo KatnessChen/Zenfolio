@@ -1,6 +1,9 @@
 package routes
 
 import (
+	"time"
+
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/transaction-tracker/backend/api/handlers"
 	"github.com/transaction-tracker/backend/api/middlewares"
@@ -12,6 +15,15 @@ import (
 // SetupRouter configures the API routes
 func SetupRouter(cfg *config.Config) *gin.Engine {
 	r := gin.Default()
+
+	// Configure CORS
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000", "http://localhost:5173", "http://localhost:4173"}, // Common frontend dev ports
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 
 	rateLimiter := middlewares.NewClientRateLimiter(cfg)
 

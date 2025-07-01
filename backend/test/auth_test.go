@@ -292,8 +292,13 @@ func TestLoginEndpoint(t *testing.T) {
 			if tt.expectedError != "" {
 				assert.Contains(t, response["error"], tt.expectedError)
 			} else {
-				assert.NotEmpty(t, response["token"])
-				assert.NotEmpty(t, response["user"])
+				// Check new response structure
+				assert.True(t, response["success"].(bool))
+				assert.NotEmpty(t, response["data"])
+
+				data := response["data"].(map[string]interface{})
+				assert.NotEmpty(t, data["token"])
+				assert.NotEmpty(t, data["user"])
 			}
 		})
 	}
@@ -330,7 +335,10 @@ func TestProtectedEndpoints(t *testing.T) {
 	var loginResponse map[string]interface{}
 	err = json.Unmarshal(w.Body.Bytes(), &loginResponse)
 	require.NoError(t, err)
-	token := loginResponse["token"].(string)
+
+	// Extract token from the nested data structure
+	data := loginResponse["data"].(map[string]interface{})
+	token := data["token"].(string)
 
 	tests := []struct {
 		name           string
@@ -396,7 +404,9 @@ func TestProtectedEndpoints(t *testing.T) {
 			if tt.expectedError != "" {
 				assert.Contains(t, response["error"], tt.expectedError)
 			} else {
-				assert.NotEmpty(t, response["user"])
+				// Check new response structure
+				assert.True(t, response["success"].(bool))
+				assert.NotEmpty(t, response["data"])
 			}
 		})
 	}
@@ -436,7 +446,9 @@ func TestJWTTokenLifecycle(t *testing.T) {
 		err = json.Unmarshal(w.Body.Bytes(), &response)
 		require.NoError(t, err)
 
-		token := response["token"].(string)
+		// Extract token from new response structure
+		data := response["data"].(map[string]interface{})
+		token := data["token"].(string)
 		tokens = append(tokens, token)
 
 		// Verify each token is unique
@@ -574,7 +586,10 @@ func TestSignupLoginIntegration(t *testing.T) {
 	var loginResponse map[string]interface{}
 	err = json.Unmarshal(w.Body.Bytes(), &loginResponse)
 	require.NoError(t, err)
-	token := loginResponse["token"].(string)
+
+	// Extract token from the nested data structure
+	data := loginResponse["data"].(map[string]interface{})
+	token := data["token"].(string)
 	assert.NotEmpty(t, token)
 
 	// Step 3: Access protected endpoint
@@ -591,7 +606,9 @@ func TestSignupLoginIntegration(t *testing.T) {
 	err = json.Unmarshal(w.Body.Bytes(), &meResponse)
 	require.NoError(t, err)
 
-	user := meResponse["user"].(map[string]interface{})
+	// Extract user from new response structure
+	user := meResponse["data"].(map[string]interface{})
 	assert.Equal(t, email, user["email"])
-	assert.Equal(t, "Integration Test", user["username"]) // Should be FirstName + LastName
+	assert.Equal(t, "Integration", user["firstName"])
+	assert.Equal(t, "Test", user["lastName"])
 }

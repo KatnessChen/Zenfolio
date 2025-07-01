@@ -28,9 +28,31 @@ export interface Transaction {
   transactionHistory?: string // Brief summary/description of the transaction
 }
 
-// User authentication types
+// Authentication types
 export interface User {
-  id: string
   email: string
-  name?: string
+  firstName: string
+  lastName?: string
+}
+
+export interface LoginRequest {
+  email: string
+  password: string
+}
+
+export interface LoginResponse {
+  success: boolean
+  message: string
+  data: {
+    token: string
+    user: User
+  }
+}
+
+export interface AuthState {
+  user: User | null
+  token: string | null
+  isAuthenticated: boolean
+  isLoading: boolean
+  error: string | null
 }

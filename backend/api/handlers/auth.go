@@ -37,14 +37,22 @@ type LoginRequest struct {
 
 // LoginResponse represents a login response
 type LoginResponse struct {
+	Success bool        `json:"success"`
+	Message string      `json:"message"`
+	Data    LoginData   `json:"data"`
+}
+
+// LoginData represents the data part of login response
+type LoginData struct {
 	Token string      `json:"token"`
 	User  UserSummary `json:"user"`
 }
 
 // UserSummary represents user information returned in responses
 type UserSummary struct {
-	Username string `json:"username"`
-	Email    string `json:"email"`
+	Email     string `json:"email"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName,omitempty"`
 }
 
 // SignupRequest represents a signup request
@@ -112,10 +120,15 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, LoginResponse{
-		Token: token,
-		User: UserSummary{
-			Username: user.Username,
-			Email:    user.Email,
+		Success: true,
+		Message: "Login successful",
+		Data: LoginData{
+			Token: token,
+			User: UserSummary{
+				Email:     user.Email,
+				FirstName: user.FirstName,
+				LastName:  user.LastName,
+			},
 		},
 	})
 }
@@ -172,10 +185,12 @@ func (h *AuthHandler) Me(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, UserInfoResponse{
-		User: UserSummary{
-			Username: user.Username,
-			Email:    user.Email,
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data": UserSummary{
+			Email:     user.Email,
+			FirstName: user.FirstName,
+			LastName:  user.LastName,
 		},
 	})
 }
@@ -269,8 +284,9 @@ func (h *AuthHandler) Signup(c *gin.Context) {
 		Success: true,
 		Message: "User registered successfully",
 		User: UserSummary{
-			Username: user.Username,
-			Email:    user.Email,
+			Email:     user.Email,
+			FirstName: user.FirstName,
+			LastName:  user.LastName,
 		},
 	})
 }
