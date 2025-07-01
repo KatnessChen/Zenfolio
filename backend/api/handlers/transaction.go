@@ -315,8 +315,9 @@ func (h *TransactionsHandler) GetTransactionHistory(c *gin.Context) {
 	}
 
 	// Build filter with user ID (security requirement)
+	uid := userID.(uint)
 	filter := services.TransactionFilter{
-		UserID:         &[]uint{userID.(uint)}[0], // Ensure user can only see their own transactions
+		UserID:         &uid, // Ensure user can only see their own transactions
 		Symbols:        params.Symbols,
 		Types:          params.Types,
 		Exchanges:      params.Exchanges,
