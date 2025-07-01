@@ -75,7 +75,7 @@
             "method": "POST",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"securePassword123\"\n}",
+              "raw": "{\n  \"email\": \"sbxew99@gmail.com\",\n  \"password\": \"securePassword123\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -913,6 +913,516 @@
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           }
+        },
+        {
+          "id": "get-transaction-history",
+          "name": "Get Transaction History",
+          "request": {
+            "name": "Get Transaction History",
+            "description": {
+              "content": "Retrieve paginated transaction history with filtering capabilities for authenticated users",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": ["api", "v1", "transaction-history"],
+              "host": ["{{baseUrl}}"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number (default: 1, min: 1)"
+                },
+                {
+                  "key": "page_size",
+                  "value": "100",
+                  "description": "Records per page (default: 100, min: 1, max: 1000)"
+                },
+                {
+                  "key": "symbol",
+                  "value": "AAPL,GOOGL,MSFT",
+                  "description": "Filter by stock symbols (comma-separated for multiple values, 1-10 alphanumeric uppercase chars each)",
+                  "disabled": true
+                },
+                {
+                  "key": "type",
+                  "value": "Buy,Sell",
+                  "description": "Filter by trade type (comma-separated: Buy, Sell, Dividends)",
+                  "disabled": true
+                },
+                {
+                  "key": "exchange",
+                  "value": "NASDAQ,NYSE",
+                  "description": "Filter by exchange (comma-separated for multiple exchanges)",
+                  "disabled": true
+                },
+                {
+                  "key": "broker",
+                  "value": "Fidelity,TDAmeritrade",
+                  "description": "Filter by broker (comma-separated for multiple brokers)",
+                  "disabled": true
+                },
+                {
+                  "key": "currency",
+                  "value": "USD,EUR,CAD",
+                  "description": "Filter by currency (comma-separated 3-letter ISO codes)",
+                  "disabled": true
+                },
+                {
+                  "key": "timeframe",
+                  "value": "2025-01-01,2025-12-31",
+                  "description": "Date filter: YYYY-MM-DD or YYYY-MM-DD,YYYY-MM-DD",
+                  "disabled": true
+                },
+                {
+                  "key": "sort_by",
+                  "value": "transaction_date",
+                  "description": "Sort field (transaction_date, symbol, price, quantity, trade_amount)",
+                  "disabled": true
+                },
+                {
+                  "key": "sort_order",
+                  "value": "desc",
+                  "description": "Sort order (asc, desc)",
+                  "disabled": true
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success - Transaction History Retrieved",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": {
+                  "path": ["api", "v1", "transaction-history"],
+                  "host": ["{{baseUrl}}"],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "page_size",
+                      "value": "10"
+                    },
+                    {
+                      "key": "symbol",
+                      "value": "AAPL,GOOGL"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Transactions retrieved successfully\",\n  \"data\": {\n    \"transactions\": [\n      {\n        \"symbol\": \"AAPL\",\n        \"type\": \"Buy\",\n        \"quantity\": 100,\n        \"price\": 150.25,\n        \"amount\": 15025.00,\n        \"currency\": \"USD\",\n        \"exchange\": \"NASDAQ\",\n        \"broker\": \"Firstrade\",\n        \"account\": \"12345\",\n        \"transaction_date\": \"2025-06-15\",\n        \"user_notes\": \"Initial investment\"\n      },\n      {\n        \"symbol\": \"GOOGL\",\n        \"type\": \"Buy\",\n        \"quantity\": 10,\n        \"price\": 2800.50,\n        \"amount\": 28005.00,\n        \"currency\": \"USD\",\n        \"exchange\": \"NASDAQ\",\n        \"broker\": \"Firstrade\",\n        \"account\": \"12345\",\n        \"transaction_date\": \"2025-06-20\",\n        \"user_notes\": \"Diversification purchase\"\n      }\n    ],\n    \"pagination\": {\n      \"page\": 1,\n      \"page_size\": 10,\n      \"total_records\": 25,\n      \"total_pages\": 3,\n      \"has_next\": true,\n      \"has_previous\": false\n    },\n    \"filters_applied\": {\n      \"symbols\": [\"AAPL\", \"GOOGL\"],\n      \"timeframe\": null,\n      \"type\": null,\n      \"exchange\": null,\n      \"broker\": null,\n      \"currency\": null\n    }\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "Unauthorized - Invalid Token",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer invalid_token"
+                  }
+                ],
+                "url": {
+                  "path": ["api", "v1", "transaction-history"],
+                  "host": ["{{baseUrl}}"],
+                  "query": []
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Unauthorized\",\n  \"errors\": {\n    \"auth\": [\"Invalid or expired token\"]\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "Bad Request - Invalid Parameters",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": {
+                  "path": ["api", "v1", "transaction-history"],
+                  "host": ["{{baseUrl}}"],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "0"
+                    },
+                    {
+                      "key": "page_size",
+                      "value": "2000"
+                    },
+                    {
+                      "key": "symbol",
+                      "value": "invalid_symbol,TOOLONG123,abc"
+                    },
+                    {
+                      "key": "type",
+                      "value": "InvalidType"
+                    }
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Validation failed\",\n  \"errors\": {\n    \"page\": [\"Must be a positive integer\"],\n    \"page_size\": [\"Must be between 1 and 1000\"],\n    \"symbol\": [\"Each symbol must be alphanumeric uppercase, 1-10 characters\"],\n    \"type\": [\"Must be one of: Buy, Sell, Dividends\"]\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "Internal Server Error",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": {
+                  "path": ["api", "v1", "transaction-history"],
+                  "host": ["{{baseUrl}}"],
+                  "query": []
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Internal server error\",\n  \"errors\": {\n    \"database\": [\"Failed to retrieve transactions\"]\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "create-transactions",
+          "name": "Create Transaction Records",
+          "request": {
+            "name": "Create Transaction Records",
+            "description": {
+              "content": "Create multiple transaction records in batch",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": ["api", "v1", "transaction-history"],
+              "host": ["{{baseUrl}}"],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"transactions\": [\n    {\n      \"symbol\": \"GOOGL\",\n      \"exchange\": \"NASDAQ\",\n      \"broker\": \"Firstrade\",\n      \"currency\": \"USD\",\n      \"trade_date\": \"2025-01-01\",\n      \"trade_type\": \"Buy\",\n      \"quantity\": 1,\n      \"price\": 200.00,\n      \"trade_amount\": 200.00,\n      \"user_notes\": \"Initial investment\"\n    },\n    {\n      \"symbol\": \"AAPL\",\n      \"exchange\": \"NASDAQ\",\n      \"broker\": \"Firstrade\",\n      \"currency\": \"USD\",\n      \"trade_date\": \"2025-01-02\",\n      \"trade_type\": \"Buy\",\n      \"quantity\": 5,\n      \"price\": 150.50,\n      \"trade_amount\": 752.50\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwtToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "create-transactions-success",
+              "name": "Transactions created successfully",
+              "originalRequest": {
+                "url": {
+                  "path": ["api", "v1", "transaction-history"],
+                  "host": ["{{baseUrl}}"],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"transactions\": [\n    {\n      \"symbol\": \"GOOGL\",\n      \"exchange\": \"NASDAQ\",\n      \"broker\": \"Firstrade\",\n      \"currency\": \"USD\",\n      \"trade_date\": \"2025-01-01\",\n      \"trade_type\": \"Buy\",\n      \"quantity\": 1,\n      \"price\": 200.00,\n      \"trade_amount\": 200.00\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Transactions created successfully\",\n  \"data\": {\n    \"transactions\": [\n      {\n        \"symbol\": \"GOOGL\",\n        \"type\": \"Buy\",\n        \"quantity\": 1,\n        \"price\": 200.00,\n        \"amount\": 200.00,\n        \"currency\": \"USD\",\n        \"broker\": \"Firstrade\",\n        \"transaction_date\": \"2025-01-01\",\n        \"user_notes\": \"Initial investment\"\n      }\n    ],\n    \"count\": 1\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "create-transactions-validation-error",
+              "name": "Validation failed",
+              "originalRequest": {
+                "url": {
+                  "path": ["api", "v1", "transaction-history"],
+                  "host": ["{{baseUrl}}"],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"transactions\": [\n    {\n      \"symbol\": \"INVALID_SYMBOL_TOO_LONG\",\n      \"trade_type\": \"InvalidType\",\n      \"quantity\": -1,\n      \"price\": 0\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Validation failed\",\n  \"errors\": {\n    \"transaction[0]\": [\"symbol must be between 1 and 10 characters\"],\n    \"transaction[0].trade_type\": [\"trade_type must be one of: Buy, Sell, Dividends\"],\n    \"transaction[0].quantity\": [\"quantity must be positive\"],\n    \"transaction[0].price\": [\"price must be positive\"]\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "create-transactions-unauthorized",
+              "name": "Unauthorized",
+              "originalRequest": {
+                "url": {
+                  "path": ["api", "v1", "transaction-history"],
+                  "host": ["{{baseUrl}}"],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"transactions\": []\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Unauthorized\",\n  \"errors\": {\n    \"auth\": [\"User not authenticated\"]\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "create-transactions-server-error",
+              "name": "Database error",
+              "originalRequest": {
+                "url": {
+                  "path": ["api", "v1", "transaction-history"],
+                  "host": ["{{baseUrl}}"],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"transactions\": [\n    {\n      \"symbol\": \"GOOGL\",\n      \"exchange\": \"NASDAQ\",\n      \"currency\": \"USD\",\n      \"trade_date\": \"2025-01-01\",\n      \"trade_type\": \"Buy\",\n      \"quantity\": 1,\n      \"price\": 200.00,\n      \"trade_amount\": 200.00\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Failed to create transactions\",\n  \"errors\": {\n    \"database\": [\"Connection timeout\"]\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
         }
       ]
     }
@@ -933,7 +1443,7 @@
   ],
   "info": {
     "_postman_id": "5ede5532-db9e-4088-bdfc-c729df66fdee",
-    "name": "Transaction Tracker API with JWT Auth",
+    "name": "Transaction Tracker API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "description": {
       "content": "RESTful API for tracking financial transactions with JWT Token Management System",

@@ -4,36 +4,38 @@ Organize the content into the following JSON format:
 {
   "transactions": [
     {
-      "ticker": "GOOGL",
-      "ticker_label": "ALPHABET INC CLASS A COMMON STOCK CASH DIV",
-      "exchange": "NASDAQ", 
+      "symbol": "GOOGL",
+      "symbol_label": "ALPHABET INC CLASS A COMMON STOCK CASH DIV",
+      "exchange": "NASDAQ",
+      "broker": "Firstrade",
       "currency": "USD",
-      "trade_date": "YYYY/MM/DD",
+      "trade_date": "2025-01-01",
       "trade_type": "Buy",
-      "quantity": 0,
-      "price": 0.00,
-      "trade_amount": 0
+      "quantity": 1,
+      "price": 200.00,
+      "trade_amount": 200.00
     },
     {
-      "ticker": "2330",
-      "ticker_label": "2330台積電",
-      "exchange": "NASDAQ", 
-      "currency": "USD",
-      "trade_date": "YYYY/MM/DD",
+      "symbol": "2330",
+      "symbol_label": "2330 台積電",
+      "exchange": "TPE", 
+      "currency": "TWD",
+      "broker": "元富證券",
+      "trade_date": "2025-04-02",
       "trade_type": "Buy",
-      "quantity": 0,
-      "price": 0.00,
-      "trade_amount": 0
+      "quantity": 25,
+      "price": 800.00,
+      "trade_amount": 20000.00
     }
   ]
 }
 
 Rules:
 1. trade_type must be one of: "Buy", "Sell", "Dividends"
-2. ticker is the stock symbol, ticker_label is human-readable stock name
-2. Infer the "exchange" and "currency" from the screenshot content
-3. Use YYYY/MM/DD format for trade_date
-4. All numeric values should be numbers, not strings
-5. If information is not available, use reasonable defaults or null
+2. symbol is the stock symbol, symbol_label is human-readable stock name
+3. Infer the "exchange" and "currency" from the screenshot content
+4. trade_date should be a valid ISO 8601 date format (YYYY-MM-DD), not more than 30 years in the past, and not future dates
+5. All numeric values should be numbers, not strings
+6. If information is not available, use reasonable defaults or null
 
 Please analyze the screenshots and return only the JSON response.

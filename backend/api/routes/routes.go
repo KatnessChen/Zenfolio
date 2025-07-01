@@ -33,15 +33,15 @@ func SetupRouter(cfg *config.Config) *gin.Engine {
 		panic("Failed to initialize database: " + err.Error())
 	}
 
-	authHandler := handlers.NewAuthHandler(dm.GetDB(), cfg)
+	handlersProvider := handlers.InitHandlers(dm.GetDB(), cfg)
 
 	// Public routes (no authentication required)
 	publicApi := r.Group(constants.APIVersion)
 	publicApi.Use(middlewares.RateLimitMiddleware(rateLimiter))
 	{
 		publicApi.GET(constants.HealthEndpoint, handlers.GetHealthCheck)
-		publicApi.POST(constants.LoginEndpoint, authHandler.Login)
-		publicApi.POST(constants.SignupEndpoint, authHandler.Signup)
+		publicApi.POST(constants.LoginEndpoint, handlersProvider.Auth.Login)
+		publicApi.POST(constants.SignupEndpoint, handlersProvider.Auth.Signup)
 	}
 
 	// Protected API routes
@@ -53,11 +53,13 @@ func SetupRouter(cfg *config.Config) *gin.Engine {
 		api.GET(constants.HelloWorldEndpoint, handlers.HelloWorld)
 		api.GET(constants.DatabaseHealthEndpoint, handlers.DatabaseHealthHandler)
 
-		api.POST(constants.LogoutEndpoint, authHandler.Logout)
-		api.POST(constants.RefreshTokenEndpoint, authHandler.RefreshToken)
-		api.GET(constants.MeEndpoint, authHandler.Me)
+		api.POST(constants.LogoutEndpoint, handlersProvider.Auth.Logout)
+		api.POST(constants.RefreshTokenEndpoint, handlersProvider.Auth.RefreshToken)
+		api.GET(constants.MeEndpoint, handlersProvider.Auth.Me)
 
 		api.POST(constants.ExtractTransEndpoint, handlers.ExtractTransactionsHandler(cfg))
+		api.GET(constants.TransactionHistoryEndpoint, handlersProvider.Transactions.GetTransactionHistory)
+		api.POST(constants.TransactionHistoryEndpoint, handlersProvider.Transactions.CreateTransactions)
 	}
 
 	return r

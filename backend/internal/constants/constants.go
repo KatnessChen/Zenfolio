@@ -14,16 +14,17 @@ const (
 
 // API Routes and Endpoints
 const (
-	APIVersion             = "/api/v1"
-	HealthEndpoint         = "/health"
-	DatabaseHealthEndpoint = "/health/database"
-	LoginEndpoint          = "/login"
-	SignupEndpoint         = "/signup"
-	LogoutEndpoint         = "/logout"
-	RefreshTokenEndpoint   = "/refresh-token"
-	MeEndpoint             = "/me"
-	HelloWorldEndpoint     = "/hello-world"
-	ExtractTransEndpoint   = "/extract-transactions"
+	APIVersion               = "/api/v1"
+	HealthEndpoint           = "/health"
+	DatabaseHealthEndpoint   = "/health/database"
+	LoginEndpoint            = "/login"
+	SignupEndpoint           = "/signup"
+	LogoutEndpoint           = "/logout"
+	RefreshTokenEndpoint     = "/refresh-token"
+	MeEndpoint               = "/me"
+	HelloWorldEndpoint       = "/hello-world"
+	ExtractTransEndpoint     = "/extract-transactions"
+	TransactionHistoryEndpoint = "/transaction-history"
 )
 
 // HTTP Headers
