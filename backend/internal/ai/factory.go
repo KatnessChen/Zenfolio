@@ -14,10 +14,11 @@ func NewClient(cfg *config.Config) (Client, error) {
 	}
 
 	aiConfig := &Config{
-		APIKey:   cfg.AIAPIKey,
-		Model:    cfg.AIModel,
-		Timeout:  cfg.AITimeout,
-		MaxRetry: cfg.AIMaxRetry,
+		APIKey:      cfg.AIAPIKey,
+		Model:       cfg.AIModel,
+		Timeout:     cfg.AITimeout,
+		MaxRetry:    cfg.AIMaxRetry,
+		Environment: cfg.Environment,
 	}
 
 	log.Printf("Initializing AI client with model: %s", aiConfig.Model)

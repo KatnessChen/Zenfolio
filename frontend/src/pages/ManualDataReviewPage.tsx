@@ -19,7 +19,7 @@ interface BatchTransaction {
   notes: string
 }
 
-export default function BatchReviewPage() {
+export default function ManualDataReviewPage() {
   const navigate = useNavigate()
   const [batch, setBatch] = useState<BatchTransaction[]>([])
 

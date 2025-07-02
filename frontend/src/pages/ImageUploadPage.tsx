@@ -24,13 +24,10 @@ export default function ImageUploadPage() {
   const handleUpload = useCallback(async () => {
     if (selectedFiles.length === 0) return
 
-    // Navigate to processing page
+    // Navigate to processing page with actual File objects
     navigate(ROUTES.TRANSACTIONS_UPLOAD_PROCESSING, {
-      state: { files: selectedFiles.map((f) => f.name) },
+      state: { files: selectedFiles },
     })
-
-    // TODO: Implement actual file upload to backend
-    console.log('Uploading files:', selectedFiles)
   }, [navigate, selectedFiles])
 
   const handleDrop = useCallback((e: React.DragEvent) => {

@@ -1,7 +1,6 @@
 package types
 
 import (
-	"context"
 	"io"
 )
 
@@ -30,26 +29,25 @@ type TransactionData struct {
 	Exchange        string    `json:"exchange"`         // Maps to Transaction.Exchange
 }
 
-// ImageInput represents an image file for processing
-type ImageInput struct {
+// FileInput represents an image file for processing
+type FileInput struct {
 	Data     io.Reader
 	Filename string
 	MimeType string
 }
 
-// ExtractResponse represents the response from AI model
-type ExtractResponse struct {
-	Transactions []TransactionData `json:"transactions"`
-	Success      bool              `json:"success"`
-	Message      string            `json:"message"`
+// ExtractResponseData represents the data part of extract response
+type ExtractResponseData struct {
+	Transactions     []TransactionData `json:"transactions"`
+	TransactionCount int               `json:"transaction_count"`
+	FileName         string            `json:"file_name"`
 }
 
-// AIClient defines the interface for AI model interactions
-type AIClient interface {
-	// ExtractTransactions processes images and extracts transaction data
-	ExtractTransactions(ctx context.Context, images []ImageInput) (*ExtractResponse, error)
-	// Close releases any resources held by the client
-	Close()
+// ExtractResponse represents the response from AI model
+type ExtractResponse struct {
+	Data    *ExtractResponseData `json:"data,omitempty"`
+	Success bool                 `json:"success"`
+	Message string               `json:"message"`
 }
 
 // TradeTypeFromString converts string to TradeType

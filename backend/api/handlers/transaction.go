@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"fmt"
-	"mime/multipart"
 	"net/http"
 	"regexp"
 	"strings"
@@ -116,68 +115,63 @@ func ExtractTransactionsHandler(cfg *config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		form, err := c.MultipartForm()
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to parse multipart form: " + err.Error()})
-			return
-		}
-		files := form.File["images"] // Expecting files under the field name "images"
-
-		if len(files) == 0 {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "No images uploaded. Please upload images under the 'images' field."})
-			return
-		}
-
-		var imageInputs []types.ImageInput
-		var filesToClose []multipart.File
-
-		// Ensure all opened files are closed after processing
-		defer func() {
-			for _, f := range filesToClose {
-				_ = f.Close()
-			}
-		}()
-
-		for _, fileHeader := range files {
-			// Log the received file
-			// log.Printf("Received file: %s, size: %d, header: %#v", fileHeader.Filename, fileHeader.Size, fileHeader.Header)
-
-			src, err := fileHeader.Open()
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to open uploaded image " + fileHeader.Filename + ": " + err.Error()})
-				return
-			}
-
-			// Collect files for deferred closure outside the loop
-			filesToClose = append(filesToClose, src)
-
-			imageInputs = append(imageInputs, types.ImageInput{
-				Data:     src,
-				Filename: fileHeader.Filename,
-				MimeType: fileHeader.Header.Get(constants.ContentTypeHeader),
+			c.JSON(http.StatusBadRequest, types.ExtractResponse{
+				Success: false,
+				Message: "Failed to parse multipart form: " + err.Error(),
 			})
+			return
+		}
+		file := form.File["file"] // Get the file directly
+
+		if len(file) == 0 {
+			c.JSON(http.StatusBadRequest, types.ExtractResponse{
+				Success: false,
+				Message: "No file uploaded. Please upload a file under the 'file' field.",
+			})
+			return
+		}
+
+		// Take the first (and only expected) file
+		fileHeader := file[0]
+
+		src, err := fileHeader.Open()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, types.ExtractResponse{
+				Success: false,
+				Message: "Failed to open uploaded file " + fileHeader.Filename + ": " + err.Error(),
+			})
+			return
+		}
+		defer src.Close()
+
+		imageInput := types.FileInput{
+			Data:     src,
+			Filename: fileHeader.Filename,
+			MimeType: fileHeader.Header.Get(constants.ContentTypeHeader),
 		}
 
 		// Initialize AI client
-		// Note: In a real application, you'd likely initialize the AI client once and reuse it,
-		// or use a dependency injection framework. For simplicity here, we create it on each request.
-		// Pass the main application config directly to the factory
-		aiClient, err := ai.NewClient(cfg) // Using the factory from backend/internal/ai/factory.go
+		aiClient, err := ai.NewClient(cfg)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to initialize AI client: " + err.Error()})
+			c.JSON(http.StatusInternalServerError, types.ExtractResponse{
+				Success: false,
+				Message: "Failed to initialize AI client: " + err.Error(),
+			})
 			return
 		}
 		defer aiClient.Close()
 
-		// Log imageInput details
-		// log.Printf("ImageInputs: %d files", len(imageInputs))
-
-		extractResp, err := aiClient.ExtractTransactions(c.Request.Context(), imageInputs)
+		extractResp, err := aiClient.ExtractTransactions(c.Request.Context(), imageInput)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to extract transactions: " + err.Error()})
+			c.JSON(http.StatusInternalServerError, types.ExtractResponse{
+				Success: false,
+				Message: "Failed to extract transactions: " + err.Error(),
+			})
 			return
 		}
 
 		if !extractResp.Success {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Transaction extraction unsuccessful: " + extractResp.Message})
+			c.JSON(http.StatusInternalServerError, extractResp)
 			return
 		}
 
@@ -269,7 +263,7 @@ func (h *TransactionsHandler) CreateTransactions(c *gin.Context) {
 	for _, transaction := range createdTransactions {
 		responseTransactions = append(responseTransactions, types.TransactionData{
 			Symbol:          transaction.Symbol,
-			Type:            transaction.Type,
+			Type:            types.TradeType(transaction.Type),
 			Quantity:        transaction.Quantity,
 			Price:           transaction.Price,
 			Amount:          transaction.Amount,
@@ -357,7 +351,7 @@ func (h *TransactionsHandler) GetTransactionHistory(c *gin.Context) {
 	for _, transaction := range transactions {
 		responseTransactions = append(responseTransactions, types.TransactionData{
 			Symbol:          transaction.Symbol,
-			Type:            transaction.Type,
+			Type:            types.TradeType(transaction.Type),
 			Quantity:        transaction.Quantity,
 			Price:           transaction.Price,
 			Amount:          transaction.Amount,
