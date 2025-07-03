@@ -10,7 +10,7 @@ interface BatchTransaction {
   id: string
   tradeDate: string
   symbol: string
-  tradeType: 'Buy' | 'Sell' | 'Dividend' | ''
+  tradeType: 'Buy' | 'Sell' | 'Dividends' | ''
   price: string
   quantity: string
   amount: string
@@ -19,7 +19,7 @@ interface BatchTransaction {
   notes: string
 }
 
-export default function BatchReviewPage() {
+export default function ManualDataReviewPage() {
   const navigate = useNavigate()
   const [batch, setBatch] = useState<BatchTransaction[]>([])
 
@@ -80,7 +80,7 @@ export default function BatchReviewPage() {
         return 'text-green-600'
       case 'Sell':
         return 'text-red-600'
-      case 'Dividend':
+      case 'Dividends':
         return 'text-blue-600'
       default:
         return 'text-foreground'
@@ -95,7 +95,7 @@ export default function BatchReviewPage() {
       case 'Sell':
         return `-$${formattedValue}`
       case 'Buy':
-      case 'Dividend':
+      case 'Dividends':
       default:
         return `$${formattedValue}`
     }

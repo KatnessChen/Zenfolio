@@ -12,6 +12,7 @@ import (
 // Config holds all configuration for the application
 type Config struct {
 	ServerAddress      string
+	Environment        string // "development" or "production"
 	JWTSecret          string
 	JWTExpirationHours int
 	RateLimitRequests  int
@@ -30,6 +31,8 @@ func Load() (*Config, error) {
 	if serverAddr == "" {
 		serverAddr = constants.DefaultServerAddr
 	}
+
+	environment := getEnvOrDefault("ENVIRONMENT", "development")
 
 	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {
@@ -69,6 +72,7 @@ func Load() (*Config, error) {
 
 	return &Config{
 		ServerAddress:      serverAddr,
+		Environment:        environment,
 		JWTSecret:          jwtSecret,
 		JWTExpirationHours: jwtExpirationHours,
 		RateLimitRequests:  constants.DefaultRateLimit,

@@ -145,20 +145,20 @@ export TEST_VERBOSE="true"                    # Enable verbose test output
 func TestAIClientExtraction(t *testing.T) {
     tests := []struct {
         name           string
-        inputImages    []ai.ImageInput
+        inputImages    []ai.FileInput
         expectedResult *ai.ExtractResponse
         expectError    bool
     }{
         {
             name: "successful extraction",
-            inputImages: []ai.ImageInput{
+            inputImages: []ai.FileInput{
                 {Data: mockImageData, Filename: "test.png", MimeType: "image/png"},
             },
             expectError: false,
         },
         {
             name: "invalid image data",
-            inputImages: []ai.ImageInput{
+            inputImages: []ai.FileInput{
                 {Data: invalidData, Filename: "bad.png", MimeType: "image/png"},
             },
             expectError: true,

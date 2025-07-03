@@ -382,10 +382,10 @@ export default function TransactionHistoryPage() {
                             <TableCell
                               className={`font-medium ${
                                 transaction.tradeType === TRADE_TYPE.BUY
-                                  ? 'text-primary' // Brighter Sage Green
+                                  ? 'text-primary'
                                   : transaction.tradeType === TRADE_TYPE.SELL
-                                    ? 'text-chart-1' // Brighter Soft Salmon Pink
-                                    : 'text-muted' // Medium Grey-Green for Dividend
+                                    ? 'text-chart-1'
+                                    : 'text-muted' // Medium Grey-Green for Dividends
                               }`}
                             >
                               {transaction.tradeType}

@@ -195,37 +195,6 @@ func (h *AuthHandler) Me(c *gin.Context) {
 	})
 }
 
-// RefreshToken handles token refresh
-func (h *AuthHandler) RefreshToken(c *gin.Context) {
-	// Get token from header
-	tokenString := extractTokenFromHeader(c)
-	if tokenString == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "No token provided",
-		})
-		return
-	}
-
-	// Get device information
-	deviceInfo := services.DeviceInfo{
-		UserAgent: c.GetHeader("User-Agent"),
-		IPAddress: c.ClientIP(),
-	}
-
-	// Refresh the token
-	newToken, err := h.jwtService.RefreshToken(tokenString, deviceInfo)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "Failed to refresh token",
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"token": newToken,
-	})
-}
-
 // Signup handles user registration
 func (h *AuthHandler) Signup(c *gin.Context) {
 	var req SignupRequest

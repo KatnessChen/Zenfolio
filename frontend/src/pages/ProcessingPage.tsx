@@ -1,63 +1,133 @@
-import { useEffect } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { ROUTES, CURRENCY } from '@/constants'
+import { useDispatch, useSelector } from 'react-redux'
+import { ROUTES } from '@/constants'
+import { TransactionService } from '@/lib/transaction-service'
+import { ClockIcon, SpinnerIcon, CheckIcon, XIcon } from '@/components/icons'
+import { initializeFiles, updateFileStatus } from '@/store/fileProcessingSlice'
+import type { RootState, AppDispatch } from '@/store'
+import type { ExtractResponse } from '@/types'
+import {
+  FILE_STATUS_PENDING,
+  FILE_STATUS_PROCESSING,
+  FILE_STATUS_COMPLETED,
+  FILE_STATUS_ERROR,
+} from '@/constants/fileProcessingStatus'
 
 interface LocationState {
-  files: string[]
+  files: File[]
 }
 
 export default function ProcessingPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const state = location.state as LocationState
+  const dispatch = useDispatch<AppDispatch>()
+  const { fileStates } = useSelector((state: RootState) => state.fileProcessing)
+
+  const [hasNavigated, setHasNavigated] = useState(false)
+  const hasStartedExtractionRef = useRef(false)
+
+  const startParallelExtraction = useCallback(
+    async (files: File[]) => {
+      try {
+        // Update all files to processing status
+        files.forEach((_, index) => {
+          dispatch(updateFileStatus({ fileIndex: index, status: 'processing' }))
+        })
+
+        // Process files in parallel with progress updates
+        await TransactionService.extractTransactionsParallel(
+          files,
+          (fileIndex: number, result: ExtractResponse, error?: string) => {
+            const status = result.success ? 'completed' : 'error'
+            dispatch(
+              updateFileStatus({
+                fileIndex,
+                status,
+                result: result.data,
+                error: error || (!result.success ? result.message : undefined),
+                progress: 100,
+              })
+            )
+
+            // Navigate as soon as ANY file is successfully processed OR all files are done (including all errors)
+            const currentStates = [...fileStates]
+            currentStates[fileIndex] = {
+              ...currentStates[fileIndex],
+              status,
+              result: result.data,
+              error: error || (!result.success ? result.message : undefined),
+              progress: 100,
+            }
+
+            const hasAnyCompleted = currentStates.some((fs) => fs.status === 'completed')
+            const allFilesProcessed = currentStates.every(
+              (fs) => fs.status === 'completed' || fs.status === 'error'
+            )
+
+            if ((hasAnyCompleted || allFilesProcessed) && !hasNavigated) {
+              setHasNavigated(true)
+
+              // Navigate to review page after a short delay
+              setTimeout(() => {
+                navigate(ROUTES.TRANSACTIONS_UPLOAD_REVIEW)
+              }, 1000)
+            }
+          }
+        )
+      } catch (error) {
+        console.error('Extraction failed:', error)
+        files.forEach((_, index) => {
+          dispatch(
+            updateFileStatus({
+              fileIndex: index,
+              status: 'error',
+              error: 'Extraction failed',
+            })
+          )
+        })
+      }
+    },
+    [navigate, hasNavigated, dispatch, fileStates]
+  )
 
   useEffect(() => {
-    // Simulate processing time (3-5 seconds)
-    const processingTime = 3000 + Math.random() * 2000
+    if (!state?.files || state.files.length === 0) {
+      navigate(ROUTES.TRANSACTIONS_UPLOAD)
+      return
+    }
 
-    const timer = setTimeout(() => {
-      // Navigate to review page with processed data
-      navigate(ROUTES.TRANSACTIONS_UPLOAD_REVIEW, {
-        state: {
-          files: state?.files || [],
-          processedData: generateMockProcessedData(),
-        },
-      })
-    }, processingTime)
+    // Prevent multiple executions
+    if (hasStartedExtractionRef.current) return
 
-    return () => clearTimeout(timer)
-  }, [navigate, state])
+    // Initialize files in store
+    dispatch(initializeFiles({ files: state.files }))
 
-  // Mock function to generate processed transaction data
-  const generateMockProcessedData = () => {
-    return [
-      {
-        id: '1',
-        ticker: 'AAPL',
-        tradeType: 'Buy',
-        quantity: 100,
-        price: 150.25,
-        amount: 15025.0,
-        tradeDate: '2024-01-15',
-        broker: 'Fidelity',
-        currency: CURRENCY.USD,
-        userNotes: '',
-        confidence: 0.95,
-      },
-      {
-        id: '2',
-        ticker: 'GOOGL',
-        tradeType: 'Sell',
-        quantity: 50,
-        price: 2750.8,
-        amount: 137540.0,
-        tradeDate: '2024-01-14',
-        broker: 'Schwab',
-        currency: CURRENCY.USD,
-        userNotes: '',
-        confidence: 0.92,
-      },
-    ]
+    // Start parallel extraction
+    startParallelExtraction(state.files)
+
+    // Mark extraction as started
+    hasStartedExtractionRef.current = true
+  }, [navigate, state, startParallelExtraction, dispatch])
+
+  const completedCount = fileStates.filter((fs) => fs.status === 'completed').length
+  const errorCount = fileStates.filter((fs) => fs.status === 'error').length
+  const totalCount = fileStates.length
+
+  const getStatusIcon = (status: (typeof fileStates)[0]['status']) => {
+    switch (status) {
+      case FILE_STATUS_PENDING:
+        return <ClockIcon size={24} />
+      case FILE_STATUS_PROCESSING:
+        return <SpinnerIcon size={24} />
+      case FILE_STATUS_COMPLETED:
+        return <CheckIcon size={24} />
+      case FILE_STATUS_ERROR:
+        return <XIcon size={24} />
+      default:
+        return <ClockIcon size={24} />
+    }
   }
 
   return (
@@ -80,35 +150,56 @@ export default function ProcessingPage() {
         <div className="space-y-3">
           <h2 className="text-2xl font-semibold text-foreground">Processing your screenshots...</h2>
           <p className="text-muted-foreground">
-            This may take a moment, please do not close this page.
+            {totalCount > 1
+              ? `Processing ${totalCount} files in parallel. You'll be redirected when the first file is ready.`
+              : 'This may take a moment, please do not close this page.'}
           </p>
+          <p className="text-sm text-muted-foreground">
+            The review page will appear once the first file is processed.
+          </p>
+          {totalCount > 1 && (
+            <p className="text-sm text-muted-foreground">
+              <span className="inline-flex items-center gap-1">
+                <CheckIcon className="w-3 h-3" />
+                {completedCount} completed
+              </span>
+              {' • '}
+              <span className="inline-flex items-center gap-1">
+                <XIcon className="w-3 h-3" />
+                {errorCount} failed
+              </span>
+              {' • '}
+              <span className="inline-flex items-center gap-1">
+                <ClockIcon className="w-3 h-3" />
+                {totalCount - completedCount - errorCount} remaining
+              </span>
+            </p>
+          )}
         </div>
 
-        {/* Processing Steps */}
-        <div className="mt-8 space-y-3 text-left">
-          <div className="flex items-center space-x-3">
-            <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-            <span className="text-sm text-muted-foreground">Analyzing images...</span>
-          </div>
-          <div className="flex items-center space-x-3">
-            <div className="w-2 h-2 bg-muted-foreground/40 rounded-full"></div>
-            <span className="text-sm text-muted-foreground/60">Extracting transaction data...</span>
-          </div>
-          <div className="flex items-center space-x-3">
-            <div className="w-2 h-2 bg-muted-foreground/40 rounded-full"></div>
-            <span className="text-sm text-muted-foreground/60">Validating information...</span>
-          </div>
-        </div>
-
-        {/* File Info */}
-        {state?.files && (
-          <div className="mt-8 p-4 bg-muted rounded-lg">
-            <p className="text-sm text-muted-foreground mb-2">Processing files:</p>
-            <div className="space-y-1">
-              {state.files.map((filename, index) => (
-                <p key={index} className="text-xs text-foreground font-mono">
-                  {filename}
-                </p>
+        {/* File Processing Status */}
+        {fileStates.length > 0 && (
+          <div className="mt-8 p-4 bg-muted rounded-lg max-w-md">
+            <div className="space-y-2 max-h-64 overflow-y-auto">
+              {fileStates.map((fileState, index) => (
+                <div key={index} className="flex items-center justify-between text-xs">
+                  <span className="text-foreground font-mono truncate flex-1 mr-2">
+                    {fileState.file.name}
+                  </span>
+                  <div className="flex items-center space-x-2">
+                    <span>{getStatusIcon(fileState.status)}</span>
+                    {fileState.status === 'completed' && fileState.result && (
+                      <span className="text-green-600 text-xs">
+                        {fileState.result.transaction_count} found
+                      </span>
+                    )}
+                    {fileState.status === FILE_STATUS_ERROR && (
+                      <span className="text-red-600 text-xs" title={fileState.error}>
+                        Error
+                      </span>
+                    )}
+                  </div>
+                </div>
               ))}
             </div>
           </div>

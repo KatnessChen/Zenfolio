@@ -13,7 +13,7 @@ interface TransactionData {
   id?: string
   tradeDate: string
   symbol: string
-  tradeType: 'Buy' | 'Sell' | 'Dividend' | ''
+  tradeType: 'Buy' | 'Sell' | 'Dividends' | ''
   price: string
   quantity: string
   amount: string
@@ -202,7 +202,7 @@ export default function ManualTransactionPage() {
       case 'Sell':
         return `-$${formattedValue}`
       case 'Buy':
-      case 'Dividend':
+      case 'Dividends':
       default:
         return `$${formattedValue}`
     }
@@ -327,8 +327,8 @@ export default function ManualTransactionPage() {
                   <DropdownItem onClick={() => handleInputChange('tradeType', 'Sell')}>
                     Sell
                   </DropdownItem>
-                  <DropdownItem onClick={() => handleInputChange('tradeType', 'Dividend')}>
-                    Dividend
+                  <DropdownItem onClick={() => handleInputChange('tradeType', 'Dividends')}>
+                    Dividends
                   </DropdownItem>
                 </Dropdown>
               </div>

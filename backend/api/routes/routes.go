@@ -18,7 +18,7 @@ func SetupRouter(cfg *config.Config) *gin.Engine {
 
 	// Configure CORS
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000", "http://localhost:5173", "http://localhost:4173"}, // Common frontend dev ports
+		AllowOrigins:     []string{"http://localhost:3000", "http://localhost:5173", "http://localhost:5174"}, // Common frontend dev ports
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
 		AllowCredentials: true,
@@ -54,10 +54,9 @@ func SetupRouter(cfg *config.Config) *gin.Engine {
 		api.GET(constants.DatabaseHealthEndpoint, handlers.DatabaseHealthHandler)
 
 		api.POST(constants.LogoutEndpoint, handlersProvider.Auth.Logout)
-		api.POST(constants.RefreshTokenEndpoint, handlersProvider.Auth.RefreshToken)
 		api.GET(constants.MeEndpoint, handlersProvider.Auth.Me)
 
-		api.POST(constants.ExtractTransEndpoint, handlers.ExtractTransactionsHandler(cfg))
+		api.POST(constants.ExtractTransEndpoint, handlersProvider.Transactions.ExtractTransactions)
 		api.GET(constants.TransactionHistoryEndpoint, handlersProvider.Transactions.GetTransactionHistory)
 		api.POST(constants.TransactionHistoryEndpoint, handlersProvider.Transactions.CreateTransactions)
 	}

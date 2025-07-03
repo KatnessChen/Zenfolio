@@ -1,7 +1,6 @@
 package types
 
 import (
-	"context"
 	"io"
 )
 
@@ -30,38 +29,33 @@ type TransactionData struct {
 	Exchange        string    `json:"exchange"`         // Maps to Transaction.Exchange
 }
 
-// ImageInput represents an image file for processing
-type ImageInput struct {
+// FileInput represents an image file for processing
+type FileInput struct {
 	Data     io.Reader
 	Filename string
 	MimeType string
 }
 
+// ExtractResponseData represents the data part of extract response
+type ExtractResponseData struct {
+	Transactions     []TransactionData `json:"transactions"`
+	TransactionCount int               `json:"transaction_count"`
+	FileName         string            `json:"file_name"`
+}
+
 // ExtractResponse represents the response from AI model
 type ExtractResponse struct {
-	Transactions []TransactionData `json:"transactions"`
-	Success      bool              `json:"success"`
-	Message      string            `json:"message"`
+	Data    *ExtractResponseData `json:"data,omitempty"`
+	Success bool                 `json:"success"`
+	Message string               `json:"message"`
 }
 
-// AIClient defines the interface for AI model interactions
-type AIClient interface {
-	// ExtractTransactions processes images and extracts transaction data
-	ExtractTransactions(ctx context.Context, images []ImageInput) (*ExtractResponse, error)
-	// Close releases any resources held by the client
-	Close()
-}
-
-// TradeTypeFromString converts string to TradeType
-func TradeTypeFromString(s string) (TradeType, bool) {
-	switch s {
-	case "Buy":
-		return TradeTypeBuy, true
-	case "Sell":
-		return TradeTypeSell, true
-	case "Dividends":
-		return TradeTypeDividend, true
-	default:
-		return "", false
-	}
+// PaginationData represents pagination information
+type PaginationData struct {
+	Page         int  `json:"page"`
+	PageSize     int  `json:"page_size"`
+	TotalRecords int  `json:"total_records"`
+	TotalPages   int  `json:"total_pages"`
+	HasNext      bool `json:"has_next"`
+	HasPrevious  bool `json:"has_previous"`
 }

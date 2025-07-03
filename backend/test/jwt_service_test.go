@@ -233,46 +233,7 @@ func TestJWTService_RevokeToken(t *testing.T) {
 	assert.Contains(t, err.Error(), "revoked")
 }
 
-// Test 1.4: Token Refresh Tests
-func TestJWTService_RefreshToken(t *testing.T) {
-	_, _, jwtService, testUser := setupJWTServiceTest(t)
-	deviceInfo := createTestDeviceInfo()
-
-	// Generate a valid token
-	originalToken, err := jwtService.GenerateToken(testUser, deviceInfo)
-	require.NoError(t, err)
-
-	// Refresh the token
-	newToken, err := jwtService.RefreshToken(originalToken, deviceInfo)
-	assert.NoError(t, err)
-	assert.NotEmpty(t, newToken)
-	assert.NotEqual(t, originalToken, newToken)
-
-	// Verify new token is valid
-	newClaims, err := jwtService.ValidateToken(newToken)
-	assert.NoError(t, err)
-	assert.NotNil(t, newClaims)
-	assert.Equal(t, testUser.ID, newClaims.UserID)
-
-	// Verify old token is revoked
-	oldClaims, err := jwtService.ValidateToken(originalToken)
-	assert.Error(t, err)
-	assert.Nil(t, oldClaims)
-	assert.Contains(t, err.Error(), "revoked")
-}
-
-func TestJWTService_RefreshToken_InvalidToken(t *testing.T) {
-	_, _, jwtService, _ := setupJWTServiceTest(t)
-	deviceInfo := createTestDeviceInfo()
-
-	// Try to refresh invalid token
-	newToken, err := jwtService.RefreshToken("invalid.token.string", deviceInfo)
-	assert.Error(t, err)
-	assert.Empty(t, newToken)
-	assert.Contains(t, err.Error(), "cannot refresh invalid token")
-}
-
-// Test 1.5: Token ID Extraction Tests
+// Test 1.4: Token ID Extraction Tests
 func TestJWTService_ExtractTokenID(t *testing.T) {
 	_, _, jwtService, testUser := setupJWTServiceTest(t)
 	deviceInfo := createTestDeviceInfo()

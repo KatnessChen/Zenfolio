@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"github.com/transaction-tracker/backend/config"
+	"github.com/transaction-tracker/backend/internal/ai"
 	"github.com/transaction-tracker/backend/internal/repositories"
 	"github.com/transaction-tracker/backend/internal/services"
 	"gorm.io/gorm"
@@ -17,8 +18,14 @@ func InitHandlers(db *gorm.DB, cfg *config.Config) *Handlers {
 	transactionRepo := repositories.NewTransactionRepository(db)
 	transactionService := services.NewTransactionService(transactionRepo)
 
+	// Initialize AI client once for reuse
+	aiClient, err := ai.NewClient(cfg)
+	if err != nil {
+		panic("Failed to initialize AI client: " + err.Error())
+	}
+
 	return &Handlers{
-		Transactions: NewTransactionsHandler(transactionService),
+		Transactions: NewTransactionsHandler(transactionService, aiClient),
 		Auth:         NewAuthHandler(db, cfg),
 	}
 }

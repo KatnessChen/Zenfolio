@@ -11,12 +11,11 @@ import DashboardPage from '@/pages/DashboardPage'
 import SignUpPage from '@/pages/SignUpPage'
 import LoginPage from '@/pages/LoginPage'
 import TransactionHistoryPage from '@/pages/TransactionHistoryPage'
-import ImageUploadPage from '@/pages/ImageUploadPage'
 import ProcessingPage from '@/pages/ProcessingPage'
-import DataReviewPage from '@/pages/DataReviewPage'
 import SettingsPage from '@/pages/SettingsPage'
 import ManualTransactionPage from '@/pages/ManualTransactionPage'
-import BatchReviewPage from '@/pages/BatchReviewPage'
+import ManualDataReviewPage from '@/pages/ManualDataReviewPage'
+import UploadImageGuard from '@/components/UploadImageGuard'
 
 function App() {
   return (
@@ -39,11 +38,14 @@ function App() {
                 <Route path={ROUTES.HOME} element={<HomePage />} />
                 <Route path={ROUTES.DASHBOARD} element={<DashboardPage />} />
                 <Route path={ROUTES.TRANSACTIONS} element={<TransactionHistoryPage />} />
-                <Route path={ROUTES.TRANSACTIONS_UPLOAD} element={<ImageUploadPage />} />
+                <Route path={ROUTES.TRANSACTIONS_UPLOAD} element={<UploadImageGuard />} />
                 <Route path={ROUTES.TRANSACTIONS_UPLOAD_PROCESSING} element={<ProcessingPage />} />
-                <Route path={ROUTES.TRANSACTIONS_UPLOAD_REVIEW} element={<DataReviewPage />} />
+                <Route path={ROUTES.TRANSACTIONS_UPLOAD_REVIEW} element={<UploadImageGuard />} />
                 <Route path={ROUTES.TRANSACTIONS_MANUAL_ADD} element={<ManualTransactionPage />} />
-                <Route path={ROUTES.TRANSACTIONS_MANUAL_REVIEW} element={<BatchReviewPage />} />
+                <Route
+                  path={ROUTES.TRANSACTIONS_MANUAL_REVIEW}
+                  element={<ManualDataReviewPage />}
+                />
                 <Route path={ROUTES.SETTINGS} element={<SettingsPage />} />
               </Route>
             </Routes>
