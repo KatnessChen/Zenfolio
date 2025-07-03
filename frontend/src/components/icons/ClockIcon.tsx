@@ -1,13 +1,16 @@
 import React from 'react'
 
 interface ClockIconProps {
+  size?: number
   className?: string
 }
 
-export const ClockIcon: React.FC<ClockIconProps> = ({ className = 'w-4 h-4' }) => {
+export const ClockIcon: React.FC<ClockIconProps> = ({ size = 24, className }) => {
   return (
     <svg
       className={className}
+      width={size}
+      height={size}
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"

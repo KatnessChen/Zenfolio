@@ -85,7 +85,7 @@ export const WithActions: Story = {
         </TableRow>
         <TableRow>
           <TableCell className="font-mono font-medium">MSFT</TableCell>
-          <TableCell>Dividend</TableCell>
+          <TableCell>Dividends</TableCell>
           <TableCell>$2.75</TableCell>
           <TableCell className="text-right text-muted-foreground">$550.00</TableCell>
           <TableCell>Quarterly dividend</TableCell>

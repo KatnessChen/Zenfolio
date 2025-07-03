@@ -18,6 +18,12 @@ import { DeleteIcon, PlusIcon, ClockIcon, SpinnerIcon, CheckIcon, XIcon } from '
 import { Title } from '@/components/ui/title'
 import type { RootState } from '@/store'
 import type { FileProcessingState, TradeType } from '@/types'
+import {
+  FILE_STATUS_PENDING,
+  FILE_STATUS_PROCESSING,
+  FILE_STATUS_COMPLETED,
+  FILE_STATUS_ERROR,
+} from '@/constants/fileProcessingStatus'
 
 interface ProcessedTransaction {
   id: string
@@ -37,7 +43,6 @@ interface ProcessedTransaction {
 export default function ExtractedDataReviewPage() {
   const navigate = useNavigate()
 
-  // Get data from Redux store
   const { files, fileStates, extractResults } = useSelector(
     (state: RootState) => state.fileProcessing
   )
@@ -87,22 +92,22 @@ export default function ExtractedDataReviewPage() {
 
   // Helper functions
   const getFileStatus = (fileIndex: number): FileProcessingState['status'] => {
-    if (!fileStates[fileIndex]) return 'completed'
+    if (!fileStates[fileIndex]) return FILE_STATUS_COMPLETED
     return fileStates[fileIndex].status
   }
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'pending':
-        return <ClockIcon className="w-4 h-4" />
-      case 'processing':
-        return <SpinnerIcon className="w-4 h-4" />
-      case 'completed':
-        return <CheckIcon className="w-4 h-4" />
-      case 'error':
-        return <XIcon className="w-4 h-4" />
+      case FILE_STATUS_PENDING:
+        return <ClockIcon size={24} />
+      case FILE_STATUS_PROCESSING:
+        return <SpinnerIcon size={24} />
+      case FILE_STATUS_COMPLETED:
+        return <CheckIcon size={24} />
+      case FILE_STATUS_ERROR:
+        return <XIcon size={24} />
       default:
-        return <CheckIcon className="w-4 h-4" />
+        return <CheckIcon size={24} />
     }
   }
 
@@ -112,7 +117,9 @@ export default function ExtractedDataReviewPage() {
   }
 
   const areAllFilesProcessed = () => {
-    return fileStates.every((fs) => fs.status === 'completed' || fs.status === 'error')
+    return fileStates.every(
+      (fs) => fs.status === FILE_STATUS_COMPLETED || fs.status === FILE_STATUS_ERROR
+    )
   }
 
   // Get transactions for current file
@@ -220,7 +227,7 @@ export default function ExtractedDataReviewPage() {
           const status = getFileStatus(index)
           const count = getTransactionCount(index)
           const isActive = index === currentFileIndex
-          const isClickable = status === 'completed' || 'error'
+          const isClickable = status === FILE_STATUS_COMPLETED || status === FILE_STATUS_ERROR
 
           return (
             <Button
@@ -233,11 +240,15 @@ export default function ExtractedDataReviewPage() {
               <div className="flex items-center gap-2">
                 <span>{getStatusIcon(status)}</span>
                 <span className="truncate max-w-[150px]">{file.name}</span>
-                {status === 'completed' && count > 0 && (
+                {status === FILE_STATUS_COMPLETED && count > 0 && (
                   <span className="text-xs">({count} records)</span>
                 )}
-                {status === 'processing' && <span className="text-xs">Processing...</span>}
-                {status === 'error' && <span className="text-xs text-red-500">Error</span>}
+                {status === FILE_STATUS_PROCESSING && (
+                  <span className="text-xs">Processing...</span>
+                )}
+                {status === FILE_STATUS_ERROR && (
+                  <span className="text-xs text-red-500">Error</span>
+                )}
               </div>
             </Button>
           )
@@ -288,9 +299,9 @@ export default function ExtractedDataReviewPage() {
 
             {currentTransactions.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                {getFileStatus(currentFileIndex) === 'processing'
+                {getFileStatus(currentFileIndex) === FILE_STATUS_PROCESSING
                   ? 'Processing file...'
-                  : getFileStatus(currentFileIndex) === 'error'
+                  : getFileStatus(currentFileIndex) === FILE_STATUS_ERROR
                     ? 'Error processing this file'
                     : 'No transactions found in this file'}
               </div>

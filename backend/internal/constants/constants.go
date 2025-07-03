@@ -20,7 +20,6 @@ const (
 	LoginEndpoint              = "/login"
 	SignupEndpoint             = "/signup"
 	LogoutEndpoint             = "/logout"
-	RefreshTokenEndpoint       = "/refresh-token"
 	MeEndpoint                 = "/me"
 	HelloWorldEndpoint         = "/hello-world"
 	ExtractTransEndpoint       = "/extract-transactions"

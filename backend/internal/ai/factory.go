@@ -30,20 +30,3 @@ func NewClient(cfg *config.Config) (Client, error) {
 
 	return client, nil
 }
-
-// ValidateConfig validates the AI configuration
-func ValidateConfig(cfg *config.Config) error {
-	if cfg.AIAPIKey == "" {
-		return fmt.Errorf("AI API key environment variable is required")
-	}
-
-	if cfg.AITimeout <= 0 {
-		return fmt.Errorf("AI timeout must be positive")
-	}
-
-	if cfg.AIMaxRetry <= 0 {
-		return fmt.Errorf("AI max retry must be positive")
-	}
-
-	return nil
-}

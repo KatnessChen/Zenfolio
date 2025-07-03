@@ -38,7 +38,7 @@ const TransactionForm = () => {
                 <DropdownItem>Buy</DropdownItem>
                 <DropdownItem>Sell</DropdownItem>
                 <DropdownSeparator />
-                <DropdownItem>Dividend</DropdownItem>
+                <DropdownItem>Dividends</DropdownItem>
               </Dropdown>
             </div>
             <div className="space-y-2">

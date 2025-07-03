@@ -1,5 +1,6 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import type { FileProcessingState, ExtractResponseData } from '@/types'
+import { FILE_STATUS_PENDING, FILE_STATUS_PROCESSING } from '@/constants/fileProcessingStatus'
 
 interface FileProcessingSliceState {
   files: File[]
@@ -32,12 +33,12 @@ const fileProcessingSlice = createSlice({
         action.payload.fileStates ||
         action.payload.files.map((file) => ({
           file,
-          status: 'pending',
+          status: FILE_STATUS_PENDING,
           progress: 0,
         }))
       state.extractResults = action.payload.extractResults || []
       state.isProcessing = state.fileStates.some(
-        (fs) => fs.status === 'pending' || fs.status === 'processing'
+        (fs) => fs.status === FILE_STATUS_PENDING || fs.status === FILE_STATUS_PROCESSING
       )
     },
 
@@ -74,7 +75,7 @@ const fileProcessingSlice = createSlice({
 
       // Update processing status
       state.isProcessing = state.fileStates.some(
-        (fs) => fs.status === 'pending' || fs.status === 'processing'
+        (fs) => fs.status === FILE_STATUS_PENDING || fs.status === FILE_STATUS_PROCESSING
       )
     },
 

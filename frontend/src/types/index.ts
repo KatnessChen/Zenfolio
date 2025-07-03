@@ -57,7 +57,7 @@ export interface FileProcessingState {
 export interface ProcessedTransaction {
   id: string
   ticker: string
-  tradeType: 'Buy' | 'Sell' | 'Dividend'
+  tradeType: 'Buy' | 'Sell' | 'Dividends'
   quantity: number
   price: number
   amount: number

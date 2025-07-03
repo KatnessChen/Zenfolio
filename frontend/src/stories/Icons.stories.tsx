@@ -1,5 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import { EditIcon, DeleteIcon, ChevronDownIcon, PlusIcon, GoogleIcon } from '@/components/icons'
+import {
+  EditIcon,
+  DeleteIcon,
+  ChevronDownIcon,
+  PlusIcon,
+  GoogleIcon,
+  ClockIcon,
+  SpinnerIcon,
+  CheckIcon,
+  XIcon,
+} from '@/components/icons'
 
 const IconShowcase = () => {
   return (
@@ -10,54 +20,66 @@ const IconShowcase = () => {
           Icon components used throughout the Zenfolio Transaction Tracker application.
         </p>
       </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+        <div className="flex flex-col items-center space-y-2">
+          <div className="p-3 bg-card border border-border rounded-md">
+            <EditIcon size={24} />
+          </div>
+          <span className="text-xs text-muted-foreground">EditIcon</span>
+        </div>
+        <div className="flex flex-col items-center space-y-2">
+          <div className="p-3 bg-card border border-border rounded-md">
+            <DeleteIcon size={24} />
+          </div>
+          <span className="text-xs text-muted-foreground">DeleteIcon</span>
+        </div>
+        <div className="flex flex-col items-center space-y-2">
+          <div className="p-3 bg-card border border-border rounded-md">
+            <PlusIcon size={24} />
+          </div>
+          <span className="text-xs text-muted-foreground">PlusIcon</span>
+        </div>
+        <div className="flex flex-col items-center space-y-2">
+          <div className="p-3 bg-card border border-border rounded-md">
+            <ChevronDownIcon size={24} />
+          </div>
+          <span className="text-xs text-muted-foreground">ChevronDownIcon</span>
+        </div>
+        <div className="flex flex-col items-center space-y-2">
+          <div className="p-3 bg-card border border-border rounded-md">
+            <ClockIcon size={24} />
+          </div>
+          <span className="text-xs text-muted-foreground">ClockIcon</span>
+        </div>
+        <div className="flex flex-col items-center space-y-2">
+          <div className="p-3 bg-card border border-border rounded-md">
+            <SpinnerIcon size={24} className="animate-spin" />
+          </div>
+          <span className="text-xs text-muted-foreground">SpinnerIcon</span>
+        </div>
+        <div className="flex flex-col items-center space-y-2">
+          <div className="p-3 bg-card border border-border rounded-md">
+            <CheckIcon size={24} />
+          </div>
+          <span className="text-xs text-muted-foreground">CheckIcon</span>
+        </div>
+        <div className="flex flex-col items-center space-y-2">
+          <div className="p-3 bg-card border border-border rounded-md">
+            <XIcon size={24} />
+          </div>
+          <span className="text-xs text-muted-foreground">XIcon</span>
+        </div>
+      </div>
 
+      {/* Brand icons section */}
       <section className="space-y-4">
         <h3 className="text-xl font-semibold text-primary border-b border-border pb-2">
-          Action Icons
+          Brand icons
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
           <div className="flex flex-col items-center space-y-2">
             <div className="p-3 bg-card border border-border rounded-md">
-              <EditIcon
-                size={24}
-                className="text-muted-foreground hover:text-primary transition-colors"
-              />
-            </div>
-            <span className="text-xs text-muted-foreground">EditIcon</span>
-          </div>
-          <div className="flex flex-col items-center space-y-2">
-            <div className="p-3 bg-card border border-border rounded-md">
-              <DeleteIcon
-                size={24}
-                className="text-muted-foreground hover:text-destructive transition-colors"
-              />
-            </div>
-            <span className="text-xs text-muted-foreground">DeleteIcon</span>
-          </div>
-          <div className="flex flex-col items-center space-y-2">
-            <div className="p-3 bg-card border border-border rounded-md">
-              <PlusIcon
-                size={24}
-                className="text-muted-foreground hover:text-primary transition-colors"
-              />
-            </div>
-            <span className="text-xs text-muted-foreground">PlusIcon</span>
-          </div>
-        </div>
-      </section>
-
-      <section className="space-y-4">
-        <h3 className="text-xl font-semibold text-primary border-b border-border pb-2">UI Icons</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
-          <div className="flex flex-col items-center space-y-2">
-            <div className="p-3 bg-card border border-border rounded-md">
-              <ChevronDownIcon className="text-muted-foreground w-6 h-6" />
-            </div>
-            <span className="text-xs text-muted-foreground">ChevronDownIcon</span>
-          </div>
-          <div className="flex flex-col items-center space-y-2">
-            <div className="p-3 bg-card border border-border rounded-md">
-              <GoogleIcon />
+              <GoogleIcon size={24} />
             </div>
             <span className="text-xs text-muted-foreground">GoogleIcon</span>
           </div>
@@ -130,39 +152,3 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 export const AllIcons: Story = {}
-
-export const EditIcon_: Story = {
-  render: () => (
-    <div className="flex gap-4 items-center">
-      <EditIcon size={16} />
-      <EditIcon size={20} />
-      <EditIcon size={24} />
-    </div>
-  ),
-}
-
-export const DeleteIcon_: Story = {
-  render: () => (
-    <div className="flex gap-4 items-center">
-      <DeleteIcon size={16} />
-      <DeleteIcon size={20} />
-      <DeleteIcon size={24} />
-    </div>
-  ),
-}
-
-export const InteractiveButtons: Story = {
-  render: () => (
-    <div className="flex gap-4">
-      <button className="p-2 hover:bg-muted rounded transition-colors">
-        <EditIcon size={16} className="text-muted-foreground hover:text-primary" />
-      </button>
-      <button className="p-2 hover:bg-muted rounded transition-colors">
-        <DeleteIcon size={16} className="text-muted-foreground hover:text-destructive" />
-      </button>
-      <button className="p-2 hover:bg-muted rounded transition-colors">
-        <PlusIcon size={16} className="text-muted-foreground hover:text-primary" />
-      </button>
-    </div>
-  ),
-}

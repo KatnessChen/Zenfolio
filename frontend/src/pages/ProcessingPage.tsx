@@ -7,6 +7,12 @@ import { ClockIcon, SpinnerIcon, CheckIcon, XIcon } from '@/components/icons'
 import { initializeFiles, updateFileStatus } from '@/store/fileProcessingSlice'
 import type { RootState, AppDispatch } from '@/store'
 import type { ExtractResponse } from '@/types'
+import {
+  FILE_STATUS_PENDING,
+  FILE_STATUS_PROCESSING,
+  FILE_STATUS_COMPLETED,
+  FILE_STATUS_ERROR,
+} from '@/constants/fileProcessingStatus'
 
 interface LocationState {
   files: File[]
@@ -111,16 +117,16 @@ export default function ProcessingPage() {
 
   const getStatusIcon = (status: (typeof fileStates)[0]['status']) => {
     switch (status) {
-      case 'pending':
-        return <ClockIcon className="w-4 h-4" />
-      case 'processing':
-        return <SpinnerIcon className="w-4 h-4" />
-      case 'completed':
-        return <CheckIcon className="w-4 h-4" />
-      case 'error':
-        return <XIcon className="w-4 h-4" />
+      case FILE_STATUS_PENDING:
+        return <ClockIcon size={24} />
+      case FILE_STATUS_PROCESSING:
+        return <SpinnerIcon size={24} />
+      case FILE_STATUS_COMPLETED:
+        return <CheckIcon size={24} />
+      case FILE_STATUS_ERROR:
+        return <XIcon size={24} />
       default:
-        return <ClockIcon className="w-4 h-4" />
+        return <ClockIcon size={24} />
     }
   }
 
@@ -187,7 +193,7 @@ export default function ProcessingPage() {
                         {fileState.result.transaction_count} found
                       </span>
                     )}
-                    {fileState.status === 'error' && (
+                    {fileState.status === FILE_STATUS_ERROR && (
                       <span className="text-red-600 text-xs" title={fileState.error}>
                         Error
                       </span>

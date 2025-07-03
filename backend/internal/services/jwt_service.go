@@ -33,7 +33,6 @@ type DeviceInfo struct {
 type JWTService interface {
 	GenerateToken(user *models.User, deviceInfo DeviceInfo) (string, error)
 	ValidateToken(tokenString string) (*JWTClaims, error)
-	RefreshToken(tokenString string, deviceInfo DeviceInfo) (string, error)
 	RevokeToken(tokenString string) error
 	GetActiveTokens(userID uint) ([]models.JWTToken, error)
 	CleanupExpiredTokens() error
@@ -164,32 +163,6 @@ func (s *jwtService) ValidateToken(tokenString string) (*JWTClaims, error) {
 	}
 
 	return claims, nil
-}
-
-// RefreshToken refreshes an existing token (generates a new one and revokes the old)
-func (s *jwtService) RefreshToken(tokenString string, deviceInfo DeviceInfo) (string, error) {
-	// Validate current token
-	claims, err := s.ValidateToken(tokenString)
-	if err != nil {
-		return "", fmt.Errorf("cannot refresh invalid token: %w", err)
-	}
-
-	// Create composite hash to find the token in database
-	compositeString := fmt.Sprintf("%s:%s", tokenString, claims.TokenID)
-	tokenHash := repositories.HashToken(compositeString)
-
-	jwtToken, err := s.jwtRepository.FindByTokenHash(tokenHash)
-	if err != nil {
-		return "", fmt.Errorf("token not found: %w", err)
-	}
-
-	// Revoke current token
-	if err := s.jwtRepository.RevokeToken(jwtToken.ID); err != nil {
-		return "", fmt.Errorf("failed to revoke current token: %w", err)
-	}
-
-	// Generate new token
-	return s.GenerateToken(&jwtToken.User, deviceInfo)
 }
 
 // RevokeToken revokes a specific token

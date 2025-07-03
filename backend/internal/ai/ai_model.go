@@ -233,27 +233,32 @@ func (c *AIModelClient) parseTransactionResponse(responseText string, filename s
 	}, nil
 }
 
-// Health checks if the AI model client is working properly
+// Health checks if the AI client is working properly
 func (c *AIModelClient) Health(ctx context.Context) error {
 	switch c.modelType {
 	case ModelTypeGemini:
 		return c.healthCheckGemini(ctx)
 	default:
-		return fmt.Errorf("health check not implemented for model type: %s", c.modelType)
+		return fmt.Errorf("unsupported model type for health check: %s", c.modelType)
 	}
 }
 
 // healthCheckGemini performs a health check for Gemini models
 func (c *AIModelClient) healthCheckGemini(ctx context.Context) error {
-	// Simple health check by making a minimal request
-	parts := []genai.Part{genai.Text("Health check - please respond with 'OK'")}
+	if c.geminiClient == nil || c.geminiModel == nil {
+		return fmt.Errorf("Gemini client not initialized")
+	}
 
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	// Set a short timeout for health check
+	healthCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	_, err := c.geminiModel.GenerateContent(ctx, parts...)
+	// Send a simple test request to verify the client is working
+	testParts := []genai.Part{genai.Text("Health check. Please respond with 'OK'.")}
+
+	_, err := c.geminiModel.GenerateContent(healthCtx, testParts...)
 	if err != nil {
-		return fmt.Errorf("health check failed: %w", err)
+		return fmt.Errorf("Gemini health check failed: %w", err)
 	}
 
 	return nil
@@ -279,65 +284,6 @@ func (c *AIModelClient) GetModelType() ModelType {
 // GetModelName returns the configured model name
 func (c *AIModelClient) GetModelName() string {
 	return c.config.Model
-}
-
-// Mock response for testing
-func (c *AIModelClient) MockExtractTransactions(ctx context.Context, image types.FileInput) (*types.ExtractResponse, error) {
-	// Generate a mock response with random transaction data
-	numTransactions := rand.Intn(5) + 1 // At least 1 transaction
-	var transactions []types.TransactionData
-
-	for i := 0; i < numTransactions; i++ {
-		quantity := float64(rand.Intn(100) + 1)
-		price := float64(rand.Intn(45000)+5000) / 100.0 // $50-500
-		amount := quantity * price
-
-		transactions = append(transactions, types.TransactionData{
-			Symbol:          fmt.Sprintf("MOCK%d", i+1),
-			Type:            types.TradeTypeBuy,
-			Quantity:        quantity,
-			Price:           price,
-			Amount:          amount,
-			Currency:        "USD",
-			Broker:          "Mock Broker",
-			Account:         "Mock Account",
-			Exchange:        "NASDAQ",
-			TransactionDate: time.Now().AddDate(0, 0, -rand.Intn(30)).Format("2006-01-02"),
-			UserNotes:       fmt.Sprintf("Mock transaction %d", i+1),
-		})
-	}
-
-	response := &types.ExtractResponse{
-		Data: &types.ExtractResponseData{
-			Transactions:     transactions,
-			TransactionCount: len(transactions),
-			FileName:         image.Filename,
-		},
-		Success: true,
-		Message: constants.MsgTransactionsExtracted,
-	}
-
-	return response, nil
-}
-
-// Mock health check
-func (c *AIModelClient) MockHealth(ctx context.Context) error {
-	// Simulate random health check failure
-	if rand.Intn(10) < 2 { // 20% chance of failure
-		return fmt.Errorf("mock health check failed")
-	}
-	return nil
-}
-
-// Mock close
-func (c *AIModelClient) MockClose() error {
-	// No operation for mock close
-	return nil
-}
-
-// Mock initialization
-func (c *AIModelClient) MockInit() {
-	// No operation for mock initialization
 }
 
 // getMockResponse returns mock responses based on filename for development/testing

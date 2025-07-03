@@ -50,16 +50,12 @@ type ExtractResponse struct {
 	Message string               `json:"message"`
 }
 
-// TradeTypeFromString converts string to TradeType
-func TradeTypeFromString(s string) (TradeType, bool) {
-	switch s {
-	case "Buy":
-		return TradeTypeBuy, true
-	case "Sell":
-		return TradeTypeSell, true
-	case "Dividends":
-		return TradeTypeDividend, true
-	default:
-		return "", false
-	}
+// PaginationData represents pagination information
+type PaginationData struct {
+	Page         int  `json:"page"`
+	PageSize     int  `json:"page_size"`
+	TotalRecords int  `json:"total_records"`
+	TotalPages   int  `json:"total_pages"`
+	HasNext      bool `json:"has_next"`
+	HasPrevious  bool `json:"has_previous"`
 }

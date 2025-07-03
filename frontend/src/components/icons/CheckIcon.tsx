@@ -1,13 +1,16 @@
 import React from 'react'
 
 interface CheckIconProps {
+  size?: number
   className?: string
 }
 
-export const CheckIcon: React.FC<CheckIconProps> = ({ className = 'w-4 h-4' }) => {
+export const CheckIcon: React.FC<CheckIconProps> = ({ size = 24, className = '' }) => {
   return (
     <svg
       className={className}
+      width={size}
+      height={size}
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"

@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/transaction-tracker/backend/config"
 	"github.com/transaction-tracker/backend/internal/ai"
 	"github.com/transaction-tracker/backend/internal/constants"
 	"github.com/transaction-tracker/backend/internal/models"
@@ -20,11 +19,20 @@ import (
 // TransactionsHandler handles transaction-related endpoints
 type TransactionsHandler struct {
 	transactionService *services.TransactionService
+	aiClient           ai.Client
 }
 
 // NewTransactionsHandler creates a new TransactionsHandler
-func NewTransactionsHandler(service *services.TransactionService) *TransactionsHandler {
-	return &TransactionsHandler{transactionService: service}
+func NewTransactionsHandler(service *services.TransactionService, aiClient ai.Client) *TransactionsHandler {
+	return &TransactionsHandler{
+		transactionService: service,
+		aiClient:           aiClient,
+	}
+}
+
+// Close closes the AI client and cleans up resources
+func (h *TransactionsHandler) Close() error {
+	return h.aiClient.Close()
 }
 
 // TransactionRequest represents the request structure for creating transactions
@@ -71,18 +79,8 @@ type GetTransactionsResponse struct {
 // GetTransactionsData represents the data part of get transactions response
 type GetTransactionsData struct {
 	Transactions   []types.TransactionData `json:"transactions"`
-	Pagination     PaginationData          `json:"pagination"`
+	Pagination     types.PaginationData    `json:"pagination"`
 	FiltersApplied FiltersApplied          `json:"filters_applied"`
-}
-
-// PaginationData represents pagination information
-type PaginationData struct {
-	Page         int  `json:"page"`
-	PageSize     int  `json:"page_size"`
-	TotalRecords int  `json:"total_records"`
-	TotalPages   int  `json:"total_pages"`
-	HasNext      bool `json:"has_next"`
-	HasPrevious  bool `json:"has_previous"`
 }
 
 // FiltersApplied represents the filters that were applied to the query
@@ -110,73 +108,61 @@ type TransactionQueryParams struct {
 	SortOrder  string
 }
 
-// ExtractTransactionsHandler handles the image upload and transaction extraction
-func ExtractTransactionsHandler(cfg *config.Config) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		form, err := c.MultipartForm()
-		if err != nil {
-			c.JSON(http.StatusBadRequest, types.ExtractResponse{
-				Success: false,
-				Message: "Failed to parse multipart form: " + err.Error(),
-			})
-			return
-		}
-		file := form.File["file"] // Get the file directly
-
-		if len(file) == 0 {
-			c.JSON(http.StatusBadRequest, types.ExtractResponse{
-				Success: false,
-				Message: "No file uploaded. Please upload a file under the 'file' field.",
-			})
-			return
-		}
-
-		// Take the first (and only expected) file
-		fileHeader := file[0]
-
-		src, err := fileHeader.Open()
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, types.ExtractResponse{
-				Success: false,
-				Message: "Failed to open uploaded file " + fileHeader.Filename + ": " + err.Error(),
-			})
-			return
-		}
-		defer src.Close()
-
-		imageInput := types.FileInput{
-			Data:     src,
-			Filename: fileHeader.Filename,
-			MimeType: fileHeader.Header.Get(constants.ContentTypeHeader),
-		}
-
-		// Initialize AI client
-		aiClient, err := ai.NewClient(cfg)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, types.ExtractResponse{
-				Success: false,
-				Message: "Failed to initialize AI client: " + err.Error(),
-			})
-			return
-		}
-		defer aiClient.Close()
-
-		extractResp, err := aiClient.ExtractTransactions(c.Request.Context(), imageInput)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, types.ExtractResponse{
-				Success: false,
-				Message: "Failed to extract transactions: " + err.Error(),
-			})
-			return
-		}
-
-		if !extractResp.Success {
-			c.JSON(http.StatusInternalServerError, extractResp)
-			return
-		}
-
-		c.JSON(http.StatusOK, extractResp)
+// ExtractTransactions handles the image upload and transaction extraction
+func (h *TransactionsHandler) ExtractTransactions(c *gin.Context) {
+	form, err := c.MultipartForm()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, types.ExtractResponse{
+			Success: false,
+			Message: "Failed to parse multipart form: " + err.Error(),
+		})
+		return
 	}
+	file := form.File["file"] // Get the file directly
+
+	if len(file) == 0 {
+		c.JSON(http.StatusBadRequest, types.ExtractResponse{
+			Success: false,
+			Message: "No file uploaded. Please upload a file under the 'file' field.",
+		})
+		return
+	}
+
+	// Take the first (and only expected) file
+	fileHeader := file[0]
+
+	src, err := fileHeader.Open()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, types.ExtractResponse{
+			Success: false,
+			Message: "Failed to open uploaded file " + fileHeader.Filename + ": " + err.Error(),
+		})
+		return
+	}
+	defer src.Close()
+
+	fileInput := types.FileInput{
+		Data:     src,
+		Filename: fileHeader.Filename,
+		MimeType: fileHeader.Header.Get(constants.ContentTypeHeader),
+	}
+
+	// Use the reusable AI client
+	extractResp, err := h.aiClient.ExtractTransactions(c.Request.Context(), fileInput)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, types.ExtractResponse{
+			Success: false,
+			Message: "Failed to extract transactions: " + err.Error(),
+		})
+		return
+	}
+
+	if !extractResp.Success {
+		c.JSON(http.StatusInternalServerError, extractResp)
+		return
+	}
+
+	c.JSON(http.StatusOK, extractResp)
 }
 
 // CreateTransactions handles the creation of transaction records in batch
@@ -398,7 +384,7 @@ func (h *TransactionsHandler) GetTransactionHistory(c *gin.Context) {
 		Message: "Transactions retrieved successfully",
 		Data: &GetTransactionsData{
 			Transactions: responseTransactions,
-			Pagination: PaginationData{
+			Pagination: types.PaginationData{
 				Page:         params.Page,
 				PageSize:     params.PageSize,
 				TotalRecords: int(totalCount),
@@ -530,7 +516,7 @@ func parseTransactionQueryParams(c *gin.Context) (params TransactionQueryParams,
 
 		for _, tradeType := range typeList {
 			tradeType = strings.TrimSpace(tradeType)
-			if _, ok := types.TradeTypeFromString(tradeType); !ok {
+			if _, ok := utils.TradeTypeFromString(tradeType); !ok {
 				validationErrors["type"] = []string{"Must be one of: Buy, Sell, Dividends (comma-separated for multiple)"}
 				break
 			} else {
