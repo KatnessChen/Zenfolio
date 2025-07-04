@@ -11,7 +11,7 @@ import (
 type Transaction struct {
 	BaseModel
 	UserID          uint            `gorm:"not null;index" json:"user_id"`
-	Type            types.TradeType `gorm:"size:50;not null;index" json:"type"`
+	TradeType       types.TradeType `gorm:"column:type;size:50;not null;index" json:"trade_type"`
 	Symbol          string          `gorm:"size:20;not null;index" json:"symbol"`
 	Quantity        float64         `gorm:"type:decimal(15,4);not null" json:"quantity"`
 	Price           float64         `gorm:"type:decimal(15,4);not null" json:"price"`

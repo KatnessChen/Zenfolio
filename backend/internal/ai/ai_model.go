@@ -114,7 +114,7 @@ func (c *AIModelClient) initGeminiClient() error {
 
 // ExtractTransactions processes a single image and extracts transaction data using the configured AI model
 func (c *AIModelClient) ExtractTransactions(ctx context.Context, image types.FileInput) (*types.ExtractResponse, error) {
-	// Check for mock responses based on filename (only in development environment and filename prefix "mock-")
+	// Check for mock responses based on filename (only in development environment and filename prefix "mock_")
 	if c.config.Environment == "development" && strings.HasPrefix(image.Filename, "mock") {
 		if mockResponse := c.getMockResponse(image.Filename); mockResponse != nil {
 			return mockResponse, nil
@@ -301,7 +301,7 @@ func (c *AIModelClient) getMockResponse(filename string) *types.ExtractResponse 
 
 		return types.TransactionData{
 			Symbol:          symbols[index%len(symbols)],
-			Type:            tradeTypes[index%len(tradeTypes)],
+			TradeType:       tradeTypes[index%len(tradeTypes)],
 			Quantity:        quantity,
 			Price:           price,
 			Amount:          quantity * price,
@@ -315,7 +315,7 @@ func (c *AIModelClient) getMockResponse(filename string) *types.ExtractResponse 
 	}
 
 	switch fileNameWithoutExt {
-	case "file":
+	case "mock_file":
 		// Normal case: 10 transactions with 2-3 second delay
 		time.Sleep(time.Duration(2000+rand.Intn(1000)) * time.Millisecond)
 
@@ -334,7 +334,7 @@ func (c *AIModelClient) getMockResponse(filename string) *types.ExtractResponse 
 			},
 		}
 
-	case "file_error":
+	case "mock_file_error":
 		// Error case: 1-2 second delay then error
 		time.Sleep(time.Duration(1000+rand.Intn(1000)) * time.Millisecond)
 
@@ -343,7 +343,7 @@ func (c *AIModelClient) getMockResponse(filename string) *types.ExtractResponse 
 			Message: "Processing failed: Unable to extract transactions from image. The image quality may be too low or the format is not supported.",
 		}
 
-	case "file_empty":
+	case "mock_file_empty":
 		// Empty case: 1-2 second delay, 0 transactions
 		time.Sleep(time.Duration(1000+rand.Intn(1000)) * time.Millisecond)
 
@@ -357,7 +357,7 @@ func (c *AIModelClient) getMockResponse(filename string) *types.ExtractResponse 
 			},
 		}
 
-	case "file_pending":
+	case "mock_file_pending":
 		// Long processing case: 10-15 second delay
 		time.Sleep(time.Duration(10000+rand.Intn(5000)) * time.Millisecond)
 

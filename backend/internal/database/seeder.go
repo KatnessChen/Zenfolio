@@ -122,7 +122,7 @@ func (s *Seeder) seedTransactions() error {
 	transactions := []models.Transaction{
 		{
 			UserID:          demoUser.ID,
-			Type:            types.TradeTypeBuy,
+			TradeType:       types.TradeTypeBuy,
 			Symbol:          "AAPL",
 			Quantity:        100,
 			Price:           150.25,
@@ -135,7 +135,7 @@ func (s *Seeder) seedTransactions() error {
 		},
 		{
 			UserID:          demoUser.ID,
-			Type:            types.TradeTypeBuy,
+			TradeType:       types.TradeTypeBuy,
 			Symbol:          "GOOGL",
 			Quantity:        50,
 			Price:           2800.00,
@@ -148,7 +148,7 @@ func (s *Seeder) seedTransactions() error {
 		},
 		{
 			UserID:          demoUser.ID,
-			Type:            types.TradeTypeSell,
+			TradeType:       types.TradeTypeSell,
 			Symbol:          "AAPL",
 			Quantity:        50,
 			Price:           155.75,
@@ -161,7 +161,7 @@ func (s *Seeder) seedTransactions() error {
 		},
 		{
 			UserID:          demoUser.ID,
-			Type:            types.TradeTypeBuy,
+			TradeType:       types.TradeTypeBuy,
 			Symbol:          "MSFT",
 			Quantity:        75,
 			Price:           415.30,
@@ -174,7 +174,7 @@ func (s *Seeder) seedTransactions() error {
 		},
 		{
 			UserID:          demoUser.ID,
-			Type:            types.TradeTypeDividend,
+			TradeType:       types.TradeTypeDividend,
 			Symbol:          "AAPL",
 			Quantity:        50,
 			Price:           0.24,
@@ -187,7 +187,7 @@ func (s *Seeder) seedTransactions() error {
 		},
 		{
 			UserID:          demoUser.ID,
-			Type:            types.TradeTypeBuy,
+			TradeType:       types.TradeTypeBuy,
 			Symbol:          "TSLA",
 			Quantity:        25,
 			Price:           245.80,
@@ -200,7 +200,7 @@ func (s *Seeder) seedTransactions() error {
 		},
 		{
 			UserID:          demoUser.ID,
-			Type:            types.TradeTypeBuy,
+			TradeType:       types.TradeTypeBuy,
 			Symbol:          "NVDA",
 			Quantity:        10,
 			Price:           875.50,
@@ -223,7 +223,7 @@ func (s *Seeder) seedTransactions() error {
 	johnTransactions := []models.Transaction{
 		{
 			UserID:          johnUser.ID,
-			Type:            types.TradeTypeBuy,
+			TradeType:       types.TradeTypeBuy,
 			Symbol:          "SPY",
 			Quantity:        200,
 			Price:           420.50,
@@ -236,7 +236,7 @@ func (s *Seeder) seedTransactions() error {
 		},
 		{
 			UserID:          johnUser.ID,
-			Type:            types.TradeTypeBuy,
+			TradeType:       types.TradeTypeBuy,
 			Symbol:          "VTI",
 			Quantity:        100,
 			Price:           225.75,
@@ -286,7 +286,7 @@ func (s *Seeder) SeedTestData() error {
 	// Create test transactions
 	testTransaction := models.Transaction{
 		UserID:          testUser.ID,
-		Type:            types.TradeTypeBuy,
+		TradeType:       types.TradeTypeBuy,
 		Symbol:          "TEST",
 		Quantity:        1,
 		Price:           1.00,

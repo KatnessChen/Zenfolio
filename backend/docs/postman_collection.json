@@ -710,7 +710,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"transactions\": [\n    {\n      \"ticker\": \"AAPL\",\n      \"exchange\": \"NASDAQ\",\n      \"currency\": \"USD\",\n      \"trade_date\": \"2025-06-20\",\n      \"trade_type\": \"Buy\",\n      \"quantity\": 10.0,\n      \"price\": 150.50,\n      \"trade_amount\": 1505.00\n    }\n  ],\n  \"success\": true,\n  \"message\": \"Transactions extracted successfully\"\n}",
+              "body": "{\n  \"transactions\": [\n    {\n      \"ticker\": \"AAPL\",\n      \"exchange\": \"NASDAQ\",\n      \"currency\": \"USD\",\n      \"transaction_date\": \"2025-06-20\",\n      \"trade_type\": \"Buy\",\n      \"quantity\": 10.0,\n      \"price\": 150.50,\n      \"amount\": 1505.00\n    }\n  ],\n  \"success\": true,\n  \"message\": \"Transactions extracted successfully\"\n}",
               "cookie": [],
               "_postman_previewlanguage": "json"
             },
@@ -976,7 +976,7 @@
                 {
                   "key": "sort_by",
                   "value": "transaction_date",
-                  "description": "Sort field (transaction_date, symbol, price, quantity, trade_amount)",
+                  "description": "Sort field (transaction_date, symbol, price, quantity, amount)",
                   "disabled": true
                 },
                 {
@@ -1203,7 +1203,7 @@
             "method": "POST",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"transactions\": [\n    {\n      \"symbol\": \"GOOGL\",\n      \"exchange\": \"NASDAQ\",\n      \"broker\": \"Firstrade\",\n      \"currency\": \"USD\",\n      \"trade_date\": \"2025-01-01\",\n      \"trade_type\": \"Buy\",\n      \"quantity\": 1,\n      \"price\": 200.00,\n      \"trade_amount\": 200.00,\n      \"user_notes\": \"Initial investment\"\n    },\n    {\n      \"symbol\": \"AAPL\",\n      \"exchange\": \"NASDAQ\",\n      \"broker\": \"Firstrade\",\n      \"currency\": \"USD\",\n      \"trade_date\": \"2025-01-02\",\n      \"trade_type\": \"Buy\",\n      \"quantity\": 5,\n      \"price\": 150.50,\n      \"trade_amount\": 752.50\n    }\n  ]\n}",
+              "raw": "{\n  \"transactions\": [\n    {\n      \"symbol\": \"GOOGL\",\n      \"exchange\": \"NASDAQ\",\n      \"broker\": \"Firstrade\",\n      \"currency\": \"USD\",\n      \"transaction_date\": \"2025-01-01\",\n      \"trade_type\": \"Buy\",\n      \"quantity\": 1,\n      \"price\": 200.00,\n      \"amount\": 200.00,\n      \"user_notes\": \"Initial investment\"\n    },\n    {\n      \"symbol\": \"AAPL\",\n      \"exchange\": \"NASDAQ\",\n      \"broker\": \"Firstrade\",\n      \"currency\": \"USD\",\n      \"transaction_date\": \"2025-01-02\",\n      \"trade_type\": \"Buy\",\n      \"quantity\": 5,\n      \"price\": 150.50,\n      \"amount\": 752.50\n    }\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1253,7 +1253,7 @@
                 "method": "POST",
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"transactions\": [\n    {\n      \"symbol\": \"GOOGL\",\n      \"exchange\": \"NASDAQ\",\n      \"broker\": \"Firstrade\",\n      \"currency\": \"USD\",\n      \"trade_date\": \"2025-01-01\",\n      \"trade_type\": \"Buy\",\n      \"quantity\": 1,\n      \"price\": 200.00,\n      \"trade_amount\": 200.00\n    }\n  ]\n}",
+                  "raw": "{\n  \"transactions\": [\n    {\n      \"symbol\": \"GOOGL\",\n      \"exchange\": \"NASDAQ\",\n      \"broker\": \"Firstrade\",\n      \"currency\": \"USD\",\n      \"transaction_date\": \"2025-01-01\",\n      \"trade_type\": \"Buy\",\n      \"quantity\": 1,\n      \"price\": 200.00,\n      \"amount\": 200.00\n    }\n  ]\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -1398,7 +1398,7 @@
                 "method": "POST",
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"transactions\": [\n    {\n      \"symbol\": \"GOOGL\",\n      \"exchange\": \"NASDAQ\",\n      \"currency\": \"USD\",\n      \"trade_date\": \"2025-01-01\",\n      \"trade_type\": \"Buy\",\n      \"quantity\": 1,\n      \"price\": 200.00,\n      \"trade_amount\": 200.00\n    }\n  ]\n}",
+                  "raw": "{\n  \"transactions\": [\n    {\n      \"symbol\": \"GOOGL\",\n      \"exchange\": \"NASDAQ\",\n      \"currency\": \"USD\",\n      \"transaction_date\": \"2025-01-01\",\n      \"trade_type\": \"Buy\",\n      \"quantity\": 1,\n      \"price\": 200.00,\n      \"amount\": 200.00\n    }\n  ]\n}",
                   "options": {
                     "raw": {
                       "language": "json"

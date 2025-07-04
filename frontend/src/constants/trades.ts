@@ -1,5 +1,5 @@
 export const TRADE_TYPE = {
-  BUY: 'BUY',
-  SELL: 'SELL',
-  DIVIDEND: 'DIVIDEND',
+  BUY: 'Buy',
+  SELL: 'Sell',
+  DIVIDEND: 'Dividends',
 }

@@ -16,8 +16,9 @@ const (
 // TransactionData represents extracted transaction information from AI
 // Uses fields that map to the Transaction model structure
 type TransactionData struct {
+	ID              string    `json:"id"`               // Unique identifier for frontend/backend sync
 	Symbol          string    `json:"symbol"`           // Maps to Transaction.Symbol
-	Type            TradeType `json:"type"`             // Maps to Transaction.Type
+	TradeType       TradeType `json:"trade_type"`       // Maps to Transaction.Type
 	Quantity        float64   `json:"quantity"`         // Maps to Transaction.Quantity
 	Price           float64   `json:"price"`            // Maps to Transaction.Price
 	Amount          float64   `json:"amount"`           // Maps to Transaction.Amount

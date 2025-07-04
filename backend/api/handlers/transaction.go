@@ -37,16 +37,16 @@ func (h *TransactionsHandler) Close() error {
 
 // TransactionRequest represents the request structure for creating transactions
 type TransactionRequest struct {
-	Symbol      string          `json:"symbol" binding:"required"`
-	Exchange    string          `json:"exchange" binding:"required"`
-	Broker      string          `json:"broker"`
-	Currency    string          `json:"currency" binding:"required"`
-	TradeDate   string          `json:"trade_date" binding:"required"`
-	TradeType   types.TradeType `json:"trade_type" binding:"required"`
-	Quantity    float64         `json:"quantity" binding:"required,gt=0"`
-	Price       float64         `json:"price" binding:"required,gt=0"`
-	TradeAmount float64         `json:"trade_amount" binding:"required,gt=0"`
-	UserNotes   string          `json:"user_notes"`
+	Symbol    string          `json:"symbol" binding:"required"`
+	Exchange  string          `json:"exchange" binding:"required"`
+	Broker    string          `json:"broker"`
+	Currency  string          `json:"currency" binding:"required"`
+	TradeDate string          `json:"transaction_date" binding:"required"`
+	TradeType types.TradeType `json:"trade_type" binding:"required"`
+	Quantity  float64         `json:"quantity" binding:"required,gt=0"`
+	Price     float64         `json:"price" binding:"required,gt=0"`
+	Amount    float64         `json:"amount" binding:"required,gt=0"`
+	UserNotes string          `json:"user_notes"`
 }
 
 // CreateTransactionsRequest represents the batch request for creating transactions
@@ -86,7 +86,7 @@ type GetTransactionsData struct {
 // FiltersApplied represents the filters that were applied to the query
 type FiltersApplied struct {
 	Symbols    []string `json:"symbols,omitempty"`    // Support multiple symbols
-	Types      []string `json:"types,omitempty"`      // Support multiple types
+	TradeTypes []string `json:"types,omitempty"`      // Support multiple types
 	Exchanges  []string `json:"exchanges,omitempty"`  // Support multiple exchanges
 	Brokers    []string `json:"brokers,omitempty"`    // Support multiple brokers
 	Currencies []string `json:"currencies,omitempty"` // Support multiple currencies
@@ -98,7 +98,7 @@ type TransactionQueryParams struct {
 	Page       int
 	PageSize   int
 	Symbols    []string // Support multiple symbols
-	Types      []string // Support multiple types
+	TradeTypes []string // Support multiple types
 	Exchanges  []string // Support multiple exchanges
 	Brokers    []string // Support multiple brokers
 	Currencies []string // Support multiple currencies
@@ -106,6 +106,37 @@ type TransactionQueryParams struct {
 	EndDate    *time.Time
 	SortBy     string
 	SortOrder  string
+}
+
+// modelToTransactionData converts a models.Transaction to types.TransactionData
+func modelToTransactionData(transaction models.Transaction) types.TransactionData {
+	return types.TransactionData{
+		ID:              fmt.Sprint(transaction.ID),
+		Symbol:          transaction.Symbol,
+		TradeType:       types.TradeType(transaction.TradeType),
+		Quantity:        transaction.Quantity,
+		Price:           transaction.Price,
+		Amount:          transaction.Amount,
+		Currency:        transaction.Currency,
+		Broker:          transaction.Broker,
+		Exchange:        transaction.Exchange,
+		TransactionDate: transaction.TransactionDate.Format("2006-01-02"),
+		UserNotes:       transaction.UserNotes,
+		Account:         transaction.Account,
+	}
+}
+
+// modelsToTransactionData converts a slice of models.Transaction to []types.TransactionData
+func modelsToTransactionData(transactions []models.Transaction) []types.TransactionData {
+	if len(transactions) == 0 {
+		return []types.TransactionData{}
+	}
+
+	responseTransactions := make([]types.TransactionData, len(transactions))
+	for i, transaction := range transactions {
+		responseTransactions[i] = modelToTransactionData(transaction)
+	}
+	return responseTransactions
 }
 
 // ExtractTransactions handles the image upload and transaction extraction
@@ -192,17 +223,17 @@ func (h *TransactionsHandler) CreateTransactions(c *gin.Context) {
 		// Parse date
 		transactionDate, err := time.Parse("2006-01-02", reqTransaction.TradeDate)
 		if err != nil {
-			validationErrors[fmt.Sprintf("transaction[%d].trade_date", i)] = []string{"Invalid date format, expected YYYY-MM-DD"}
+			validationErrors[fmt.Sprintf("transaction[%d].transaction_date", i)] = []string{"Invalid date format, expected YYYY-MM-DD"}
 			continue
 		}
 
 		// Convert request transaction to model transaction
 		transaction := models.Transaction{
-			Type:            reqTransaction.TradeType,
+			TradeType:       reqTransaction.TradeType,
 			Symbol:          reqTransaction.Symbol,
 			Quantity:        reqTransaction.Quantity,
 			Price:           reqTransaction.Price,
-			Amount:          reqTransaction.TradeAmount,
+			Amount:          reqTransaction.Amount,
 			Currency:        reqTransaction.Currency,
 			Broker:          reqTransaction.Broker,
 			TransactionDate: transactionDate,
@@ -245,20 +276,7 @@ func (h *TransactionsHandler) CreateTransactions(c *gin.Context) {
 	}
 
 	// Convert created transactions to response format
-	var responseTransactions []types.TransactionData
-	for _, transaction := range createdTransactions {
-		responseTransactions = append(responseTransactions, types.TransactionData{
-			Symbol:          transaction.Symbol,
-			Type:            types.TradeType(transaction.Type),
-			Quantity:        transaction.Quantity,
-			Price:           transaction.Price,
-			Amount:          transaction.Amount,
-			Currency:        transaction.Currency,
-			Broker:          transaction.Broker,
-			TransactionDate: transaction.TransactionDate.Format("2006-01-02"),
-			UserNotes:       transaction.UserNotes,
-		})
-	}
+	responseTransactions := modelsToTransactionData(createdTransactions)
 
 	c.JSON(http.StatusCreated, CreateTransactionsResponse{
 		Success: true,
@@ -299,7 +317,7 @@ func (h *TransactionsHandler) GetTransactionHistory(c *gin.Context) {
 	filter := services.TransactionFilter{
 		UserID:         &uid, // Ensure user can only see their own transactions
 		Symbols:        params.Symbols,
-		Types:          params.Types,
+		TradeTypes:     params.TradeTypes,
 		Exchanges:      params.Exchanges,
 		Brokers:        params.Brokers,
 		Currencies:     params.Currencies,
@@ -333,22 +351,7 @@ func (h *TransactionsHandler) GetTransactionHistory(c *gin.Context) {
 	}
 
 	// Convert transactions to response format (exclude user_id for security)
-	var responseTransactions []types.TransactionData
-	for _, transaction := range transactions {
-		responseTransactions = append(responseTransactions, types.TransactionData{
-			Symbol:          transaction.Symbol,
-			Type:            types.TradeType(transaction.Type),
-			Quantity:        transaction.Quantity,
-			Price:           transaction.Price,
-			Amount:          transaction.Amount,
-			Currency:        transaction.Currency,
-			Exchange:        transaction.Exchange,
-			Broker:          transaction.Broker,
-			Account:         transaction.Account,
-			TransactionDate: transaction.TransactionDate.Format("2006-01-02"),
-			UserNotes:       transaction.UserNotes,
-		})
-	}
+	responseTransactions := modelsToTransactionData(transactions)
 
 	// Calculate pagination
 	totalPages := int((totalCount + int64(params.PageSize) - 1) / int64(params.PageSize))
@@ -358,7 +361,7 @@ func (h *TransactionsHandler) GetTransactionHistory(c *gin.Context) {
 	// Build filters applied response
 	filtersApplied := FiltersApplied{
 		Symbols:    params.Symbols,
-		Types:      params.Types,
+		TradeTypes: params.TradeTypes,
 		Exchanges:  params.Exchanges,
 		Brokers:    params.Brokers,
 		Currencies: params.Currencies,
@@ -432,32 +435,32 @@ func validateTransaction(transaction TransactionRequest) error {
 	if transaction.Price <= 0 {
 		return fmt.Errorf("price must be positive")
 	}
-	if transaction.TradeAmount <= 0 {
-		return fmt.Errorf("trade_amount must be positive")
+	if transaction.Amount <= 0 {
+		return fmt.Errorf("amount must be positive")
 	}
 
 	// Validate trade amount calculation (with tolerance for rounding)
 	expectedAmount := transaction.Quantity * transaction.Price
 	tolerance := 0.01
-	if utils.Abs(transaction.TradeAmount-expectedAmount) > tolerance {
-		return fmt.Errorf("trade_amount does not match quantity × price calculation")
+	if utils.Abs(transaction.Amount-expectedAmount) > tolerance {
+		return fmt.Errorf("amount does not match quantity × price calculation")
 	}
 
 	// Validate date format and range
 	tradeDate, err := time.Parse("2006-01-02", transaction.TradeDate)
 	if err != nil {
-		return fmt.Errorf("trade_date must be in YYYY-MM-DD format")
+		return fmt.Errorf("transaction_date must be in YYYY-MM-DD format")
 	}
 
 	// Check date is not in the future
 	if tradeDate.After(time.Now()) {
-		return fmt.Errorf("trade_date cannot be in the future")
+		return fmt.Errorf("transaction_date cannot be in the future")
 	}
 
 	// Check date is not more than 30 years in the past
 	thirtyYearsAgo := time.Now().AddDate(-30, 0, 0)
 	if tradeDate.Before(thirtyYearsAgo) {
-		return fmt.Errorf("trade_date cannot be more than 30 years in the past")
+		return fmt.Errorf("transaction_date cannot be more than 30 years in the past")
 	}
 
 	// Validate user notes length
@@ -525,7 +528,7 @@ func parseTransactionQueryParams(c *gin.Context) (params TransactionQueryParams,
 		}
 
 		if len(validTypes) > 0 && len(validationErrors) == 0 {
-			params.Types = validTypes
+			params.TradeTypes = validTypes
 		}
 	}
 
@@ -596,7 +599,7 @@ func parseTransactionQueryParams(c *gin.Context) (params TransactionQueryParams,
 	if params.SortBy == "" {
 		params.SortBy = "transaction_date"
 	} else {
-		validSortFields := []string{"transaction_date", "symbol", "price", "quantity", "trade_amount"}
+		validSortFields := []string{"transaction_date", "symbol", "price", "quantity", "amount"}
 		valid := false
 		for _, field := range validSortFields {
 			if params.SortBy == field {
@@ -605,7 +608,7 @@ func parseTransactionQueryParams(c *gin.Context) (params TransactionQueryParams,
 			}
 		}
 		if !valid {
-			validationErrors["sort_by"] = []string{"Must be one of: transaction_date, symbol, price, quantity, trade_amount"}
+			validationErrors["sort_by"] = []string{"Must be one of: transaction_date, symbol, price, quantity, amount"}
 		}
 	}
 

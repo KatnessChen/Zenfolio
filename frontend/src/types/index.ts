@@ -16,15 +16,16 @@ export interface User {
 // Transaction extraction types to match backend API
 export type TradeType = 'Buy' | 'Sell' | 'Dividends'
 
-export interface TransactionData {
+// TransactionData now always includes id
+export type TransactionData = {
+  id: string
   symbol: string
-  type: TradeType
+  trade_type: TradeType
   quantity: number
   price: number
   amount: number
   currency: string
   broker: string
-  account: string
   transaction_date: string
   user_notes: string
   exchange: string
@@ -45,25 +46,17 @@ export interface ExtractResponse {
 // Processing states for frontend
 export type FileProcessingStatus = 'pending' | 'processing' | 'completed' | 'error'
 
+export interface SerializableFile {
+  name: string
+  size: number
+  type: string
+  lastModified: number
+  dataUrl: string // Base64 encoded file data
+}
+
 export interface FileProcessingState {
   file: File
   status: FileProcessingStatus
   result?: ExtractResponseData
   error?: string
-  progress?: number
-}
-
-// Legacy interface for backward compatibility during migration
-export interface ProcessedTransaction {
-  id: string
-  ticker: string
-  tradeType: 'Buy' | 'Sell' | 'Dividends'
-  quantity: number
-  price: number
-  amount: number
-  tradeDate: string
-  broker: string
-  currency: string
-  userNotes: string
-  confidence: number
 }

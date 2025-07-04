@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { ROUTES } from '@/constants'
 import { TRADE_TYPE, CURRENCY } from '@/constants'
-import type { Transaction } from '@/types/transaction'
+import type { TransactionData } from '@/types'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -27,70 +28,60 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination'
 import { EditIcon, DeleteIcon } from '@/components/icons'
-import { formatCurrency, formatDate } from '@/utils'
+import { formatCurrency } from '@/utils'
 import EmptyTransactionsState from '@/components/EmptyTransactionsState'
 import { TransactionCard } from '@/components/TransactionCard'
 import Title from '@/components/ui/title'
+import { TransactionService } from '@/services/transaction.service'
+import {
+  fetchTransactionHistoryStart,
+  fetchTransactionHistorySuccess,
+  fetchTransactionHistoryFailure,
+} from '@/store/transactionHistorySlice'
+import type { GetTransactionHistoryResponse } from '@/store/transactionHistorySlice'
+import type { RootState } from '@/store'
+import { useToast } from '@/hooks/useToast'
 
-// Mock data with enhanced fields as per wireframe
-const mockTransactions: Transaction[] = [
-  {
-    id: '1',
-    ticker: 'AAPL',
-    tickerLabel: 'Apple Inc.',
-    tradeType: TRADE_TYPE.BUY,
-    quantity: 100,
-    price: 150.25,
-    amount: 15025.0,
-    tradeDate: '2024-01-15',
-    uploadDate: '2024-01-16',
-    broker: 'Fidelity',
-    exchange: 'NASDAQ',
-    currency: CURRENCY.USD,
-    userNotes: 'Long-term hold',
-    transactionHistory: 'Initial position in AAPL for long-term growth strategy',
-  },
-  {
-    id: '2',
-    ticker: 'GOOGL',
-    tickerLabel: 'Alphabet Inc.',
-    tradeType: TRADE_TYPE.SELL,
-    quantity: 50,
-    price: 2750.8,
-    amount: 137540.0,
-    tradeDate: '2024-01-14',
-    uploadDate: '2024-01-15',
-    broker: 'Schwab',
-    exchange: 'NASDAQ',
-    currency: CURRENCY.USD,
-    userNotes: 'Profit taking',
-    transactionHistory: 'Partial profit taking on GOOGL after 40% gain',
-  },
-  {
-    id: '3',
-    ticker: 'MSFT',
-    tickerLabel: 'Microsoft Corp.',
-    tradeType: TRADE_TYPE.DIVIDEND,
-    quantity: 200,
-    price: 2.75,
-    amount: 550.0,
-    tradeDate: '2024-01-10',
-    uploadDate: '2024-01-11',
-    broker: 'Fidelity',
-    exchange: 'NASDAQ',
-    currency: CURRENCY.USD,
-    userNotes: 'Quarterly dividend',
-    transactionHistory: 'Q4 2023 dividend payment from MSFT holdings',
-  },
-]
-
-type SortField = keyof Transaction
+type SortField = keyof TransactionData
 type SortDirection = 'asc' | 'desc' | null
 
 export default function TransactionHistoryPage() {
   const navigate = useNavigate()
-  const [transactions] = useState<Transaction[]>(mockTransactions)
-  const [sortField, setSortField] = useState<SortField>('tradeDate')
+  const dispatch = useDispatch()
+  const { showToast } = useToast()
+  const { transactions } = useSelector((state: RootState) => state.transactionHistory)
+  const loading = useSelector((state: RootState) => state.transactionHistory.loading)
+  const error = useSelector((state: RootState) => state.transactionHistory.error)
+
+  const hasFetchedTransactions = useRef(false)
+
+  const fetchTransactions = useCallback(() => {
+    dispatch(fetchTransactionHistoryStart())
+    TransactionService.getTransactionHistory()
+      .then((data: GetTransactionHistoryResponse) => {
+        dispatch(fetchTransactionHistorySuccess(data))
+      })
+      .catch((err) => {
+        dispatch(
+          fetchTransactionHistoryFailure(err?.message || 'Failed to fetch transaction history')
+        )
+        showToast({
+          type: 'error',
+          title: 'Failed to fetch transactions',
+          message: err?.message || 'An error occurred while fetching transaction history.',
+        })
+      })
+  }, [dispatch, showToast])
+
+  useEffect(() => {
+    if (hasFetchedTransactions.current) return
+
+    fetchTransactions()
+
+    hasFetchedTransactions.current = true
+  }, [fetchTransactions, hasFetchedTransactions])
+
+  const [sortField, setSortField] = useState<SortField>('transaction_date')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
 
   // Filter states
@@ -138,7 +129,7 @@ export default function TransactionHistoryPage() {
     setTradeTypeFilter('All')
   }
 
-  const handleEditTransaction = (transaction: Transaction) => {
+  const handleEditTransaction = (transaction: TransactionData) => {
     // TODO: Implement edit transaction modal/form
     console.log('Editing transaction:', transaction)
   }
@@ -151,6 +142,29 @@ export default function TransactionHistoryPage() {
   const handleUpdateNotes = (id: string, notes: string) => {
     // TODO: Implement API call to update notes
     console.log('Updating notes for transaction:', id, notes)
+  }
+
+  // Optionally show loading and error states in the UI
+  if (loading) {
+    return (
+      <div className="container mx-auto py-6 px-4">
+        <Title as="h1">Transaction History</Title>
+        <div className="flex justify-center items-center h-64">
+          <span className="text-muted-foreground">Loading transactions...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto py-6 px-4">
+        <Title as="h1">Transaction History</Title>
+        <div className="flex justify-center items-center h-64">
+          <span className="text-destructive">{error}</span>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -198,7 +212,7 @@ export default function TransactionHistoryPage() {
                 <Input
                   id="symbol"
                   placeholder="e.g. AAPL"
-                  className="font-mono w-full"
+                  className="w-full"
                   value={symbolFilter}
                   onChange={(e) => setSymbolFilter(e.target.value)}
                 />
@@ -300,22 +314,23 @@ export default function TransactionHistoryPage() {
                         <TableRow>
                           <TableHead
                             sortable
-                            sortDirection={sortField === 'tradeDate' ? sortDirection : null}
-                            onSort={() => handleSort('tradeDate')}
+                            sortDirection={sortField === 'transaction_date' ? sortDirection : null}
+                            onSort={() => handleSort('transaction_date')}
+                            className="w-[120px]"
                           >
                             Trade Date
                           </TableHead>
                           <TableHead
                             sortable
-                            sortDirection={sortField === 'ticker' ? sortDirection : null}
-                            onSort={() => handleSort('ticker')}
+                            sortDirection={sortField === 'symbol' ? sortDirection : null}
+                            onSort={() => handleSort('symbol')}
                           >
                             Symbol
                           </TableHead>
                           <TableHead
                             sortable
-                            sortDirection={sortField === 'tradeType' ? sortDirection : null}
-                            onSort={() => handleSort('tradeType')}
+                            sortDirection={sortField === 'trade_type' ? sortDirection : null}
+                            onSort={() => handleSort('trade_type')}
                           >
                             Trade Type
                           </TableHead>
@@ -357,17 +372,10 @@ export default function TransactionHistoryPage() {
                           </TableHead>
                           <TableHead
                             sortable
-                            sortDirection={sortField === 'userNotes' ? sortDirection : null}
-                            onSort={() => handleSort('userNotes')}
+                            sortDirection={sortField === 'user_notes' ? sortDirection : null}
+                            onSort={() => handleSort('user_notes')}
                           >
                             User Notes
-                          </TableHead>
-                          <TableHead
-                            sortable
-                            sortDirection={sortField === 'uploadDate' ? sortDirection : null}
-                            onSort={() => handleSort('uploadDate')}
-                          >
-                            Upload Date
                           </TableHead>
                           <TableHead>Action</TableHead>
                         </TableRow>
@@ -375,33 +383,30 @@ export default function TransactionHistoryPage() {
                       <TableBody>
                         {currentTransactions.map((transaction) => (
                           <TableRow key={transaction.id}>
-                            <TableCell>{formatDate(transaction.tradeDate)}</TableCell>
-                            <TableCell className="font-mono font-medium">
-                              {transaction.ticker}
-                            </TableCell>
+                            <TableCell>{transaction.transaction_date}</TableCell>
+                            <TableCell className="font-medium">{transaction.symbol}</TableCell>
                             <TableCell
                               className={`font-medium ${
-                                transaction.tradeType === TRADE_TYPE.BUY
+                                transaction.trade_type === TRADE_TYPE.BUY
                                   ? 'text-primary'
-                                  : transaction.tradeType === TRADE_TYPE.SELL
+                                  : transaction.trade_type === TRADE_TYPE.SELL
                                     ? 'text-chart-1'
-                                    : 'text-muted' // Medium Grey-Green for Dividends
+                                    : 'text-muted'
                               }`}
                             >
-                              {transaction.tradeType}
+                              {transaction.trade_type}
                             </TableCell>
                             <TableCell>{formatCurrency(transaction.price)}</TableCell>
                             <TableCell>{transaction.quantity.toLocaleString()}</TableCell>
                             <TableCell className="text-right text-muted-foreground">
-                              {transaction.tradeType === TRADE_TYPE.SELL ? '-' : ''}
+                              {transaction.trade_type === TRADE_TYPE.SELL ? '-' : ''}
                               {formatCurrency(Math.abs(transaction.amount))}
                             </TableCell>
                             <TableCell>{transaction.currency}</TableCell>
                             <TableCell>{transaction.broker}</TableCell>
                             <TableCell className="max-w-32 truncate">
-                              {transaction.userNotes || '-'}
+                              {transaction.user_notes || '-'}
                             </TableCell>
-                            <TableCell>{formatDate(transaction.uploadDate)}</TableCell>
                             <TableCell>
                               <div className="flex items-center gap-2">
                                 <button
