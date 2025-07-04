@@ -9,7 +9,7 @@ import DropdownTrigger from '@/components/ui/dropdown-trigger'
 import { Label } from '@/components/ui/label'
 import { Title } from '@/components/ui/title'
 
-interface TransactionData {
+interface ManualTransactionForm {
   id?: string
   tradeDate: string
   symbol: string
@@ -22,7 +22,7 @@ interface TransactionData {
   notes: string
 }
 
-interface BatchTransaction extends TransactionData {
+interface BatchTransaction extends ManualTransactionForm {
   id: string
 }
 
@@ -43,7 +43,7 @@ interface Symbol {
 
 export default function ManualTransactionPage() {
   const navigate = useNavigate()
-  const [transaction, setTransaction] = useState<TransactionData>({
+  const [transaction, setTransaction] = useState<ManualTransactionForm>({
     tradeDate: '',
     symbol: '',
     tradeType: '',
@@ -178,8 +178,8 @@ export default function ManualTransactionPage() {
     fetchSymbols()
   }, [])
 
-  const handleInputChange = useCallback((field: keyof TransactionData, value: string) => {
-    setTransaction((prev) => ({
+  const handleInputChange = useCallback((field: keyof ManualTransactionForm, value: string) => {
+    setTransaction((prev: ManualTransactionForm) => ({
       ...prev,
       [field]: value,
     }))

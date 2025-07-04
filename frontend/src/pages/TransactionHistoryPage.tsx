@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { ROUTES } from '@/constants'
@@ -53,7 +53,9 @@ export default function TransactionHistoryPage() {
   const loading = useSelector((state: RootState) => state.transactionHistory.loading)
   const error = useSelector((state: RootState) => state.transactionHistory.error)
 
-  useEffect(() => {
+  const hasFetchedTransactions = useRef(false)
+
+  const fetchTransactions = useCallback(() => {
     dispatch(fetchTransactionHistoryStart())
     TransactionService.getTransactionHistory()
       .then((data: GetTransactionHistoryResponse) => {
@@ -70,6 +72,14 @@ export default function TransactionHistoryPage() {
         })
       })
   }, [dispatch, showToast])
+
+  useEffect(() => {
+    if (hasFetchedTransactions.current) return
+
+    fetchTransactions()
+
+    hasFetchedTransactions.current = true
+  }, [fetchTransactions, hasFetchedTransactions])
 
   const [sortField, setSortField] = useState<SortField>('transaction_date')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
@@ -202,7 +212,7 @@ export default function TransactionHistoryPage() {
                 <Input
                   id="symbol"
                   placeholder="e.g. AAPL"
-                  className="font-mono w-full"
+                  className="w-full"
                   value={symbolFilter}
                   onChange={(e) => setSymbolFilter(e.target.value)}
                 />

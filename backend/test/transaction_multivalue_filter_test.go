@@ -226,7 +226,7 @@ func TestMultiValueFiltering(t *testing.T) {
 		assert.False(t, tradeTypes[types.TradeTypeDividend]) // Should not be included
 
 		// Verify filters applied response
-		assert.Equal(t, []string{"Buy", "Sell"}, response.Data.FiltersApplied.Types)
+		assert.Equal(t, []string{"Buy", "Sell"}, response.Data.FiltersApplied.TradeTypes)
 	})
 
 	t.Run("Filter by multiple exchanges", func(t *testing.T) {
@@ -335,7 +335,7 @@ func TestMultiValueFiltering(t *testing.T) {
 
 		// Verify filters applied response
 		assert.Equal(t, []string{"AAPL", "GOOGL"}, response.Data.FiltersApplied.Symbols)
-		assert.Equal(t, []string{"Buy", "Sell"}, response.Data.FiltersApplied.Types)
+		assert.Equal(t, []string{"Buy", "Sell"}, response.Data.FiltersApplied.TradeTypes)
 		assert.Equal(t, []string{"USD"}, response.Data.FiltersApplied.Currencies)
 	})
 

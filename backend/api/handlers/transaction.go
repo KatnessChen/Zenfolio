@@ -86,7 +86,7 @@ type GetTransactionsData struct {
 // FiltersApplied represents the filters that were applied to the query
 type FiltersApplied struct {
 	Symbols    []string `json:"symbols,omitempty"`    // Support multiple symbols
-	Types      []string `json:"types,omitempty"`      // Support multiple types
+	TradeTypes []string `json:"types,omitempty"`      // Support multiple types
 	Exchanges  []string `json:"exchanges,omitempty"`  // Support multiple exchanges
 	Brokers    []string `json:"brokers,omitempty"`    // Support multiple brokers
 	Currencies []string `json:"currencies,omitempty"` // Support multiple currencies
@@ -106,6 +106,37 @@ type TransactionQueryParams struct {
 	EndDate    *time.Time
 	SortBy     string
 	SortOrder  string
+}
+
+// modelToTransactionData converts a models.Transaction to types.TransactionData
+func modelToTransactionData(transaction models.Transaction) types.TransactionData {
+	return types.TransactionData{
+		ID:              fmt.Sprint(transaction.ID),
+		Symbol:          transaction.Symbol,
+		TradeType:       types.TradeType(transaction.TradeType),
+		Quantity:        transaction.Quantity,
+		Price:           transaction.Price,
+		Amount:          transaction.Amount,
+		Currency:        transaction.Currency,
+		Broker:          transaction.Broker,
+		Exchange:        transaction.Exchange,
+		TransactionDate: transaction.TransactionDate.Format("2006-01-02"),
+		UserNotes:       transaction.UserNotes,
+		Account:         transaction.Account,
+	}
+}
+
+// modelsToTransactionData converts a slice of models.Transaction to []types.TransactionData
+func modelsToTransactionData(transactions []models.Transaction) []types.TransactionData {
+	if len(transactions) == 0 {
+		return []types.TransactionData{}
+	}
+
+	responseTransactions := make([]types.TransactionData, len(transactions))
+	for i, transaction := range transactions {
+		responseTransactions[i] = modelToTransactionData(transaction)
+	}
+	return responseTransactions
 }
 
 // ExtractTransactions handles the image upload and transaction extraction
@@ -245,21 +276,7 @@ func (h *TransactionsHandler) CreateTransactions(c *gin.Context) {
 	}
 
 	// Convert created transactions to response format
-	var responseTransactions []types.TransactionData
-	for _, transaction := range createdTransactions {
-		responseTransactions = append(responseTransactions, types.TransactionData{
-			ID:              fmt.Sprint(transaction.ID),
-			Symbol:          transaction.Symbol,
-			TradeType:       types.TradeType(transaction.TradeType),
-			Quantity:        transaction.Quantity,
-			Price:           transaction.Price,
-			Amount:          transaction.Amount,
-			Currency:        transaction.Currency,
-			Broker:          transaction.Broker,
-			TransactionDate: transaction.TransactionDate.Format("2006-01-02"),
-			UserNotes:       transaction.UserNotes,
-		})
-	}
+	responseTransactions := modelsToTransactionData(createdTransactions)
 
 	c.JSON(http.StatusCreated, CreateTransactionsResponse{
 		Success: true,
@@ -334,27 +351,7 @@ func (h *TransactionsHandler) GetTransactionHistory(c *gin.Context) {
 	}
 
 	// Convert transactions to response format (exclude user_id for security)
-	var responseTransactions []types.TransactionData
-	for _, transaction := range transactions {
-		responseTransactions = append(responseTransactions, types.TransactionData{
-			ID:              fmt.Sprint(transaction.ID),
-			Symbol:          transaction.Symbol,
-			TradeType:       types.TradeType(transaction.TradeType),
-			Quantity:        transaction.Quantity,
-			Price:           transaction.Price,
-			Amount:          transaction.Amount,
-			Currency:        transaction.Currency,
-			Exchange:        transaction.Exchange,
-			Broker:          transaction.Broker,
-			TransactionDate: transaction.TransactionDate.Format("2006-01-02"),
-			UserNotes:       transaction.UserNotes,
-		})
-	}
-
-	// Ensure empty slice instead of nil
-	if responseTransactions == nil {
-		responseTransactions = []types.TransactionData{}
-	}
+	responseTransactions := modelsToTransactionData(transactions)
 
 	// Calculate pagination
 	totalPages := int((totalCount + int64(params.PageSize) - 1) / int64(params.PageSize))
@@ -364,7 +361,7 @@ func (h *TransactionsHandler) GetTransactionHistory(c *gin.Context) {
 	// Build filters applied response
 	filtersApplied := FiltersApplied{
 		Symbols:    params.Symbols,
-		Types:      params.TradeTypes,
+		TradeTypes: params.TradeTypes,
 		Exchanges:  params.Exchanges,
 		Brokers:    params.Brokers,
 		Currencies: params.Currencies,
