@@ -6,7 +6,7 @@ import { CURRENCY } from '@/constants/setting'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { ConfirmationModal } from '@/components/ui/confirmation-modal'
+import { ConfirmationModal, ImageViewerModal } from '@/components/ui'
 import { Dropdown, DropdownItem } from '@/components/ui/dropdown'
 import {
   Table,
@@ -56,6 +56,7 @@ export default function ExtractedDataReviewPage() {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false)
   const [showCancelConfirmation, setShowCancelConfirmation] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
+  const [showImageViewer, setShowImageViewer] = useState(false)
 
   useEffect(() => {
     // Redirect if no files in store
@@ -430,7 +431,9 @@ export default function ExtractedDataReviewPage() {
                   <img
                     src={getSerializableFileUrl(files[currentFileIndex])}
                     alt={files[currentFileIndex].name}
-                    className="max-w-full h-auto rounded-lg"
+                    className="max-w-full h-auto rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() => setShowImageViewer(true)}
+                    title="Click to view in full screen"
                   />
                 </div>
               )}
@@ -754,6 +757,16 @@ export default function ExtractedDataReviewPage() {
         onConfirm={confirmCancel}
         onCancel={cancelCancel}
       />
+
+      {/* Image viewer modal */}
+      {files[currentFileIndex] && (
+        <ImageViewerModal
+          isOpen={showImageViewer}
+          imageUrl={getSerializableFileUrl(files[currentFileIndex])}
+          imageName={files[currentFileIndex].name}
+          onClose={() => setShowImageViewer(false)}
+        />
+      )}
     </div>
   )
 }

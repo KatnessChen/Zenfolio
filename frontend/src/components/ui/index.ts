@@ -2,6 +2,7 @@
 export { Button } from './button'
 export { buttonVariants } from './button-variants'
 export { ConfirmationModal } from './confirmation-modal'
+export { ImageViewerModal } from './ImageViewerModal'
 export {
   Pagination,
   PaginationContent,
