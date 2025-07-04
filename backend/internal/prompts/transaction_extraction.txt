@@ -9,11 +9,11 @@ Organize the content into the following JSON format:
       "exchange": "NASDAQ",
       "broker": "Firstrade",
       "currency": "USD",
-      "trade_date": "2025-01-01",
+      "transaction_date": "2025-01-01",
       "trade_type": "Buy",
       "quantity": 1,
       "price": 200.00,
-      "trade_amount": 200.00
+      "amount": 200.00
     },
     {
       "symbol": "2330",
@@ -21,11 +21,11 @@ Organize the content into the following JSON format:
       "exchange": "TPE", 
       "currency": "TWD",
       "broker": "元富證券",
-      "trade_date": "2025-04-02",
+      "transaction_date": "2025-04-02",
       "trade_type": "Buy",
       "quantity": 25,
       "price": 800.00,
-      "trade_amount": 20000.00
+      "amount": 20000.00
     }
   ]
 }
@@ -34,7 +34,7 @@ Rules:
 1. trade_type must be one of: "Buy", "Sell", "Dividends"
 2. symbol is the stock symbol, symbol_label is human-readable stock name
 3. Infer the "exchange" and "currency" from the screenshot content
-4. trade_date should be a valid ISO 8601 date format (YYYY-MM-DD), not more than 30 years in the past, and not future dates
+4. transaction_date should be a valid ISO 8601 date format (YYYY-MM-DD), not more than 30 years in the past, and not future dates
 5. All numeric values should be numbers, not strings
 6. If information is not available, use reasonable defaults or null
 

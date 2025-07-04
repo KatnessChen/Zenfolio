@@ -88,7 +88,7 @@ func createTestTransactions(db *gorm.DB, userID uint) error {
 		{
 			UserID:          userID,
 			Symbol:          "AAPL",
-			Type:            types.TradeTypeBuy,
+			TradeType:       types.TradeTypeBuy,
 			Quantity:        100,
 			Price:           150.00,
 			Amount:          15000.00,
@@ -100,7 +100,7 @@ func createTestTransactions(db *gorm.DB, userID uint) error {
 		{
 			UserID:          userID,
 			Symbol:          "GOOGL",
-			Type:            types.TradeTypeBuy,
+			TradeType:       types.TradeTypeBuy,
 			Quantity:        50,
 			Price:           2800.00,
 			Amount:          140000.00,
@@ -112,7 +112,7 @@ func createTestTransactions(db *gorm.DB, userID uint) error {
 		{
 			UserID:          userID,
 			Symbol:          "MSFT",
-			Type:            types.TradeTypeSell,
+			TradeType:       types.TradeTypeSell,
 			Quantity:        75,
 			Price:           400.00,
 			Amount:          30000.00,
@@ -124,7 +124,7 @@ func createTestTransactions(db *gorm.DB, userID uint) error {
 		{
 			UserID:          userID,
 			Symbol:          "TSLA",
-			Type:            types.TradeTypeDividend,
+			TradeType:       types.TradeTypeDividend,
 			Quantity:        0,
 			Price:           0,
 			Amount:          500.00,
@@ -136,7 +136,7 @@ func createTestTransactions(db *gorm.DB, userID uint) error {
 		{
 			UserID:          userID,
 			Symbol:          "BTC",
-			Type:            types.TradeTypeBuy,
+			TradeType:       types.TradeTypeBuy,
 			Quantity:        0.5,
 			Price:           60000.00,
 			Amount:          30000.00,
@@ -219,7 +219,7 @@ func TestMultiValueFiltering(t *testing.T) {
 		// Verify we got the correct types
 		tradeTypes := make(map[types.TradeType]bool)
 		for _, transaction := range response.Data.Transactions {
-			tradeTypes[transaction.Type] = true
+			tradeTypes[transaction.TradeType] = true
 		}
 		assert.True(t, tradeTypes[types.TradeTypeBuy])
 		assert.True(t, tradeTypes[types.TradeTypeSell])
@@ -329,7 +329,7 @@ func TestMultiValueFiltering(t *testing.T) {
 		// Verify all conditions are met
 		for _, transaction := range response.Data.Transactions {
 			assert.Contains(t, []string{"AAPL", "GOOGL"}, transaction.Symbol)
-			assert.Contains(t, []types.TradeType{types.TradeTypeBuy, types.TradeTypeSell}, transaction.Type)
+			assert.Contains(t, []types.TradeType{types.TradeTypeBuy, types.TradeTypeSell}, transaction.TradeType)
 			assert.Equal(t, "USD", transaction.Currency)
 		}
 

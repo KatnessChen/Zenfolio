@@ -41,6 +41,8 @@ func (r *TransactionRepository) CreateMany(transactions []models.Transaction) ([
 	var createdTransactions []models.Transaction
 
 	for i, transaction := range transactions {
+		// ignore id from frontend
+		transaction.ID = 0
 		// Create transaction
 		if err := tx.Create(&transaction).Error; err != nil {
 			tx.Rollback()

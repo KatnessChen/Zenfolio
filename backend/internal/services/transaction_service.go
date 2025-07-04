@@ -11,7 +11,7 @@ import (
 type TransactionFilter struct {
 	UserID         *uint
 	Symbols        []string // Support multiple symbols
-	Types          []string // Support multiple types
+	TradeTypes     []string // Support multiple types
 	Exchanges      []string // Support multiple exchanges
 	Brokers        []string // Support multiple brokers
 	Currencies     []string // Support multiple currencies
@@ -63,7 +63,7 @@ func (s *TransactionService) GetTransactionsWithFilter(filter TransactionFilter)
 	return s.transactionRepo.GetWithFilters(
 		filter.UserID,
 		filter.Symbols,
-		filter.Types,
+		filter.TradeTypes,
 		filter.Exchanges,
 		filter.Brokers,
 		filter.Currencies,
@@ -83,7 +83,7 @@ func (s *TransactionService) CountTransactions(filter TransactionFilter) (int64,
 	return s.transactionRepo.CountWithFilters(
 		filter.UserID,
 		filter.Symbols,
-		filter.Types,
+		filter.TradeTypes,
 		filter.Exchanges,
 		filter.Brokers,
 		filter.Currencies,

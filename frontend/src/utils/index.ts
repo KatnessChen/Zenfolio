@@ -18,15 +18,6 @@ export function formatCurrency(amount: number, currency = 'USD'): string {
   }).format(amount)
 }
 
-// Format date values
-export function formatDate(date: string | Date): string {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(new Date(date))
-}
-
 // Validate file types for image uploads
 export function isValidImageFile(file: File): boolean {
   const validTypes = ['image/png', 'image/jpeg', 'image/gif', 'image/webp']

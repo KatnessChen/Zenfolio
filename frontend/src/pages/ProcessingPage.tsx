@@ -2,9 +2,10 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { ROUTES } from '@/constants'
-import { TransactionService } from '@/lib/transaction-service'
+import { TransactionService } from '@/services/transaction.service'
 import { ClockIcon, SpinnerIcon, CheckIcon, XIcon } from '@/components/icons'
 import { initializeFiles, updateFileStatus } from '@/store/fileProcessingSlice'
+import { filesToSerializable } from '@/utils/fileUtils'
 import type { RootState, AppDispatch } from '@/store'
 import type { ExtractResponse } from '@/types'
 import {
@@ -47,7 +48,6 @@ export default function ProcessingPage() {
                 status,
                 result: result.data,
                 error: error || (!result.success ? result.message : undefined),
-                progress: 100,
               })
             )
 
@@ -58,7 +58,6 @@ export default function ProcessingPage() {
               status,
               result: result.data,
               error: error || (!result.success ? result.message : undefined),
-              progress: 100,
             }
 
             const hasAnyCompleted = currentStates.some((fs) => fs.status === 'completed')
@@ -101,11 +100,21 @@ export default function ProcessingPage() {
     // Prevent multiple executions
     if (hasStartedExtractionRef.current) return
 
-    // Initialize files in store
-    dispatch(initializeFiles({ files: state.files }))
+    // Convert files to serializable format and initialize in store
+    const initializeAndStart = async () => {
+      try {
+        const serializableFiles = await filesToSerializable(state.files)
+        dispatch(initializeFiles({ files: serializableFiles }))
 
-    // Start parallel extraction
-    startParallelExtraction(state.files)
+        // Start parallel extraction with original File objects
+        startParallelExtraction(state.files)
+      } catch (error) {
+        console.error('Failed to convert files to serializable format:', error)
+        navigate(ROUTES.TRANSACTIONS_UPLOAD)
+      }
+    }
+
+    initializeAndStart()
 
     // Mark extraction as started
     hasStartedExtractionRef.current = true

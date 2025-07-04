@@ -3,13 +3,12 @@ import { Card, CardContent } from './ui/card'
 import { Input } from './ui/input'
 import { EditIcon } from './icons/EditIcon'
 import { DeleteIcon } from './icons/DeleteIcon'
-import type { Transaction } from '@/types/transaction'
-import { formatDate } from '../utils'
+import type { TransactionData } from '@/types'
 import { TRADE_TYPE } from '../constants'
 
 interface TransactionCardProps {
-  transaction: Transaction
-  onEdit: (transaction: Transaction) => void
+  transaction: TransactionData
+  onEdit: (transaction: TransactionData) => void
   onDelete: (id: string) => void
   onUpdateNotes?: (id: string, notes: string) => void
 }
@@ -22,7 +21,7 @@ export function TransactionCard({
 }: TransactionCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [isEditingNotes, setIsEditingNotes] = useState(false)
-  const [notes, setNotes] = useState(transaction.userNotes || '')
+  const [notes, setNotes] = useState(transaction.user_notes || '')
 
   const handleCardClick = (e: React.MouseEvent) => {
     // Don't toggle if clicking on action buttons or input field
@@ -47,7 +46,7 @@ export function TransactionCard({
     if (e.key === 'Enter') {
       handleNotesSubmit()
     } else if (e.key === 'Escape') {
-      setNotes(transaction.userNotes || '')
+      setNotes(transaction.user_notes || '')
       setIsEditingNotes(false)
     }
   }
@@ -80,19 +79,19 @@ export function TransactionCard({
       <CardContent className="p-4">
         {/* Row 1: Symbol + Trade Type */}
         <div className="flex justify-between items-center mb-2 transition-all duration-200 hover:translate-x-1">
-          <span className="text-foreground font-semibold text-lg">{transaction.ticker}</span>
+          <span className="text-foreground font-semibold text-lg">{transaction.symbol}</span>
           <span
-            className={`font-medium text-sm transition-all duration-200 ${getTradeTypeColorClass(transaction.tradeType)}`}
+            className={`font-medium text-sm transition-all duration-200 ${getTradeTypeColorClass(transaction.trade_type)}`}
           >
-            {transaction.tradeType}
+            {transaction.trade_type}
           </span>
         </div>
 
         {/* Row 2: Trade Date + Amount */}
         <div className="flex justify-between items-center mb-2 transition-all duration-200 hover:translate-x-1">
-          <span className="text-foreground text-sm">{formatDate(transaction.tradeDate)}</span>
+          <span className="text-foreground text-sm">{transaction.transaction_date}</span>
           <span className="text-foreground text-sm font-medium text-right">
-            {formatAmount(transaction.amount, transaction.tradeType)}
+            {formatAmount(transaction.amount, transaction.trade_type)}
           </span>
         </div>
 
@@ -100,7 +99,7 @@ export function TransactionCard({
         <div className="flex justify-between items-center mb-2">
           <span className="text-muted text-xs">{transaction.broker}</span>
           <div className="flex items-center gap-2">
-            <span className="text-muted text-xs">{formatDate(transaction.uploadDate)}</span>
+            <span className="text-muted text-xs">{transaction.exchange}</span>
             {/* Expand/Collapse indicator */}
             <svg
               className={`w-4 h-4 text-muted transition-transform duration-300 ease-in-out ${
@@ -208,7 +207,7 @@ export function TransactionCard({
                   className="text-foreground text-sm min-h-[32px] p-2 rounded border border-transparent hover:border-border cursor-text transition-all duration-200 hover:bg-input/50"
                   data-action
                 >
-                  {transaction.userNotes || 'Click to add notes...'}
+                  {transaction.user_notes || 'Click to add notes...'}
                 </div>
               )}
             </div>

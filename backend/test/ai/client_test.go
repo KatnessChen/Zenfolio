@@ -170,7 +170,7 @@ func TestExtractTransactionsFromImage(t *testing.T) {
 		t.Logf("  Exchange: %s", transaction.Exchange)
 		t.Logf("  Currency: %s", transaction.Currency)
 		t.Logf("  Transaction Date: %s", transaction.TransactionDate)
-		t.Logf("  Trade Type: %s", transaction.Type)
+		t.Logf("  Trade Type: %s", transaction.TradeType)
 		t.Logf("  Quantity: %.2f", transaction.Quantity)
 		t.Logf("  Price: %.2f", transaction.Price)
 		t.Logf("  Amount: %.2f", transaction.Amount)
@@ -181,14 +181,14 @@ func TestExtractTransactionsFromImage(t *testing.T) {
 			t.Errorf("Transaction %d: Symbol should not be empty", i+1)
 		}
 
-		if transaction.Type == "" {
+		if transaction.TradeType == "" {
 			t.Errorf("Transaction %d: Type should not be empty", i+1)
 		}
 
 		// Validate trade type is one of the allowed values
 		validTradeTypes := constants.ValidTradeTypesMap()
-		if !validTradeTypes[string(transaction.Type)] {
-			t.Errorf("Transaction %d: Invalid trade type '%s', must be %v", i+1, transaction.Type, constants.ValidTradeTypes())
+		if !validTradeTypes[string(transaction.TradeType)] {
+			t.Errorf("Transaction %d: Invalid trade type '%s', must be %v", i+1, transaction.TradeType, constants.ValidTradeTypes())
 		}
 
 		if transaction.TransactionDate == "" {

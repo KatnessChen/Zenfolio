@@ -139,7 +139,7 @@ func TestTransaction_BeforeCreate(t *testing.T) {
 	transaction := &models.Transaction{
 		UserID:          user.ID,
 		Symbol:          "AAPL",
-		Type:            "buy",
+		TradeType:       "buy",
 		Quantity:        100,
 		Price:           150.00,
 		Amount:          15000.00,
