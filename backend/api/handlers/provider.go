@@ -10,6 +10,7 @@ import (
 
 type Handlers struct {
 	Transactions *TransactionsHandler
+	ExtractTransactionsHandler *ExtractTransactionHandler
 	Auth         *AuthHandler
 }
 
@@ -25,7 +26,8 @@ func InitHandlers(db *gorm.DB, cfg *config.Config) *Handlers {
 	}
 
 	return &Handlers{
-		Transactions: NewTransactionsHandler(transactionService, aiClient),
+		Transactions: NewTransactionsHandler(transactionService),
+		ExtractTransactionsHandler: NewExtractTransactionsHandler(cfg, aiClient),
 		Auth:         NewAuthHandler(db, cfg),
 	}
 }

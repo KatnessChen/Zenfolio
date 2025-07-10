@@ -20,7 +20,7 @@ type Client interface {
 type Config struct {
 	APIKey      string
 	Model       string
-	Timeout     int // timeout in seconds
+	Timeout     int    // timeout in seconds
 	MaxRetry    int
 	Environment string // "development" or "production"
 }

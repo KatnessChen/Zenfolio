@@ -60,9 +60,8 @@ func setupTestTransactionsHandler() (*handlers.TransactionsHandler, *gorm.DB, er
 	transactionRepo := repositories.NewTransactionRepository(db)
 	transactionService := services.NewTransactionService(transactionRepo)
 
-	// Create mock AI client for testing
-	mockAI := &mockAIClient{}
-	transactionsHandler := handlers.NewTransactionsHandler(transactionService, mockAI)
+	// Create transactions handler without AI client (extraction moved to separate handler)
+	transactionsHandler := handlers.NewTransactionsHandler(transactionService)
 
 	return transactionsHandler, db, nil
 }
