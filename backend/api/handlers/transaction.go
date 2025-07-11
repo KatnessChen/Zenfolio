@@ -26,16 +26,16 @@ type TransactionsHandler struct {
 
 // TransactionRequest represents the request structure for creating transactions
 type TransactionRequest struct {
-	Symbol      string          `json:"symbol" binding:"required"`
-	Exchange    string          `json:"exchange" binding:"required"`
-	Broker      string          `json:"broker"`
-	Currency    string          `json:"currency" binding:"required"`
-	TradeDate   string          `json:"transaction_date" binding:"required"`
-	TradeType   types.TradeType `json:"trade_type" binding:"required"`
-	Quantity    float64         `json:"quantity" binding:"required,gt=0"`
-	Price       float64         `json:"price" binding:"required,gt=0"`
-	Amount float64         `json:"amount" binding:"required,gt=0"`
-	UserNotes   string          `json:"user_notes"`
+	Symbol    string          `json:"symbol" binding:"required"`
+	Exchange  string          `json:"exchange" binding:"required"`
+	Broker    string          `json:"broker"`
+	Currency  string          `json:"currency" binding:"required"`
+	TradeDate string          `json:"transaction_date" binding:"required"`
+	TradeType types.TradeType `json:"trade_type" binding:"required"`
+	Quantity  float64         `json:"quantity" binding:"required,gt=0"`
+	Price     float64         `json:"price" binding:"required,gt=0"`
+	Amount    float64         `json:"amount" binding:"required,gt=0"`
+	UserNotes string          `json:"user_notes"`
 }
 
 // CreateTransactionsRequest represents the batch request for creating transactions
@@ -68,7 +68,7 @@ type GetTransactionsResponse struct {
 // GetTransactionsData represents the data part of get transactions response
 type GetTransactionsData struct {
 	Transactions   []types.TransactionData `json:"transactions"`
-	Pagination     types.PaginationData          `json:"pagination"`
+	Pagination     types.PaginationData    `json:"pagination"`
 	FiltersApplied FiltersApplied          `json:"filters_applied"`
 }
 

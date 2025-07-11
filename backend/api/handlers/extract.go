@@ -79,4 +79,3 @@ func (h *ExtractTransactionHandler) ExtractTransactions(c *gin.Context) {
 
 	c.JSON(http.StatusOK, extractResp)
 }
-

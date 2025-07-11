@@ -226,7 +226,7 @@ func (c *AIModelClient) parseTransactionResponse(responseText string, filename s
 		Data: &types.ExtractResponseData{
 			Transactions:     result.Transactions,
 			TransactionCount: len(result.Transactions),
-			FileName:        filename,
+			FileName:         filename,
 		},
 		Success: true,
 		Message: constants.MsgTransactionsExtracted,
