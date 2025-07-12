@@ -55,11 +55,11 @@ export function TransactionCard({
   const getTradeTypeColorClass = (tradeType: string) => {
     switch (tradeType.toUpperCase()) {
       case TRADE_TYPE.BUY:
-        return 'text-primary' // Brighter Sage Green
+        return 'text-primary'
       case TRADE_TYPE.SELL:
-        return 'text-chart-1' // Brighter Soft Salmon Pink
+        return 'text-chart-3'
       case TRADE_TYPE.DIVIDEND:
-        return 'text-muted' // Medium Grey-Green
+        return 'text-chart-1'
       default:
         return 'text-foreground' // Pure Light Gray fallback
     }
