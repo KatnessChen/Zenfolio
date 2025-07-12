@@ -389,8 +389,8 @@ export default function TransactionHistoryPage() {
                                 transaction.trade_type === TRADE_TYPE.BUY
                                   ? 'text-primary'
                                   : transaction.trade_type === TRADE_TYPE.SELL
-                                    ? 'text-chart-1'
-                                    : 'text-muted'
+                                    ? 'text-chart-3'
+                                    : 'text-chart-1'
                               }`}
                             >
                               {transaction.trade_type}

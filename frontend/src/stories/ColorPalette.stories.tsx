@@ -66,27 +66,11 @@ const ColorPalette = () => {
             </p>
           </div>
           <div className="space-y-2">
-            <div className="w-full h-16 bg-destructive border border-border rounded-md"></div>
+            <div className="w-full h-16 bg-loss border border-border rounded-md"></div>
             <p className="text-xs text-muted-foreground">
               Alert Red
               <br />
               (Loss/Error)
-            </p>
-          </div>
-          <div className="space-y-2">
-            <div className="w-full h-16 bg-chart-1 border border-border rounded-md"></div>
-            <p className="text-xs text-muted-foreground">
-              Soft Salmon Pink
-              <br />
-              (Chart Accent)
-            </p>
-          </div>
-          <div className="space-y-2">
-            <div className="w-full h-16 bg-chart-3 border border-border rounded-md"></div>
-            <p className="text-xs text-muted-foreground">
-              Muted Ochre
-              <br />
-              (Chart Accent)
             </p>
           </div>
         </div>
@@ -141,115 +125,27 @@ type Story = StoryObj<typeof meta>
 
 export const ZenfolioColors: Story = {}
 
-export const CoreColors: Story = {
-  render: () => (
-    <div className="p-6 space-y-4">
-      <h3 className="text-xl font-semibold text-primary border-b border-border pb-2">
-        Core Colors
-      </h3>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="space-y-2">
-          <div className="w-full h-16 bg-background border border-border rounded-md"></div>
-          <p className="text-xs text-muted-foreground">
-            Deep Ink Green
-            <br />
-            (Background)
-          </p>
-        </div>
-        <div className="space-y-2">
-          <div className="w-full h-16 bg-card border border-border rounded-md"></div>
-          <p className="text-xs text-muted-foreground">
-            Dark Grey-Green
-            <br />
-            (Cards)
-          </p>
-        </div>
-        <div className="space-y-2">
-          <div className="w-full h-16 bg-primary border border-border rounded-md"></div>
-          <p className="text-xs text-muted-foreground">
-            Brighter Sage Green
-            <br />
-            (Primary)
-          </p>
-        </div>
-        <div className="space-y-2">
-          <div className="w-full h-16 bg-muted-foreground border border-border rounded-md"></div>
-          <p className="text-xs text-muted-foreground">
-            Medium Grey-Green
-            <br />
-            (Secondary Text)
-          </p>
-        </div>
-      </div>
-    </div>
-  ),
-}
-
-export const FinancialColors: Story = {
-  render: () => (
-    <div className="p-6 space-y-4">
-      <h3 className="text-xl font-semibold text-primary border-b border-border pb-2">
-        Financial & Status Colors
-      </h3>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="space-y-2">
-          <div className="w-full h-16 bg-profit border border-border rounded-md"></div>
-          <p className="text-xs text-muted-foreground">
-            Bright Grass Green
-            <br />
-            (Profit)
-          </p>
-        </div>
-        <div className="space-y-2">
-          <div className="w-full h-16 bg-destructive border border-border rounded-md"></div>
-          <p className="text-xs text-muted-foreground">
-            Alert Red
-            <br />
-            (Loss/Error)
-          </p>
-        </div>
-        <div className="space-y-2">
-          <div className="w-full h-16 bg-chart-1 border border-border rounded-md"></div>
-          <p className="text-xs text-muted-foreground">
-            Soft Salmon Pink
-            <br />
-            (Chart Accent)
-          </p>
-        </div>
-        <div className="space-y-2">
-          <div className="w-full h-16 bg-chart-3 border border-border rounded-md"></div>
-          <p className="text-xs text-muted-foreground">
-            Muted Ochre
-            <br />
-            (Chart Accent)
-          </p>
-        </div>
-      </div>
-    </div>
-  ),
-}
-
 const chartColors = [
-  { var: '--chart-1', name: 'Soft Salmon Pink', hex: '#E6B9B3' },
-  { var: '--chart-2', name: 'Muted Ochre', hex: '#C5AE8D' },
-  { var: '--chart-3', name: 'Brighter Sage Green', hex: '#9DC0B2' },
-  { var: '--chart-4', name: 'Medium Grey-Green', hex: '#A0B0A6' },
-  { var: '--chart-5', name: 'Light Sky Blue', hex: '#A3C5E8' },
-  { var: '--chart-6', name: 'Soft Purple', hex: '#B894D1' },
-  { var: '--chart-7', name: 'Warm Orange', hex: '#E8B794' },
-  { var: '--chart-8', name: 'Rose Pink', hex: '#E094B3' },
-  { var: '--chart-9', name: 'Soft Yellow Green', hex: '#C1D194' },
-  { var: '--chart-10', name: 'Soft Cyan', hex: '#94C5D1' },
-  { var: '--chart-11', name: 'Muted Magenta', hex: '#B394C5' },
-  { var: '--chart-12', name: 'Golden Yellow', hex: '#C5B394' },
-  { var: '--chart-13', name: 'Muted Green', hex: '#94C5A3' },
-  { var: '--chart-14', name: 'Steel Blue', hex: '#94A3C5' },
-  { var: '--chart-15', name: 'Coral', hex: '#D1A394' },
-  { var: '--chart-16', name: 'Lavender', hex: '#A394C5' },
-  { var: '--chart-17', name: 'Lime Green', hex: '#A3C594' },
-  { var: '--chart-18', name: 'Pink', hex: '#D194B8' },
-  { var: '--chart-19', name: 'Teal', hex: '#94B8C5' },
-  { var: '--chart-20', name: 'Olive', hex: '#B8C594' },
+  { var: '--chart-1', name: 'Pale Wheat' },
+  { var: '--chart-2', name: 'Deep Soil' },
+  { var: '--chart-3', name: 'Soft Salmon Pink' },
+  { var: '--chart-4', name: 'Earthy Pink' },
+  { var: '--chart-5', name: 'Terracotta (Earthy Red)' },
+  { var: '--chart-6', name: 'Wheat' },
+  { var: '--chart-7', name: 'Brick Brown' },
+  { var: '--chart-8', name: 'Sandstone' },
+  { var: '--chart-9', name: 'Olive Green' },
+  { var: '--chart-10', name: 'Dusty Blue' },
+  { var: '--chart-11', name: 'Forest Green' },
+  { var: '--chart-12', name: 'Clay Orange' },
+  { var: '--chart-13', name: 'Moss Green' },
+  { var: '--chart-14', name: 'Deep Navy' },
+  { var: '--chart-15', name: 'Ochre Yellow' },
+  { var: '--chart-16', name: 'Deep Night Sky Blue' },
+  { var: '--chart-17', name: 'Sage Green' },
+  { var: '--chart-18', name: 'Olive' },
+  { var: '--chart-19', name: 'Slate Green' },
+  { var: '--chart-20', name: 'Teal' },
 ]
 
 export const ChartColors = () => (
@@ -268,7 +164,6 @@ export const ChartColors = () => (
         />
         <div style={{ fontWeight: 600 }}>{color.name}</div>
         <div style={{ fontSize: 12, color: '#888' }}>{color.var}</div>
-        <div style={{ fontSize: 12, color: '#888' }}>{color.hex}</div>
       </div>
     ))}
   </div>

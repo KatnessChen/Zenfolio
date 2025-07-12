@@ -24,8 +24,7 @@ function App() {
       <ToastProvider>
         <Router>
           <ScrollToTop />
-          {/* Apply dark class for Zenfolio dark theme */}
-          <div className="min-h-screen bg-background dark flex flex-col">
+          <div className="min-h-screen bg-background flex flex-col">
             <div className="fixed top-0 left-0 right-0 z-50 border-b border-border/50">
               <Navigation />
             </div>
