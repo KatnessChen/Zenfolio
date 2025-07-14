@@ -10,7 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	testutils "github.com/transaction-tracker/backend/testutils"
 	"gorm.io/gorm"
 
 	"github.com/transaction-tracker/backend/api/handlers"
@@ -18,6 +17,7 @@ import (
 	"github.com/transaction-tracker/backend/config"
 	"github.com/transaction-tracker/backend/internal/constants"
 	"github.com/transaction-tracker/backend/internal/models"
+	"github.com/transaction-tracker/backend/internal/utils"
 )
 
 // TestSetup holds the test environment
@@ -34,7 +34,7 @@ func setupTestEnvironment(t *testing.T) *TestSetup {
 	gin.SetMode(gin.TestMode)
 
 	// Use shared MySQL test DB
-	db := testutils.SetupTestDB(t)
+	db := utils.SetupTestDB(t)
 
 	// Create test config
 	cfg := &config.Config{

@@ -6,12 +6,12 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/transaction-tracker/backend/testutils"
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/transaction-tracker/backend/config"
 	"github.com/transaction-tracker/backend/internal/database"
 	"github.com/transaction-tracker/backend/internal/models"
+	"github.com/transaction-tracker/backend/internal/utils"
 )
 
 func TestDatabaseManager_Connect(t *testing.T) {
@@ -32,7 +32,7 @@ func TestDatabaseManager_Connect(t *testing.T) {
 }
 
 func TestDatabaseManager_HealthCheck(t *testing.T) {
-	_ = testutils.SetupTestDB(t)
+	_ = utils.SetupTestDB(t)
 
 	// We'll need to set the db field via reflection or create a test method
 	// For now, let's skip this complex test
@@ -62,7 +62,7 @@ func TestUser_PasswordHashing(t *testing.T) {
 }
 
 func TestUser_BeforeCreate(t *testing.T) {
-	db := testutils.SetupTestDB(t)
+	db := utils.SetupTestDB(t)
 
 	// Hash password manually since model doesn't have this method
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
@@ -100,7 +100,7 @@ func TestTransaction_CalculateValue(t *testing.T) {
 }
 
 func TestTransaction_BeforeCreate(t *testing.T) {
-	db := testutils.SetupTestDB(t)
+	db := utils.SetupTestDB(t)
 
 	// Create a test user first
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
@@ -134,7 +134,7 @@ func TestTransaction_BeforeCreate(t *testing.T) {
 }
 
 func TestSeeder_SeedDevelopmentData(t *testing.T) {
-	db := testutils.SetupTestDB(t)
+	db := utils.SetupTestDB(t)
 
 	seeder := database.NewSeeder(db)
 

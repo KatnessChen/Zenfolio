@@ -8,17 +8,17 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	testutils "github.com/transaction-tracker/backend/testutils"
 	"gorm.io/gorm"
 
 	"github.com/transaction-tracker/backend/internal/models"
 	"github.com/transaction-tracker/backend/internal/repositories"
+	"github.com/transaction-tracker/backend/internal/utils"
 )
 
 // setupJWTRepositoryTest sets up the test environment for JWT repository tests
 func setupJWTRepositoryTest(t *testing.T) (*gorm.DB, repositories.JWTRepository, *models.User) {
 	// Use shared MySQL test DB
-	db := testutils.SetupTestDB(t)
+	db := utils.SetupTestDB(t)
 
 	jwtRepo := repositories.NewJWTRepository(db)
 

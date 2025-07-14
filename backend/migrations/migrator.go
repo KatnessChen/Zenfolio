@@ -40,13 +40,13 @@ func NewMigrator(db *gorm.DB) *Migrator {
 func NewMigratorWithDefaults(db *gorm.DB) *Migrator {
 	m := NewMigrator(db)
 	for _, mig := range GetAllMigrations() {
-		m.addMigration(mig)
+		m.AddMigration(mig)
 	}
 	return m
 }
 
-// addMigration adds a migration to the migrator (private).
-func (m *Migrator) addMigration(migration Migration) {
+// AddMigration adds a migration to the migrator (private).
+func (m *Migrator) AddMigration(migration Migration) {
 	m.migrations = append(m.migrations, migration)
 }
 

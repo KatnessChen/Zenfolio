@@ -169,7 +169,6 @@ func (h *AuthHandler) Me(c *gin.Context) {
 		return
 	}
 
-	// Expect UUID
 	userID, ok := userIDInterface.(uuid.UUID)
 	if !ok {
 		c.JSON(http.StatusInternalServerError, gin.H{

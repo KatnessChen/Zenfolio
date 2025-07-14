@@ -3,7 +3,6 @@ package handlers
 import (
 	"fmt"
 	"net/http"
-	"regexp"
 	"strings"
 	"time"
 
@@ -359,8 +358,7 @@ func validateTransaction(transaction TransactionRequest) error {
 	}
 
 	// Validate symbol format (alphanumeric uppercase, allow dot for e.g. BRK.B)
-	symbolRegex := regexp.MustCompile(`^[A-Z0-9]{1,8}(\.[A-Z0-9]{1,2})?$`)
-	if !symbolRegex.MatchString(transaction.Symbol) {
+	if !utils.SymbolRegex.MatchString(transaction.Symbol) {
 		return fmt.Errorf("symbol must contain only uppercase letters, numbers, and optionally a single dot (e.g. BRK.B)")
 	}
 
@@ -448,11 +446,10 @@ func parseTransactionQueryParams(c *gin.Context) (params TransactionQueryParams,
 	if symbolParam := c.Query("symbol"); symbolParam != "" {
 		symbols := strings.Split(symbolParam, ",")
 		var validSymbols []string
-		symbolRegex := regexp.MustCompile(`^[A-Z0-9]{1,8}(\.[A-Z0-9]{1,2})?$`)
 
 		for _, symbol := range symbols {
 			symbol = strings.TrimSpace(symbol)
-			if !symbolRegex.MatchString(symbol) {
+			if !utils.SymbolRegex.MatchString(symbol) {
 				validationErrors["symbol"] = []string{"Each symbol must be alphanumeric uppercase, 1-10 characters"}
 				break
 			} else {
@@ -523,11 +520,10 @@ func parseTransactionQueryParams(c *gin.Context) (params TransactionQueryParams,
 	if currenciesParam := c.Query("currency"); currenciesParam != "" {
 		currencies := strings.Split(currenciesParam, ",")
 		var validCurrencies []string
-		currencyRegex := regexp.MustCompile(`^[A-Z]{3}$`)
 
 		for _, currency := range currencies {
 			currency = strings.TrimSpace(currency)
-			if !currencyRegex.MatchString(currency) {
+			if !utils.CurrencyRegex.MatchString(currency) {
 				validationErrors["currency"] = []string{"Must be valid 3-letter ISO currency codes (comma-separated for multiple)"}
 				break
 			} else {
@@ -581,7 +577,7 @@ func parseTimeframe(timeframe string, params *TransactionQueryParams) error {
 	// Check if it's a date range (contains comma)
 	if len(timeframe) > 10 && timeframe[10] == ',' {
 		// Date range: from,to
-		parts := regexp.MustCompile(`,`).Split(timeframe, 2)
+		parts := strings.Split(timeframe, ",")
 		if len(parts) != 2 {
 			return fmt.Errorf("invalid date range format, expected YYYY-MM-DD,YYYY-MM-DD")
 		}

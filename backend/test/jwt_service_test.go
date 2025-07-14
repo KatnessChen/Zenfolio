@@ -7,7 +7,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	testutils "github.com/transaction-tracker/backend/testutils"
+	"github.com/transaction-tracker/backend/internal/utils"
 	"gorm.io/gorm"
 
 	"github.com/transaction-tracker/backend/config"
@@ -19,7 +19,7 @@ import (
 // Test setup helper
 func setupJWTServiceTest(t *testing.T) (*gorm.DB, *config.Config, services.JWTService, *models.User) {
 	// Use shared MySQL test DB
-	db := testutils.SetupTestDB(t)
+	db := utils.SetupTestDB(t)
 
 	// Create test config
 	cfg := &config.Config{

@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	testutils "github.com/transaction-tracker/backend/testutils"
+	"github.com/transaction-tracker/backend/internal/utils"
 	"gorm.io/gorm"
 
 	"github.com/transaction-tracker/backend/api/handlers"
@@ -23,7 +23,7 @@ import (
 
 func setupTestTransactionsHandler(t *testing.T) (*handlers.TransactionsHandler, *gorm.DB, error) {
 	// Use shared MySQL test DB - pass the testing.T parameter
-	db := testutils.SetupTestDB(t)
+	db := utils.SetupTestDB(t)
 
 	// Create repositories and services
 	transactionRepo := repositories.NewTransactionRepository(db)

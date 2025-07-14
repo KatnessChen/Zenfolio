@@ -13,13 +13,13 @@ import (
 	"github.com/transaction-tracker/backend/internal/models"
 	"github.com/transaction-tracker/backend/internal/repositories"
 	"github.com/transaction-tracker/backend/internal/services"
-	"github.com/transaction-tracker/backend/testutils"
+	"github.com/transaction-tracker/backend/internal/utils"
 )
 
 // setupAuthMiddlewareTest sets up the test environment for auth middleware tests
 func setupAuthMiddlewareTest(t *testing.T) (*gin.Engine, services.JWTService, *models.User, string) {
 	// Use shared MySQL test DB
-	db := testutils.SetupTestDB(t)
+	db := utils.SetupTestDB(t)
 
 	// Create test config
 	cfg := &config.Config{
