@@ -12,11 +12,11 @@ import (
 
 // JWTRepository defines the interface for JWT token operations
 type JWTRepository interface {
-	Create(userID uint, tokenHash string, expiresAt time.Time, deviceInfo string) (*models.JWTToken, error)
+	Create(userID uuid.UUID, tokenHash string, expiresAt time.Time, deviceInfo string) (*models.JWTToken, error)
 	FindByTokenHash(tokenHash string) (*models.JWTToken, error)
-	FindActiveTokensByUserID(userID uint) ([]models.JWTToken, error)
-	UpdateLastUsed(tokenID string) error
-	RevokeToken(tokenID string) error
+	FindActiveTokensByUserID(userID uuid.UUID) ([]models.JWTToken, error)
+	UpdateLastUsed(tokenID uuid.UUID) error
+	RevokeToken(tokenID uuid.UUID) error
 	CleanupExpiredTokens() error
 }
 
@@ -31,9 +31,9 @@ func NewJWTRepository(db *gorm.DB) JWTRepository {
 }
 
 // Create creates a new JWT token record
-func (r *jwtRepository) Create(userID uint, tokenHash string, expiresAt time.Time, deviceInfo string) (*models.JWTToken, error) {
+func (r *jwtRepository) Create(userID uuid.UUID, tokenHash string, expiresAt time.Time, deviceInfo string) (*models.JWTToken, error) {
 	token := &models.JWTToken{
-		ID:         uuid.New().String(),
+		ID:         uuid.New(),
 		UserID:     userID,
 		TokenHash:  tokenHash,
 		IssuedAt:   time.Now(),
@@ -64,7 +64,7 @@ func (r *jwtRepository) FindByTokenHash(tokenHash string) (*models.JWTToken, err
 }
 
 // FindActiveTokensByUserID finds all active tokens for a user
-func (r *jwtRepository) FindActiveTokensByUserID(userID uint) ([]models.JWTToken, error) {
+func (r *jwtRepository) FindActiveTokensByUserID(userID uuid.UUID) ([]models.JWTToken, error) {
 	var tokens []models.JWTToken
 
 	err := r.db.Where("user_id = ? AND expires_at > ? AND revoked_at IS NULL",
@@ -77,7 +77,7 @@ func (r *jwtRepository) FindActiveTokensByUserID(userID uint) ([]models.JWTToken
 }
 
 // UpdateLastUsed updates the last used timestamp for a token
-func (r *jwtRepository) UpdateLastUsed(tokenID string) error {
+func (r *jwtRepository) UpdateLastUsed(tokenID uuid.UUID) error {
 	now := time.Now()
 	err := r.db.Model(&models.JWTToken{}).
 		Where("id = ?", tokenID).
@@ -91,7 +91,7 @@ func (r *jwtRepository) UpdateLastUsed(tokenID string) error {
 }
 
 // RevokeToken revokes a specific token
-func (r *jwtRepository) RevokeToken(tokenID string) error {
+func (r *jwtRepository) RevokeToken(tokenID uuid.UUID) error {
 	now := time.Now()
 	err := r.db.Model(&models.JWTToken{}).
 		Where("id = ?", tokenID).

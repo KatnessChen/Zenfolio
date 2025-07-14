@@ -7,9 +7,8 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"gorm.io/driver/sqlite"
+	"github.com/transaction-tracker/backend/internal/utils"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 
 	"github.com/transaction-tracker/backend/config"
 	"github.com/transaction-tracker/backend/internal/models"
@@ -19,15 +18,8 @@ import (
 
 // Test setup helper
 func setupJWTServiceTest(t *testing.T) (*gorm.DB, *config.Config, services.JWTService, *models.User) {
-	// Create in-memory SQLite database
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Silent),
-	})
-	require.NoError(t, err)
-
-	// Auto-migrate the schemas
-	err = db.AutoMigrate(&models.User{}, &models.JWTToken{})
-	require.NoError(t, err)
+	// Use shared MySQL test DB
+	db := utils.SetupTestDB(t)
 
 	// Create test config
 	cfg := &config.Config{
@@ -47,7 +39,7 @@ func setupJWTServiceTest(t *testing.T) (*gorm.DB, *config.Config, services.JWTSe
 		LastName:  "Testuser",
 		IsActive:  true,
 	}
-	err = testUser.SetPassword("TestPass123!")
+	err := testUser.SetPassword("TestPass123!")
 	require.NoError(t, err)
 
 	err = db.Create(testUser).Error
@@ -87,12 +79,12 @@ func TestJWTService_GenerateToken(t *testing.T) {
 	require.True(t, ok)
 
 	// Verify token contains correct claims
-	assert.Equal(t, testUser.ID, claims.UserID)
+	assert.Equal(t, testUser.UserID, claims.UserID)
 	assert.Equal(t, testUser.Username, claims.Username)
 	assert.Equal(t, testUser.Email, claims.Email)
 	assert.NotEmpty(t, claims.TokenID)
 	assert.Equal(t, "transaction-tracker", claims.Issuer)
-	assert.Equal(t, "user:1", claims.Subject)
+	assert.Equal(t, "user:"+testUser.UserID.String(), claims.Subject)
 
 	// Check expiration time is approximately 24 hours from creation
 	expectedExpiration := time.Now().Add(24 * time.Hour)
@@ -102,9 +94,9 @@ func TestJWTService_GenerateToken(t *testing.T) {
 
 	// Verify token is stored in database with composite hash
 	var jwtToken models.JWTToken
-	err = db.Where("user_id = ?", testUser.ID).First(&jwtToken).Error
+	err = db.Where("user_id = ?", testUser.UserID).First(&jwtToken).Error
 	assert.NoError(t, err)
-	assert.Equal(t, testUser.ID, jwtToken.UserID)
+	assert.Equal(t, testUser.UserID, jwtToken.UserID)
 	assert.NotEmpty(t, jwtToken.TokenHash)
 	assert.NotEmpty(t, jwtToken.DeviceInfo)
 }
@@ -132,13 +124,13 @@ func TestJWTService_ValidateToken(t *testing.T) {
 	claims, err := jwtService.ValidateToken(tokenString)
 	assert.NoError(t, err)
 	assert.NotNil(t, claims)
-	assert.Equal(t, testUser.ID, claims.UserID)
+	assert.Equal(t, testUser.UserID, claims.UserID)
 	assert.Equal(t, testUser.Username, claims.Username)
 	assert.Equal(t, testUser.Email, claims.Email)
 
 	// Verify last_used_at timestamp is updated
 	var jwtToken models.JWTToken
-	err = db.Where("user_id = ?", testUser.ID).First(&jwtToken).Error
+	err = db.Where("user_id = ?", testUser.UserID).First(&jwtToken).Error
 	require.NoError(t, err)
 	assert.NotNil(t, jwtToken.LastUsedAt)
 }
@@ -269,7 +261,7 @@ func TestJWTService_GetActiveTokens(t *testing.T) {
 	deviceInfo := createTestDeviceInfo()
 
 	// Initially no active tokens
-	tokens, err := jwtService.GetActiveTokens(testUser.ID)
+	tokens, err := jwtService.GetActiveTokens(testUser.UserID)
 	assert.NoError(t, err)
 	assert.Len(t, tokens, 0)
 
@@ -278,10 +270,10 @@ func TestJWTService_GetActiveTokens(t *testing.T) {
 	require.NoError(t, err)
 
 	// Should have one active token
-	tokens, err = jwtService.GetActiveTokens(testUser.ID)
+	tokens, err = jwtService.GetActiveTokens(testUser.UserID)
 	assert.NoError(t, err)
 	assert.Len(t, tokens, 1)
-	assert.Equal(t, testUser.ID, tokens[0].UserID)
+	assert.Equal(t, testUser.UserID, tokens[0].UserID)
 }
 
 func TestJWTService_CleanupExpiredTokens(t *testing.T) {
@@ -298,7 +290,7 @@ func TestJWTService_CleanupExpiredTokens(t *testing.T) {
 
 	// Verify token exists in database
 	var count int64
-	err = db.Model(&models.JWTToken{}).Where("user_id = ?", testUser.ID).Count(&count).Error
+	err = db.Model(&models.JWTToken{}).Where("user_id = ?", testUser.UserID).Count(&count).Error
 	require.NoError(t, err)
 	assert.Equal(t, int64(1), count)
 
@@ -307,7 +299,7 @@ func TestJWTService_CleanupExpiredTokens(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Verify expired token is removed
-	err = db.Model(&models.JWTToken{}).Where("user_id = ?", testUser.ID).Count(&count).Error
+	err = db.Model(&models.JWTToken{}).Where("user_id = ?", testUser.UserID).Count(&count).Error
 	require.NoError(t, err)
 	assert.Equal(t, int64(0), count)
 }

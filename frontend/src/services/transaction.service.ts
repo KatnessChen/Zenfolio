@@ -3,8 +3,9 @@ import { API_ENDPOINTS } from '@/constants/api'
 import type { TransactionData, ExtractResponse } from '@/types'
 import type { GetTransactionHistoryResponse } from '@/store/transactionHistorySlice'
 
+export type TransactionDataRequest = Omit<TransactionData, 'id'>
 export interface ImportTransactionsRequest {
-  transactions: TransactionData[]
+  transactions: TransactionDataRequest[]
 }
 
 export interface ImportTransactionsResponse {
@@ -19,22 +20,10 @@ export interface ImportTransactionsResponse {
 export class TransactionService {
   // Import transactions from file processing
   static async importTransactions(
-    transactions: TransactionData[]
+    transactions: TransactionDataRequest[]
   ): Promise<ImportTransactionsResponse> {
     const payload: ImportTransactionsRequest = {
-      transactions: transactions.map((transaction) => ({
-        id: transaction.id,
-        symbol: transaction.symbol,
-        trade_type: transaction.trade_type,
-        quantity: transaction.quantity,
-        price: transaction.price,
-        amount: transaction.amount,
-        currency: transaction.currency,
-        broker: transaction.broker,
-        transaction_date: transaction.transaction_date,
-        user_notes: transaction.user_notes,
-        exchange: transaction.exchange,
-      })),
+      transactions,
     }
 
     const response = await apiClient.post<ImportTransactionsResponse>(

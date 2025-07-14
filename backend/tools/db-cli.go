@@ -84,39 +84,21 @@ func printUsage() {
 func runMigrations(dm *database.DatabaseManager) error {
 	log.Println("Running database migrations...")
 
-	migrator := migrations.NewMigrator(dm.GetDB())
-
-	// Add all migrations
-	for _, migration := range migrations.GetAllMigrations() {
-		migrator.AddMigration(migration)
-	}
-
-	return migrator.Up()
+	// Use the helper function that applies all default migrations
+	return migrations.ApplyAllMigrations(dm.GetDB())
 }
 
 func rollbackMigration(dm *database.DatabaseManager) error {
 	log.Println("Rolling back last migration...")
 
-	migrator := migrations.NewMigrator(dm.GetDB())
-
-	// Add all migrations
-	for _, migration := range migrations.GetAllMigrations() {
-		migrator.AddMigration(migration)
-	}
-
-	return migrator.Down()
+	migrator := migrations.NewMigratorWithDefaults(dm.GetDB())
+	return migrator.RollbackLast()
 }
 
 func showMigrationStatus(dm *database.DatabaseManager) error {
 	log.Println("Checking migration status...")
 
-	migrator := migrations.NewMigrator(dm.GetDB())
-
-	// Add all migrations
-	for _, migration := range migrations.GetAllMigrations() {
-		migrator.AddMigration(migration)
-	}
-
+	migrator := migrations.NewMigratorWithDefaults(dm.GetDB())
 	return migrator.Status()
 }
 

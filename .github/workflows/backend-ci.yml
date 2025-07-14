@@ -38,6 +38,11 @@ jobs:
     env:
       # Integration tests requiring AI API keys are skipped in CI
       CI_SKIP_INTEGRATION: "true"
+      TEST_DB_HOST: 127.0.0.1
+      TEST_DB_PORT: 3306
+      TEST_DB_USER: root
+      TEST_DB_PASS: root
+      TEST_DB_NAME: transaction_tracker_test
 
     steps:
       - name: Checkout code
@@ -64,6 +69,18 @@ jobs:
 
       - name: Verify dependencies
         run: go mod verify
+
+      - name: Wait for MySQL to be ready
+        run: |
+          echo "Waiting for MySQL to be ready..."
+          for i in {1..30}; do
+            if mysqladmin ping -h 127.0.0.1 -u root -proot --silent; then
+              echo "MySQL is ready!"
+              break
+            fi
+            echo "Waiting for MySQL... ($i/30)"
+            sleep 2
+          done
 
       - name: Format check
         id: format-check
@@ -171,6 +188,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Pipeline Stages:" >> $GITHUB_STEP_SUMMARY
           echo "- 📦 Setup: ✅" >> $GITHUB_STEP_SUMMARY
+          echo "- 🎯 MySQL Ready: ✅" >> $GITHUB_STEP_SUMMARY
           echo "- 🎨 Format Check: ${{ steps.format-check.outcome == 'success' && '✅' || '❌' }}" >> $GITHUB_STEP_SUMMARY
           echo "- 🔍 Linting: ${{ steps.linting.outcome == 'success' && '✅' || '❌' }}" >> $GITHUB_STEP_SUMMARY  
           echo "- 🔧 Build: ${{ steps.build.outcome == 'success' && '✅' || '❌' }}" >> $GITHUB_STEP_SUMMARY

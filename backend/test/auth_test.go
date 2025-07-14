@@ -10,15 +10,14 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 
 	"github.com/transaction-tracker/backend/api/handlers"
 	"github.com/transaction-tracker/backend/api/middlewares"
 	"github.com/transaction-tracker/backend/config"
 	"github.com/transaction-tracker/backend/internal/constants"
 	"github.com/transaction-tracker/backend/internal/models"
+	"github.com/transaction-tracker/backend/internal/utils"
 )
 
 // TestSetup holds the test environment
@@ -34,15 +33,8 @@ func setupTestEnvironment(t *testing.T) *TestSetup {
 	// Set Gin to test mode
 	gin.SetMode(gin.TestMode)
 
-	// Create in-memory SQLite database
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Silent),
-	})
-	require.NoError(t, err)
-
-	// Auto-migrate the schemas
-	err = db.AutoMigrate(&models.User{}, &models.Transaction{}, &models.JWTToken{})
-	require.NoError(t, err)
+	// Use shared MySQL test DB
+	db := utils.SetupTestDB(t)
 
 	// Create test config
 	cfg := &config.Config{
@@ -459,7 +451,7 @@ func TestJWTTokenLifecycle(t *testing.T) {
 
 	// Verify all tokens are active in database
 	var activeTokens []models.JWTToken
-	err = setup.DB.Where("user_id = ? AND revoked_at IS NULL", user.ID).Find(&activeTokens).Error
+	err = setup.DB.Where("user_id = ? AND revoked_at IS NULL", user.UserID).Find(&activeTokens).Error
 	require.NoError(t, err)
 	assert.Len(t, activeTokens, 3)
 
@@ -475,7 +467,7 @@ func TestJWTTokenLifecycle(t *testing.T) {
 
 	// Verify token is revoked
 	var revokedToken models.JWTToken
-	err = setup.DB.Where("user_id = ? AND revoked_at IS NOT NULL", user.ID).First(&revokedToken).Error
+	err = setup.DB.Where("user_id = ? AND revoked_at IS NOT NULL", user.UserID).First(&revokedToken).Error
 	require.NoError(t, err)
 	assert.NotNil(t, revokedToken.RevokedAt)
 

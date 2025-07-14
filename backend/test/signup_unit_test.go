@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
@@ -34,8 +35,8 @@ func (m *MockUserRepository) FindByEmail(email string) (*models.User, error) {
 	return args.Get(0).(*models.User), args.Error(1)
 }
 
-func (m *MockUserRepository) FindByID(id uint) (*models.User, error) {
-	args := m.Called(id)
+func (m *MockUserRepository) FindByUserID(userID uuid.UUID) (*models.User, error) {
+	args := m.Called(userID)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}

@@ -3,11 +3,11 @@ package handlers
 import (
 	"fmt"
 	"net/http"
-	"regexp"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/transaction-tracker/backend/internal/models"
 	"github.com/transaction-tracker/backend/internal/services"
 	"github.com/transaction-tracker/backend/internal/types"
@@ -100,7 +100,7 @@ type TransactionQueryParams struct {
 // modelToTransactionData converts a models.Transaction to types.TransactionData
 func modelToTransactionData(transaction models.Transaction) types.TransactionData {
 	return types.TransactionData{
-		ID:              fmt.Sprint(transaction.ID),
+		ID:              transaction.TransactionID.String(),
 		Symbol:          transaction.Symbol,
 		TradeType:       types.TradeType(transaction.TradeType),
 		Quantity:        transaction.Quantity,
@@ -111,7 +111,6 @@ func modelToTransactionData(transaction models.Transaction) types.TransactionDat
 		Exchange:        transaction.Exchange,
 		TransactionDate: transaction.TransactionDate.Format("2006-01-02"),
 		UserNotes:       transaction.UserNotes,
-		Account:         transaction.Account,
 	}
 }
 
@@ -196,8 +195,18 @@ func (h *TransactionsHandler) CreateTransactions(c *gin.Context) {
 		return
 	}
 
+	userUUID, ok := userID.(uuid.UUID)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, CreateTransactionsResponse{
+			Success: false,
+			Message: "Invalid user ID in context",
+			Errors:  map[string][]string{"auth": {"Invalid user ID in context"}},
+		})
+		return
+	}
+
 	// Create transactions using injected service
-	createdTransactions, err := h.transactionService.CreateTransactions(userID.(uint), validatedTransactions)
+	createdTransactions, err := h.transactionService.CreateTransactions(userUUID, validatedTransactions)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, CreateTransactionsResponse{
 			Success: false,
@@ -233,6 +242,16 @@ func (h *TransactionsHandler) GetTransactionHistory(c *gin.Context) {
 		return
 	}
 
+	userUUID, ok := userID.(uuid.UUID)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, GetTransactionsResponse{
+			Success: false,
+			Message: "Invalid user ID in context",
+			Errors:  map[string][]string{"auth": {"Invalid user ID in context"}},
+		})
+		return
+	}
+
 	// Parse and validate query parameters
 	params, validationErrors := parseTransactionQueryParams(c)
 	if len(validationErrors) > 0 {
@@ -245,9 +264,8 @@ func (h *TransactionsHandler) GetTransactionHistory(c *gin.Context) {
 	}
 
 	// Build filter with user ID (security requirement)
-	uid := userID.(uint)
 	filter := services.TransactionFilter{
-		UserID:         &uid, // Ensure user can only see their own transactions
+		UserID:         &userUUID, // Ensure user can only see their own transactions
 		Symbols:        params.Symbols,
 		TradeTypes:     params.TradeTypes,
 		Exchanges:      params.Exchanges,
@@ -339,10 +357,9 @@ func validateTransaction(transaction TransactionRequest) error {
 		return fmt.Errorf("symbol must be between 1 and 10 characters")
 	}
 
-	// Validate symbol format (alphanumeric uppercase)
-	symbolRegex := regexp.MustCompile(`^[A-Z0-9]{1,10}$`)
-	if !symbolRegex.MatchString(transaction.Symbol) {
-		return fmt.Errorf("symbol must contain only uppercase letters and numbers")
+	// Validate symbol format (alphanumeric uppercase, allow dot for e.g. BRK.B)
+	if !utils.SymbolRegex.MatchString(transaction.Symbol) {
+		return fmt.Errorf("symbol must contain only uppercase letters, numbers, and optionally a single dot (e.g. BRK.B)")
 	}
 
 	// Validate currency
@@ -429,11 +446,10 @@ func parseTransactionQueryParams(c *gin.Context) (params TransactionQueryParams,
 	if symbolParam := c.Query("symbol"); symbolParam != "" {
 		symbols := strings.Split(symbolParam, ",")
 		var validSymbols []string
-		symbolRegex := regexp.MustCompile(`^[A-Z0-9]{1,10}$`)
 
 		for _, symbol := range symbols {
 			symbol = strings.TrimSpace(symbol)
-			if !symbolRegex.MatchString(symbol) {
+			if !utils.SymbolRegex.MatchString(symbol) {
 				validationErrors["symbol"] = []string{"Each symbol must be alphanumeric uppercase, 1-10 characters"}
 				break
 			} else {
@@ -447,14 +463,14 @@ func parseTransactionQueryParams(c *gin.Context) (params TransactionQueryParams,
 	}
 
 	// Parse types (comma-separated)
-	if typesParam := c.Query("type"); typesParam != "" {
+	if typesParam := c.Query("trade_type"); typesParam != "" {
 		typeList := strings.Split(typesParam, ",")
 		var validTypes []string
 
 		for _, tradeType := range typeList {
 			tradeType = strings.TrimSpace(tradeType)
 			if _, ok := utils.TradeTypeFromString(tradeType); !ok {
-				validationErrors["type"] = []string{"Must be one of: Buy, Sell, Dividends (comma-separated for multiple)"}
+				validationErrors["trade_type"] = []string{"Must be one of: Buy, Sell, Dividends (comma-separated for multiple)"}
 				break
 			} else {
 				validTypes = append(validTypes, tradeType)
@@ -504,11 +520,10 @@ func parseTransactionQueryParams(c *gin.Context) (params TransactionQueryParams,
 	if currenciesParam := c.Query("currency"); currenciesParam != "" {
 		currencies := strings.Split(currenciesParam, ",")
 		var validCurrencies []string
-		currencyRegex := regexp.MustCompile(`^[A-Z]{3}$`)
 
 		for _, currency := range currencies {
 			currency = strings.TrimSpace(currency)
-			if !currencyRegex.MatchString(currency) {
+			if !utils.CurrencyRegex.MatchString(currency) {
 				validationErrors["currency"] = []string{"Must be valid 3-letter ISO currency codes (comma-separated for multiple)"}
 				break
 			} else {
@@ -562,7 +577,7 @@ func parseTimeframe(timeframe string, params *TransactionQueryParams) error {
 	// Check if it's a date range (contains comma)
 	if len(timeframe) > 10 && timeframe[10] == ',' {
 		// Date range: from,to
-		parts := regexp.MustCompile(`,`).Split(timeframe, 2)
+		parts := strings.Split(timeframe, ",")
 		if len(parts) != 2 {
 			return fmt.Errorf("invalid date range format, expected YYYY-MM-DD,YYYY-MM-DD")
 		}

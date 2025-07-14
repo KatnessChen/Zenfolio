@@ -64,7 +64,7 @@ This comprehensive guide covers the complete database setup and management for t
 
 ```sql
 CREATE TABLE users (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id CHAR(36) PRIMARY KEY,
     username VARCHAR(100) NOT NULL UNIQUE,
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
@@ -87,8 +87,8 @@ CREATE TABLE users (
 
 ```sql
 CREATE TABLE transactions (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    user_id BIGINT UNSIGNED NOT NULL,
+    transaction_id CHAR(36) PRIMARY KEY,
+    user_id CHAR(36) NOT NULL,
     type VARCHAR(50) NOT NULL,
     symbol VARCHAR(20) NOT NULL,
     quantity DECIMAL(15,4) NOT NULL,
@@ -121,7 +121,7 @@ CREATE TABLE transactions (
     INDEX idx_transactions_type_status (type, status),
     INDEX idx_transactions_deleted_at (deleted_at),
 
-    FOREIGN KEY (user_id) REFERENCES users(id) ON UPDATE CASCADE ON DELETE RESTRICT
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON UPDATE CASCADE ON DELETE RESTRICT
 );
 ```
 

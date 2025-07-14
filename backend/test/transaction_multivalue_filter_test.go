@@ -2,35 +2,28 @@ package test
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/transaction-tracker/backend/internal/utils"
+	"gorm.io/gorm"
+
 	"github.com/transaction-tracker/backend/api/handlers"
 	"github.com/transaction-tracker/backend/internal/models"
 	"github.com/transaction-tracker/backend/internal/repositories"
 	"github.com/transaction-tracker/backend/internal/services"
 	"github.com/transaction-tracker/backend/internal/types"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
 )
 
-func setupTestTransactionsHandler() (*handlers.TransactionsHandler, *gorm.DB, error) {
-	// Create in-memory SQLite database for testing
-	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed to connect to database: %w", err)
-	}
-
-	// Auto-migrate the schema
-	if err := db.AutoMigrate(&models.User{}, &models.Transaction{}); err != nil {
-		return nil, nil, fmt.Errorf("failed to migrate database: %w", err)
-	}
+func setupTestTransactionsHandler(t *testing.T) (*handlers.TransactionsHandler, *gorm.DB, error) {
+	// Use shared MySQL test DB - pass the testing.T parameter
+	db := utils.SetupTestDB(t)
 
 	// Create repositories and services
 	transactionRepo := repositories.NewTransactionRepository(db)
@@ -57,10 +50,10 @@ func createTestUser(db *gorm.DB, email string) (*models.User, error) {
 	return user, nil
 }
 
-func createTestTransactions(db *gorm.DB, userID uint) error {
+func createTestTransactions(db *gorm.DB, userID uuid.UUID) error {
 	testTransactions := []models.Transaction{
-		// Different symbols
 		{
+			TransactionID:   uuid.New(),
 			UserID:          userID,
 			Symbol:          "AAPL",
 			TradeType:       types.TradeTypeBuy,
@@ -73,6 +66,7 @@ func createTestTransactions(db *gorm.DB, userID uint) error {
 			TransactionDate: time.Date(2024, 1, 15, 0, 0, 0, 0, time.UTC),
 		},
 		{
+			TransactionID:   uuid.New(),
 			UserID:          userID,
 			Symbol:          "GOOGL",
 			TradeType:       types.TradeTypeBuy,
@@ -85,6 +79,7 @@ func createTestTransactions(db *gorm.DB, userID uint) error {
 			TransactionDate: time.Date(2024, 1, 16, 0, 0, 0, 0, time.UTC),
 		},
 		{
+			TransactionID:   uuid.New(),
 			UserID:          userID,
 			Symbol:          "MSFT",
 			TradeType:       types.TradeTypeSell,
@@ -97,6 +92,7 @@ func createTestTransactions(db *gorm.DB, userID uint) error {
 			TransactionDate: time.Date(2024, 1, 17, 0, 0, 0, 0, time.UTC),
 		},
 		{
+			TransactionID:   uuid.New(),
 			UserID:          userID,
 			Symbol:          "TSLA",
 			TradeType:       types.TradeTypeDividend,
@@ -109,6 +105,7 @@ func createTestTransactions(db *gorm.DB, userID uint) error {
 			TransactionDate: time.Date(2024, 1, 18, 0, 0, 0, 0, time.UTC),
 		},
 		{
+			TransactionID:   uuid.New(),
 			UserID:          userID,
 			Symbol:          "BTC",
 			TradeType:       types.TradeTypeBuy,
@@ -126,7 +123,7 @@ func createTestTransactions(db *gorm.DB, userID uint) error {
 }
 
 func TestMultiValueFiltering(t *testing.T) {
-	handler, db, err := setupTestTransactionsHandler()
+	handler, db, err := setupTestTransactionsHandler(t)
 	require.NoError(t, err)
 
 	// Create test user
@@ -134,7 +131,7 @@ func TestMultiValueFiltering(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create test transactions
-	err = createTestTransactions(db, user.ID)
+	err = createTestTransactions(db, user.UserID)
 	require.NoError(t, err)
 
 	gin.SetMode(gin.TestMode)
@@ -142,7 +139,7 @@ func TestMultiValueFiltering(t *testing.T) {
 
 	// Add middleware to set user_id (simulating JWT middleware)
 	router.Use(func(c *gin.Context) {
-		c.Set("user_id", user.ID)
+		c.Set("user_id", user.UserID)
 		c.Next()
 	})
 
@@ -178,7 +175,7 @@ func TestMultiValueFiltering(t *testing.T) {
 	})
 
 	t.Run("Filter by multiple trade types", func(t *testing.T) {
-		req := httptest.NewRequest("GET", "/transaction-history?type=Buy,Sell", nil)
+		req := httptest.NewRequest("GET", "/transaction-history?trade_type=Buy,Sell", nil)
 		w := httptest.NewRecorder()
 		router.ServeHTTP(w, req)
 
@@ -288,7 +285,7 @@ func TestMultiValueFiltering(t *testing.T) {
 
 	t.Run("Combined multi-value filters", func(t *testing.T) {
 		// Filter for AAPL or GOOGL symbols, Buy or Sell types, and USD currency
-		req := httptest.NewRequest("GET", "/transaction-history?symbol=AAPL,GOOGL&type=Buy,Sell&currency=USD", nil)
+		req := httptest.NewRequest("GET", "/transaction-history?symbol=AAPL,GOOGL&trade_type=Buy,Sell&currency=USD", nil)
 		w := httptest.NewRecorder()
 		router.ServeHTTP(w, req)
 

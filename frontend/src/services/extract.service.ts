@@ -1,8 +1,8 @@
-import { apiClient } from './api-client'
+import { apiClient } from '@/lib/api-client'
 import { API_ENDPOINTS } from '@/constants/api'
 import type { ExtractResponse } from '@/types'
 
-export class TransactionService {
+export class ExtractService {
   /**
    * Extract transactions from a single image file
    * @param file - The image file to process

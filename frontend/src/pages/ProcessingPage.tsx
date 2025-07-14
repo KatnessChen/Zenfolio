@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { ROUTES } from '@/constants'
-import { TransactionService } from '@/services/transaction.service'
+import { ExtractService } from '@/services/extract.service'
 import { ClockIcon, SpinnerIcon, CheckIcon, XIcon } from '@/components/icons'
 import { initializeFiles, updateFileStatus } from '@/store/fileProcessingSlice'
 import { filesToSerializable } from '@/utils/fileUtils'
@@ -38,7 +38,7 @@ export default function ProcessingPage() {
         })
 
         // Process files in parallel with progress updates
-        await TransactionService.extractTransactionsParallel(
+        await ExtractService.extractTransactionsParallel(
           files,
           (fileIndex: number, result: ExtractResponse, error?: string) => {
             const status = result.success ? 'completed' : 'error'

@@ -3,34 +3,23 @@ package test
 import (
 	"net/http"
 	"net/http/httptest"
-	"strconv"
 	"testing"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
-
 	"github.com/transaction-tracker/backend/api/middlewares"
 	"github.com/transaction-tracker/backend/config"
 	"github.com/transaction-tracker/backend/internal/models"
 	"github.com/transaction-tracker/backend/internal/repositories"
 	"github.com/transaction-tracker/backend/internal/services"
+	"github.com/transaction-tracker/backend/internal/utils"
 )
 
 // setupAuthMiddlewareTest sets up the test environment for auth middleware tests
 func setupAuthMiddlewareTest(t *testing.T) (*gin.Engine, services.JWTService, *models.User, string) {
-	// Create in-memory SQLite database
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Silent),
-	})
-	require.NoError(t, err)
-
-	// Auto-migrate the schemas
-	err = db.AutoMigrate(&models.User{}, &models.JWTToken{})
-	require.NoError(t, err)
+	// Use shared MySQL test DB
+	db := utils.SetupTestDB(t)
 
 	// Create test config
 	cfg := &config.Config{
@@ -47,7 +36,7 @@ func setupAuthMiddlewareTest(t *testing.T) (*gin.Engine, services.JWTService, *m
 		Username: "testuser",
 		Email:    "test@example.com",
 	}
-	err = testUser.SetPassword("password123")
+	err := testUser.SetPassword("password123")
 	require.NoError(t, err)
 
 	err = db.Create(testUser).Error
@@ -102,7 +91,7 @@ func TestAuthMiddleware_ValidToken(t *testing.T) {
 	// Check response
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Contains(t, w.Body.String(), "success")
-	assert.Contains(t, w.Body.String(), `"user_id":`+strconv.Itoa(int(testUser.ID)))
+	assert.Contains(t, w.Body.String(), `"user_id":"`+testUser.UserID.String()+`"`)
 }
 
 // Test 3.2: Missing Authorization Header
@@ -283,7 +272,7 @@ func TestAuthMiddleware_UserContextInjection(t *testing.T) {
 	router.GET("/user-context", func(c *gin.Context) {
 		userID, exists := c.Get("user_id")
 		assert.True(t, exists)
-		assert.Equal(t, testUser.ID, userID)
+		assert.Equal(t, testUser.UserID, userID)
 
 		username, exists := c.Get("username")
 		assert.True(t, exists)
