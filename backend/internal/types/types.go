@@ -30,7 +30,7 @@ type ExtractResponse struct {
 // TransactionData represents extracted transaction information from AI
 // Uses fields that map to the Transaction model structure
 type TransactionData struct {
-	ID              string    `json:"id"`               // Unique identifier for frontend/backend sync
+	ID              string    `json:"transaction_id"`   // Unique identifier for frontend/backend sync
 	Symbol          string    `json:"symbol"`           // Maps to Transaction.Symbol
 	TradeType       TradeType `json:"trade_type"`       // Maps to Transaction.Type
 	Quantity        float64   `json:"quantity"`         // Maps to Transaction.Quantity
@@ -38,7 +38,6 @@ type TransactionData struct {
 	Amount          float64   `json:"amount"`           // Maps to Transaction.Amount
 	Currency        string    `json:"currency"`         // Maps to Transaction.Currency
 	Broker          string    `json:"broker"`           // Maps to Transaction.Broker
-	Account         string    `json:"account"`          // Maps to Transaction.Account
 	TransactionDate string    `json:"transaction_date"` // Maps to Transaction.TransactionDate (as string for JSON)
 	UserNotes       string    `json:"user_notes"`       // Maps to Transaction.UserNotes
 	Exchange        string    `json:"exchange"`         // Maps to Transaction.Exchange

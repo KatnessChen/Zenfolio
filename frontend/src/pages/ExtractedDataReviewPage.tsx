@@ -201,7 +201,6 @@ export default function ExtractedDataReviewPage() {
         broker: '',
         currency: 'USD',
         user_notes: '',
-        account: '',
         exchange: '',
       }
       const currentFileTransactions = [

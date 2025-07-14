@@ -128,9 +128,13 @@ export default function TransactionHistoryPage() {
     setTradeTypeFilter('All')
   }
 
+  const [editModalOpen, setEditModalOpen] = useState(false)
+  const [editTransaction, setEditTransaction] = useState<TransactionData | null>(null)
+  const [editError, setEditError] = useState<string | null>(null)
+  const [editLoading, setEditLoading] = useState(false)
+
   const handleEditTransaction = (transaction: TransactionData) => {
-    // TODO: Implement edit transaction modal/form
-    console.log('Editing transaction:', transaction)
+    navigate(ROUTES.TRANSACTIONS_MANUAL_ADD, { state: { initial: transaction } })
   }
 
   const handleDeleteTransaction = (id: string) => {
@@ -141,6 +145,21 @@ export default function TransactionHistoryPage() {
   const handleUpdateNotes = (id: string, notes: string) => {
     // TODO: Implement API call to update notes
     console.log('Updating notes for transaction:', id, notes)
+  }
+
+  const handleEditSubmit = async (updated: TransactionData) => {
+    setEditLoading(true)
+    setEditError(null)
+    try {
+      await TransactionService.updateTransaction(updated.id, updated)
+      setEditModalOpen(false)
+      setEditTransaction(null)
+      fetchTransactions() // refetch to update list
+    } catch (e: any) {
+      setEditError(e?.response?.data?.message || 'Failed to update transaction')
+    } finally {
+      setEditLoading(false)
+    }
   }
 
   // Optionally show loading and error states in the UI
@@ -315,7 +334,7 @@ export default function TransactionHistoryPage() {
                             sortable
                             sortDirection={sortField === 'transaction_date' ? sortDirection : null}
                             onSort={() => handleSort('transaction_date')}
-                            className="w-[120px]"
+                            className="w-[160px]"
                           >
                             Trade Date
                           </TableHead>
@@ -412,8 +431,8 @@ export default function TransactionHistoryPage() {
                             </TableCell>
                             <TableCell>
                               <div className="flex items-center gap-2">
-                                <button
-                                  className="p-1 hover:bg-muted rounded transition-colors"
+                                <Button
+                                  variant="ghost"
                                   onClick={() => handleEditTransaction(transaction)}
                                   title="Edit transaction"
                                 >
@@ -421,9 +440,9 @@ export default function TransactionHistoryPage() {
                                     size={16}
                                     className="text-muted-foreground hover:text-primary"
                                   />
-                                </button>
-                                <button
-                                  className="p-1 hover:bg-muted rounded transition-colors"
+                                </Button>
+                                <Button
+                                  variant="ghost"
                                   onClick={() => handleDeleteTransaction(transaction.id)}
                                   title="Delete transaction"
                                 >
@@ -431,7 +450,7 @@ export default function TransactionHistoryPage() {
                                     size={16}
                                     className="text-muted-foreground hover:text-destructive"
                                   />
-                                </button>
+                                </Button>
                               </div>
                             </TableCell>
                           </TableRow>

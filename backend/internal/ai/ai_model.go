@@ -302,7 +302,6 @@ func (c *AIModelClient) getMockResponse(filename string) *types.ExtractResponse 
 			Amount:          quantity * price,
 			Currency:        "USD",
 			Broker:          "Mock Broker",
-			Account:         "Mock Account",
 			Exchange:        "NASDAQ",
 			TransactionDate: time.Now().AddDate(0, 0, -rand.Intn(30)).Format("2006-01-02"),
 			UserNotes:       fmt.Sprintf("Mock transaction %d", index+1),

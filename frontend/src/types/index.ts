@@ -16,7 +16,6 @@ export interface User {
 // Transaction extraction types to match backend API
 export type TradeType = 'Buy' | 'Sell' | 'Dividends'
 
-// TransactionData now always includes id
 export type TransactionData = {
   id: string
   symbol: string
@@ -29,6 +28,7 @@ export type TransactionData = {
   transaction_date: string
   user_notes: string
   exchange: string
+  transaction_id?: string // from backend
 }
 
 export interface ExtractResponseData {

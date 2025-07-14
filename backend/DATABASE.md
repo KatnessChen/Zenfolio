@@ -97,7 +97,6 @@ CREATE TABLE transactions (
     fee DECIMAL(15,2) DEFAULT 0.00,
     currency VARCHAR(3) NOT NULL DEFAULT 'USD',
     broker VARCHAR(100),
-    account VARCHAR(100),
     transaction_date TIMESTAMP NOT NULL,
     settlement_date TIMESTAMP NULL,
     description TEXT,

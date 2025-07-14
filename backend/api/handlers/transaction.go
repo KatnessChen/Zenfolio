@@ -27,7 +27,7 @@ type TransactionsHandler struct {
 // TransactionRequest represents the request structure for creating transactions
 type TransactionRequest struct {
 	Symbol    string          `json:"symbol" binding:"required"`
-	Exchange  string          `json:"exchange" binding:"required"`
+	Exchange  string          `json:"exchange"`
 	Broker    string          `json:"broker"`
 	Currency  string          `json:"currency" binding:"required"`
 	TradeDate string          `json:"transaction_date" binding:"required"`
@@ -167,6 +167,7 @@ func (h *TransactionsHandler) CreateTransactions(c *gin.Context) {
 			Amount:          reqTransaction.Amount,
 			Currency:        reqTransaction.Currency,
 			Broker:          reqTransaction.Broker,
+			Exchange:        reqTransaction.Exchange,
 			TransactionDate: transactionDate,
 			UserNotes:       reqTransaction.UserNotes,
 		}
@@ -347,6 +348,77 @@ func (h *TransactionsHandler) GetTransactionHistory(c *gin.Context) {
 			},
 			FiltersApplied: filtersApplied,
 		},
+	})
+}
+
+// UpdateTransaction handles PUT /transaction-history/:id
+func (h *TransactionsHandler) UpdateTransaction(c *gin.Context) {
+	idParam := c.Param("id")
+	if idParam == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "Transaction ID is required"})
+		return
+	}
+
+	transactionID, err := uuid.Parse(idParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "Invalid transaction ID format"})
+		return
+	}
+
+	var req TransactionRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "Invalid request format", "errors": map[string][]string{"json": {"Invalid JSON format"}}})
+		return
+	}
+
+	if err := validateTransaction(req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "Validation failed", "errors": map[string][]string{"validation": {err.Error()}}})
+		return
+	}
+
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"success": false, "message": "Unauthorized", "errors": map[string][]string{"auth": {"User not authenticated"}}})
+		return
+	}
+	userUUID, ok := userID.(uuid.UUID)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"success": false, "message": "Invalid user ID in context", "errors": map[string][]string{"auth": {"Invalid user ID in context"}}})
+		return
+	}
+
+	updated, err := h.transactionService.UpdateTransaction(
+		userUUID,
+		transactionID,
+		req.Symbol,
+		req.Exchange,
+		req.Broker,
+		req.Currency,
+		req.TradeDate,
+		string(req.TradeType),
+		req.Quantity,
+		req.Price,
+		req.Amount,
+		req.UserNotes,
+	)
+	if err != nil {
+		switch err.Error() {
+		case "not_found":
+			c.JSON(http.StatusNotFound, gin.H{"success": false, "message": "Transaction does not exist"})
+			return
+		case "forbidden":
+			c.JSON(http.StatusForbidden, gin.H{"success": false, "message": "Not the owner"})
+			return
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Failed to update transaction"})
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "Transaction updated successfully",
+		"data":    gin.H{"transaction": modelToTransactionData(*updated)},
 	})
 }
 

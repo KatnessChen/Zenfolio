@@ -68,6 +68,16 @@ func (r *TransactionRepository) GetByID(id uuid.UUID) (*models.Transaction, erro
 	return &transaction, nil
 }
 
+// GetByIDAndUserID retrieves a transaction by transaction_id and user_id (UUID)
+func (r *TransactionRepository) GetByIDAndUserID(id uuid.UUID, userID uuid.UUID) (*models.Transaction, error) {
+	var transaction models.Transaction
+	err := r.db.Where("transaction_id = ? AND user_id = ?", id, userID).First(&transaction).Error
+	if err != nil {
+		return nil, err
+	}
+	return &transaction, nil
+}
+
 // GetByUserID retrieves all transactions for a user by user_id (UUID)
 func (r *TransactionRepository) GetByUserID(userID uuid.UUID) ([]models.Transaction, error) {
 	var transactions []models.Transaction
