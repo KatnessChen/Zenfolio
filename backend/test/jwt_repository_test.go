@@ -13,7 +13,6 @@ import (
 
 	"github.com/transaction-tracker/backend/internal/models"
 	"github.com/transaction-tracker/backend/internal/repositories"
-	"github.com/transaction-tracker/backend/internal/utils"
 )
 
 // setupJWTRepositoryTest sets up the test environment for JWT repository tests
@@ -155,7 +154,7 @@ func TestJWTRepository_RevokeToken_NotFound(t *testing.T) {
 
 	// Try to revoke non-existent token - the repository doesn't check if token exists
 	// It just updates 0 rows, which is not an error in GORM
-	nonExistentID := utils.UUID{UUID: uuid.MustParse("00000000-0000-0000-0000-000000000000")}
+	nonExistentID := uuid.MustParse("00000000-0000-0000-0000-000000000000")
 	err := jwtRepo.RevokeToken(nonExistentID)
 	assert.NoError(t, err) // This succeeds but affects 0 rows
 }

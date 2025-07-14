@@ -5,14 +5,13 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/transaction-tracker/backend/internal/types"
-	"github.com/transaction-tracker/backend/internal/utils"
 	"gorm.io/gorm"
 )
 
 // Transaction represents a financial transaction
 type Transaction struct {
-	TransactionID   utils.UUID      `gorm:"type:binary(16);primaryKey" json:"transaction_id"`
-	UserID          utils.UUID      `gorm:"type:binary(16);not null;index" json:"user_id"`
+	TransactionID   uuid.UUID       `gorm:"type:varchar(36);primaryKey" json:"transaction_id"`
+	UserID          uuid.UUID       `gorm:"type:varchar(36);not null;index" json:"user_id"`
 	TradeType       types.TradeType `gorm:"column:trade_type;size:50;not null;index" json:"trade_type"`
 	Symbol          string          `gorm:"size:20;not null;index" json:"symbol"`
 	Quantity        float64         `gorm:"type:decimal(15,4);not null" json:"quantity"`
@@ -36,8 +35,8 @@ func (Transaction) TableName() string {
 
 // BeforeCreate hook for Transaction model
 func (t *Transaction) BeforeCreate(tx *gorm.DB) error {
-	if t.TransactionID.UUID == uuid.Nil {
-		t.TransactionID = utils.UUID{UUID: uuid.New()}
+	if t.TransactionID == uuid.Nil {
+		t.TransactionID = uuid.New()
 	}
 	if t.CreatedAt.IsZero() {
 		t.CreatedAt = time.Now()

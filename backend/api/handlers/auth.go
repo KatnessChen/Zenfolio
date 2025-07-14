@@ -4,11 +4,11 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/transaction-tracker/backend/config"
 	"github.com/transaction-tracker/backend/internal/models"
 	"github.com/transaction-tracker/backend/internal/repositories"
 	"github.com/transaction-tracker/backend/internal/services"
-	"github.com/transaction-tracker/backend/internal/utils"
 	"gorm.io/gorm"
 )
 
@@ -169,8 +169,8 @@ func (h *AuthHandler) Me(c *gin.Context) {
 		return
 	}
 
-	// Expect UUID wrapped in utils.UUID
-	userIDWrapper, ok := userIDInterface.(utils.UUID)
+	// Expect UUID
+	userID, ok := userIDInterface.(uuid.UUID)
 	if !ok {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Invalid user ID",
@@ -179,7 +179,7 @@ func (h *AuthHandler) Me(c *gin.Context) {
 	}
 
 	// Get user information
-	user, err := h.userRepo.FindByUserID(userIDWrapper)
+	user, err := h.userRepo.FindByUserID(userID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"error": "User not found",

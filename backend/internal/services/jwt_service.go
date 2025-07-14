@@ -10,15 +10,14 @@ import (
 	"github.com/transaction-tracker/backend/config"
 	"github.com/transaction-tracker/backend/internal/models"
 	"github.com/transaction-tracker/backend/internal/repositories"
-	"github.com/transaction-tracker/backend/internal/utils"
 )
 
 // JWTClaims represents the claims in our JWT token
 type JWTClaims struct {
-	UserID   utils.UUID `json:"user_id"`
-	Username string     `json:"username"`
-	Email    string     `json:"email"`
-	TokenID  string     `json:"token_id"`
+	UserID   uuid.UUID `json:"user_id"`
+	Username string    `json:"username"`
+	Email    string    `json:"email"`
+	TokenID  string    `json:"token_id"`
 	jwt.RegisteredClaims
 }
 
@@ -35,7 +34,7 @@ type JWTService interface {
 	GenerateToken(user *models.User, deviceInfo DeviceInfo) (string, error)
 	ValidateToken(tokenString string) (*JWTClaims, error)
 	RevokeToken(tokenString string) error
-	GetActiveTokens(userID utils.UUID) ([]models.JWTToken, error)
+	GetActiveTokens(userID uuid.UUID) ([]models.JWTToken, error)
 	CleanupExpiredTokens() error
 	ExtractTokenID(tokenString string) (string, error)
 }
@@ -187,7 +186,7 @@ func (s *jwtService) RevokeToken(tokenString string) error {
 }
 
 // GetActiveTokens returns all active tokens for a user
-func (s *jwtService) GetActiveTokens(userID utils.UUID) ([]models.JWTToken, error) {
+func (s *jwtService) GetActiveTokens(userID uuid.UUID) ([]models.JWTToken, error) {
 	return s.jwtRepository.FindActiveTokensByUserID(userID)
 }
 

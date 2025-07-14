@@ -19,7 +19,6 @@ import (
 	"github.com/transaction-tracker/backend/internal/repositories"
 	"github.com/transaction-tracker/backend/internal/services"
 	"github.com/transaction-tracker/backend/internal/types"
-	"github.com/transaction-tracker/backend/internal/utils"
 )
 
 func setupTestTransactionsHandler(t *testing.T) (*handlers.TransactionsHandler, *gorm.DB, error) {
@@ -51,10 +50,10 @@ func createTestUser(db *gorm.DB, email string) (*models.User, error) {
 	return user, nil
 }
 
-func createTestTransactions(db *gorm.DB, userID utils.UUID) error {
+func createTestTransactions(db *gorm.DB, userID uuid.UUID) error {
 	testTransactions := []models.Transaction{
 		{
-			TransactionID:   utils.UUID{UUID: uuid.New()},
+			TransactionID:   uuid.New(),
 			UserID:          userID,
 			Symbol:          "AAPL",
 			TradeType:       types.TradeTypeBuy,
@@ -67,7 +66,7 @@ func createTestTransactions(db *gorm.DB, userID utils.UUID) error {
 			TransactionDate: time.Date(2024, 1, 15, 0, 0, 0, 0, time.UTC),
 		},
 		{
-			TransactionID:   utils.UUID{UUID: uuid.New()},
+			TransactionID:   uuid.New(),
 			UserID:          userID,
 			Symbol:          "GOOGL",
 			TradeType:       types.TradeTypeBuy,
@@ -80,7 +79,7 @@ func createTestTransactions(db *gorm.DB, userID utils.UUID) error {
 			TransactionDate: time.Date(2024, 1, 16, 0, 0, 0, 0, time.UTC),
 		},
 		{
-			TransactionID:   utils.UUID{UUID: uuid.New()},
+			TransactionID:   uuid.New(),
 			UserID:          userID,
 			Symbol:          "MSFT",
 			TradeType:       types.TradeTypeSell,
@@ -93,7 +92,7 @@ func createTestTransactions(db *gorm.DB, userID utils.UUID) error {
 			TransactionDate: time.Date(2024, 1, 17, 0, 0, 0, 0, time.UTC),
 		},
 		{
-			TransactionID:   utils.UUID{UUID: uuid.New()},
+			TransactionID:   uuid.New(),
 			UserID:          userID,
 			Symbol:          "TSLA",
 			TradeType:       types.TradeTypeDividend,
@@ -106,7 +105,7 @@ func createTestTransactions(db *gorm.DB, userID utils.UUID) error {
 			TransactionDate: time.Date(2024, 1, 18, 0, 0, 0, 0, time.UTC),
 		},
 		{
-			TransactionID:   utils.UUID{UUID: uuid.New()},
+			TransactionID:   uuid.New(),
 			UserID:          userID,
 			Symbol:          "BTC",
 			TradeType:       types.TradeTypeBuy,
@@ -140,7 +139,7 @@ func TestMultiValueFiltering(t *testing.T) {
 
 	// Add middleware to set user_id (simulating JWT middleware)
 	router.Use(func(c *gin.Context) {
-		c.Set("user_id", user.UserID.String())
+		c.Set("user_id", user.UserID)
 		c.Next()
 	})
 

@@ -1,4 +1,4 @@
--- Unified migration for Transaction Tracker (UUID primary keys, BINARY(16) for strict FK compatibility)
+-- Unified migration for Transaction Tracker (UUID primary keys, VARCHAR(36) for portability)
 -- Drops and recreates all tables with correct schema and foreign keys
 
 SET FOREIGN_KEY_CHECKS = 0;
@@ -7,9 +7,9 @@ DROP TABLE IF EXISTS transactions;
 DROP TABLE IF EXISTS users;
 SET FOREIGN_KEY_CHECKS = 1;
 
--- Users table (UUID PK, BINARY(16))
+-- Users table (UUID PK, VARCHAR(36))
 CREATE TABLE users (
-    user_id BINARY(16) NOT NULL PRIMARY KEY,
+    user_id VARCHAR(36) NOT NULL PRIMARY KEY,
     username VARCHAR(100) NOT NULL UNIQUE,
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
@@ -25,10 +25,10 @@ CREATE TABLE users (
     INDEX idx_users_deleted_at (deleted_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Transactions table (UUID PK, FK to users, BINARY(16))
+-- Transactions table (UUID PK, FK to users, VARCHAR(36))
 CREATE TABLE transactions (
-    transaction_id BINARY(16) NOT NULL PRIMARY KEY,
-    user_id BINARY(16) NOT NULL,
+    transaction_id VARCHAR(36) NOT NULL PRIMARY KEY,
+    user_id VARCHAR(36) NOT NULL,
     trade_type VARCHAR(50) NOT NULL,
     symbol VARCHAR(20) NOT NULL,
     quantity DECIMAL(15,4) NOT NULL,
@@ -52,10 +52,10 @@ CREATE TABLE transactions (
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- JWT tokens table (UUID PK, FK to users, BINARY(16))
+-- JWT tokens table (UUID PK, FK to users, VARCHAR(36))
 CREATE TABLE jwt_tokens (
-    id BINARY(16) PRIMARY KEY,
-    user_id BINARY(16) NOT NULL,
+    id VARCHAR(36) PRIMARY KEY,
+    user_id VARCHAR(36) NOT NULL,
     token_hash VARCHAR(255) NOT NULL UNIQUE,
     issued_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     expires_at TIMESTAMP NOT NULL,
@@ -70,4 +70,4 @@ CREATE TABLE jwt_tokens (
     INDEX idx_token_hash (token_hash),
     INDEX idx_expires_at (expires_at),
     INDEX idx_jwt_tokens_deleted_at (deleted_at)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

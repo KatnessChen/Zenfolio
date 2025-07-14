@@ -3,13 +3,13 @@ package models
 import (
 	"time"
 
-	"github.com/transaction-tracker/backend/internal/utils"
+	"github.com/google/uuid"
 )
 
 // JWTToken represents a JWT token record in the database
 type JWTToken struct {
-	ID         utils.UUID `gorm:"type:binary(16);primaryKey" json:"id"`
-	UserID     utils.UUID `gorm:"type:binary(16);not null;index:idx_user_tokens" json:"user_id"`
+	ID         uuid.UUID  `gorm:"type:varchar(36);primaryKey" json:"id"`
+	UserID     uuid.UUID  `gorm:"type:varchar(36);not null;index:idx_user_tokens" json:"user_id"`
 	TokenHash  string     `gorm:"type:varchar(255);not null;uniqueIndex:idx_token_hash" json:"token_hash"`
 	IssuedAt   time.Time  `gorm:"not null" json:"issued_at"`
 	ExpiresAt  time.Time  `gorm:"not null;index:idx_expires_at" json:"expires_at"`

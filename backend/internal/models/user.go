@@ -4,20 +4,19 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/transaction-tracker/backend/internal/utils"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
 // User represents a user in the system
 type User struct {
-	UserID       utils.UUID `gorm:"type:binary(16);primaryKey" json:"user_id"`
-	Username     string     `gorm:"uniqueIndex;size:100;not null" json:"username"`
-	Email        string     `gorm:"uniqueIndex;size:255;not null" json:"email"`
-	PasswordHash string     `gorm:"size:255;not null" json:"-"`
-	FirstName    string     `gorm:"size:100" json:"first_name"`
-	LastName     string     `gorm:"size:100" json:"last_name"`
-	IsActive     bool       `gorm:"default:true" json:"is_active"`
+	UserID       uuid.UUID `gorm:"type:varchar(36);primaryKey" json:"user_id"`
+	Username     string    `gorm:"uniqueIndex;size:100;not null" json:"username"`
+	Email        string    `gorm:"uniqueIndex;size:255;not null" json:"email"`
+	PasswordHash string    `gorm:"size:255;not null" json:"-"`
+	FirstName    string    `gorm:"size:100" json:"first_name"`
+	LastName     string    `gorm:"size:100" json:"last_name"`
+	IsActive     bool      `gorm:"default:true" json:"is_active"`
 	BaseModel
 
 	Transactions []Transaction `gorm:"foreignKey:UserID;references:UserID" json:"transactions,omitempty"`
@@ -31,8 +30,8 @@ func (User) TableName() string {
 
 // BeforeCreate hook for User model
 func (u *User) BeforeCreate(tx *gorm.DB) error {
-	if u.UserID.UUID == uuid.Nil {
-		u.UserID = utils.UUID{UUID: uuid.New()}
+	if u.UserID == uuid.Nil {
+		u.UserID = uuid.New()
 	}
 	if u.CreatedAt.IsZero() {
 		u.CreatedAt = time.Now()

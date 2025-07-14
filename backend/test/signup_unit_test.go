@@ -9,12 +9,12 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
 	"github.com/transaction-tracker/backend/api/handlers"
 	"github.com/transaction-tracker/backend/internal/models"
-	"github.com/transaction-tracker/backend/internal/utils"
 )
 
 // MockUserRepository is a mock implementation of the user repository
@@ -35,7 +35,7 @@ func (m *MockUserRepository) FindByEmail(email string) (*models.User, error) {
 	return args.Get(0).(*models.User), args.Error(1)
 }
 
-func (m *MockUserRepository) FindByUserID(userID utils.UUID) (*models.User, error) {
+func (m *MockUserRepository) FindByUserID(userID uuid.UUID) (*models.User, error) {
 	args := m.Called(userID)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/transaction-tracker/backend/internal/models"
 	"github.com/transaction-tracker/backend/internal/services"
 	"github.com/transaction-tracker/backend/internal/types"
@@ -195,8 +196,8 @@ func (h *TransactionsHandler) CreateTransactions(c *gin.Context) {
 		return
 	}
 
-	userUUID, ok := userID.(string)
-	if !ok || userUUID == "" {
+	userUUID, ok := userID.(uuid.UUID)
+	if !ok {
 		c.JSON(http.StatusUnauthorized, CreateTransactionsResponse{
 			Success: false,
 			Message: "Invalid user ID in context",
@@ -242,8 +243,8 @@ func (h *TransactionsHandler) GetTransactionHistory(c *gin.Context) {
 		return
 	}
 
-	userUUID, ok := userID.(string)
-	if !ok || userUUID == "" {
+	userUUID, ok := userID.(uuid.UUID)
+	if !ok {
 		c.JSON(http.StatusUnauthorized, GetTransactionsResponse{
 			Success: false,
 			Message: "Invalid user ID in context",

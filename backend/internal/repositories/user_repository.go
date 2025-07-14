@@ -3,15 +3,15 @@ package repositories
 import (
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/transaction-tracker/backend/internal/models"
-	"github.com/transaction-tracker/backend/internal/utils"
 	"gorm.io/gorm"
 )
 
 // UserRepository defines the interface for user operations
 type UserRepository interface {
 	Create(user *models.User) error
-	FindByUserID(userID utils.UUID) (*models.User, error)
+	FindByUserID(userID uuid.UUID) (*models.User, error)
 	FindByEmail(email string) (*models.User, error)
 	Update(user *models.User) error
 }
@@ -35,7 +35,7 @@ func (r *userRepository) Create(user *models.User) error {
 }
 
 // FindByUserID finds a user by user ID (UUID)
-func (r *userRepository) FindByUserID(userID utils.UUID) (*models.User, error) {
+func (r *userRepository) FindByUserID(userID uuid.UUID) (*models.User, error) {
 	var user models.User
 	err := r.db.Where("user_id = ?", userID).First(&user).Error
 	if err != nil {
