@@ -128,11 +128,6 @@ export default function TransactionHistoryPage() {
     setTradeTypeFilter('All')
   }
 
-  const [editModalOpen, setEditModalOpen] = useState(false)
-  const [editTransaction, setEditTransaction] = useState<TransactionData | null>(null)
-  const [editError, setEditError] = useState<string | null>(null)
-  const [editLoading, setEditLoading] = useState(false)
-
   const handleEditTransaction = (transaction: TransactionData) => {
     navigate(ROUTES.TRANSACTIONS_MANUAL_ADD, { state: { initial: transaction } })
   }
@@ -140,26 +135,6 @@ export default function TransactionHistoryPage() {
   const handleDeleteTransaction = (id: string) => {
     // TODO: Implement delete confirmation and API call
     console.log('Deleting transaction:', id)
-  }
-
-  const handleUpdateNotes = (id: string, notes: string) => {
-    // TODO: Implement API call to update notes
-    console.log('Updating notes for transaction:', id, notes)
-  }
-
-  const handleEditSubmit = async (updated: TransactionData) => {
-    setEditLoading(true)
-    setEditError(null)
-    try {
-      await TransactionService.updateTransaction(updated.id, updated)
-      setEditModalOpen(false)
-      setEditTransaction(null)
-      fetchTransactions() // refetch to update list
-    } catch (e: any) {
-      setEditError(e?.response?.data?.message || 'Failed to update transaction')
-    } finally {
-      setEditLoading(false)
-    }
   }
 
   // Optionally show loading and error states in the UI
@@ -470,7 +445,6 @@ export default function TransactionHistoryPage() {
                   transaction={transaction}
                   onEdit={handleEditTransaction}
                   onDelete={handleDeleteTransaction}
-                  onUpdateNotes={handleUpdateNotes}
                 />
               ))}
             </div>

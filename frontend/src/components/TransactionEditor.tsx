@@ -82,7 +82,7 @@ export function TransactionEditor({ initial }: TransactionEditorProps) {
 
   const onCancel = useCallback(() => {
     window.history.back()
-  }, [navigate])
+  }, [])
 
   const isFormValid =
     transaction.transaction_date &&
