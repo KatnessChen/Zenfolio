@@ -59,6 +59,7 @@ func SetupRouter(cfg *config.Config) *gin.Engine {
 		api.POST(constants.ExtractTransEndpoint, handlersProvider.ExtractTransactionsHandler.ExtractTransactions)
 		api.GET(constants.TransactionHistoryEndpoint, handlersProvider.Transactions.GetTransactionHistory)
 		api.POST(constants.TransactionHistoryEndpoint, handlersProvider.Transactions.CreateTransactions)
+		api.PUT(constants.TransactionHistoryEndpoint+"/:id", handlersProvider.Transactions.UpdateTransaction)
 	}
 
 	return r

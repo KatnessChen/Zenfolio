@@ -129,18 +129,12 @@ export default function TransactionHistoryPage() {
   }
 
   const handleEditTransaction = (transaction: TransactionData) => {
-    // TODO: Implement edit transaction modal/form
-    console.log('Editing transaction:', transaction)
+    navigate(ROUTES.TRANSACTIONS_MANUAL_ADD, { state: { initial: transaction } })
   }
 
   const handleDeleteTransaction = (id: string) => {
     // TODO: Implement delete confirmation and API call
     console.log('Deleting transaction:', id)
-  }
-
-  const handleUpdateNotes = (id: string, notes: string) => {
-    // TODO: Implement API call to update notes
-    console.log('Updating notes for transaction:', id, notes)
   }
 
   // Optionally show loading and error states in the UI
@@ -315,7 +309,7 @@ export default function TransactionHistoryPage() {
                             sortable
                             sortDirection={sortField === 'transaction_date' ? sortDirection : null}
                             onSort={() => handleSort('transaction_date')}
-                            className="w-[120px]"
+                            className="w-[160px]"
                           >
                             Trade Date
                           </TableHead>
@@ -412,8 +406,8 @@ export default function TransactionHistoryPage() {
                             </TableCell>
                             <TableCell>
                               <div className="flex items-center gap-2">
-                                <button
-                                  className="p-1 hover:bg-muted rounded transition-colors"
+                                <Button
+                                  variant="ghost"
                                   onClick={() => handleEditTransaction(transaction)}
                                   title="Edit transaction"
                                 >
@@ -421,9 +415,9 @@ export default function TransactionHistoryPage() {
                                     size={16}
                                     className="text-muted-foreground hover:text-primary"
                                   />
-                                </button>
-                                <button
-                                  className="p-1 hover:bg-muted rounded transition-colors"
+                                </Button>
+                                <Button
+                                  variant="ghost"
                                   onClick={() => handleDeleteTransaction(transaction.id)}
                                   title="Delete transaction"
                                 >
@@ -431,7 +425,7 @@ export default function TransactionHistoryPage() {
                                     size={16}
                                     className="text-muted-foreground hover:text-destructive"
                                   />
-                                </button>
+                                </Button>
                               </div>
                             </TableCell>
                           </TableRow>
@@ -451,7 +445,6 @@ export default function TransactionHistoryPage() {
                   transaction={transaction}
                   onEdit={handleEditTransaction}
                   onDelete={handleDeleteTransaction}
-                  onUpdateNotes={handleUpdateNotes}
                 />
               ))}
             </div>

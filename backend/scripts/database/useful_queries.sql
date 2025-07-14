@@ -9,7 +9,7 @@ ORDER BY created_at;
 
 -- 2. Check all transactions
 SELECT id, user_id, type, symbol, quantity, price, amount, currency, 
-       broker, account, transaction_date, user_notes, created_at
+       broker, transaction_date, user_notes, created_at
 FROM transactions
 ORDER BY transaction_date DESC;
 

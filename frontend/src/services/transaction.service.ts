@@ -22,8 +22,22 @@ export class TransactionService {
   static async importTransactions(
     transactions: TransactionDataRequest[]
   ): Promise<ImportTransactionsResponse> {
+    // Filter out fields that shouldn't be sent to the backend for create operations
+    const filteredTransactions = transactions.map((transaction) => ({
+      symbol: transaction.symbol,
+      trade_type: transaction.trade_type,
+      quantity: transaction.quantity,
+      price: transaction.price,
+      amount: transaction.amount,
+      currency: transaction.currency,
+      broker: transaction.broker,
+      transaction_date: transaction.transaction_date,
+      user_notes: transaction.user_notes,
+      exchange: transaction.exchange,
+    }))
+
     const payload: ImportTransactionsRequest = {
-      transactions,
+      transactions: filteredTransactions,
     }
 
     const response = await apiClient.post<ImportTransactionsResponse>(
@@ -50,14 +64,18 @@ export class TransactionService {
 
   // Update a transaction (for future use)
   static async updateTransaction(
-    id: string,
-    transaction: Partial<TransactionData>
+    transaction_id: string,
+    transaction: TransactionData
   ): Promise<TransactionData> {
-    const response = await apiClient.put<{ success: boolean; data: TransactionData }>(
-      `${API_ENDPOINTS.TRANSACTIONS.HISTORY}/${id}`,
-      transaction
-    )
-    return response.data.data
+    // Remove unnecessary property to backend
+    delete transaction.transaction_id
+
+    const response = await apiClient.put<{
+      success: boolean
+      message: string
+      data: { transaction: TransactionData }
+    }>(`${API_ENDPOINTS.TRANSACTIONS.HISTORY}/${transaction_id}`, transaction)
+    return response.data.data.transaction
   }
 
   /**

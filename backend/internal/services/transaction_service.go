@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -93,4 +94,38 @@ func (s *TransactionService) CountTransactions(filter TransactionFilter) (int64,
 		filter.MinAmount,
 		filter.MaxAmount,
 	)
+}
+
+// UpdateTransaction updates a transaction by ID for a specific user
+func (s *TransactionService) UpdateTransaction(userID uuid.UUID, transactionID uuid.UUID, symbol, exchange, broker, currency, tradeDate string, tradeType string, quantity, price, amount float64, userNotes string) (*models.Transaction, error) {
+	// Get transaction and check ownership
+	tx, err := s.transactionRepo.GetByID(transactionID)
+	if err != nil {
+		return nil, fmt.Errorf("not_found")
+	}
+	if tx.UserID != userID {
+		return nil, fmt.Errorf("forbidden")
+	}
+
+	// Prepare updates
+	updates := map[string]interface{}{
+		"symbol":           symbol,
+		"exchange":         exchange,
+		"broker":           broker,
+		"currency":         currency,
+		"transaction_date": tradeDate,
+		"trade_type":       tradeType,
+		"quantity":         quantity,
+		"price":            price,
+		"amount":           amount,
+		"user_notes":       userNotes,
+	}
+
+	// Update transaction
+	if err := s.transactionRepo.UpdateByID(transactionID, updates); err != nil {
+		return nil, err
+	}
+
+	// Return updated transaction
+	return s.transactionRepo.GetByID(transactionID)
 }
