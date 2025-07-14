@@ -33,3 +33,14 @@ export function generateId(): string {
 export function abs(value: number): number {
   return Math.abs(value)
 }
+
+export function toSnakeCase<T extends object>(obj: T): Record<string, unknown> {
+  if (typeof obj !== 'object' || obj === null) return obj
+  if (Array.isArray(obj)) return obj.map(toSnakeCase) as unknown as Record<string, unknown>
+  return Object.fromEntries(
+    Object.entries(obj).map(([key, value]) => [
+      key.replace(/([A-Z])/g, '_$1').toLowerCase(),
+      typeof value === 'object' && value !== null ? toSnakeCase(value) : value,
+    ])
+  )
+}

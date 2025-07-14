@@ -6,33 +6,13 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/transaction-tracker/backend/testutils"
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 
 	"github.com/transaction-tracker/backend/config"
 	"github.com/transaction-tracker/backend/internal/database"
 	"github.com/transaction-tracker/backend/internal/models"
 )
-
-// setupTestDB creates an in-memory SQLite database for testing
-func setupTestDB() (*gorm.DB, error) {
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Silent),
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	// Auto-migrate the schemas
-	err = db.AutoMigrate(&models.User{}, &models.Transaction{})
-	if err != nil {
-		return nil, err
-	}
-
-	return db, nil
-}
 
 func TestDatabaseManager_Connect(t *testing.T) {
 	// Test with invalid configuration
@@ -52,8 +32,7 @@ func TestDatabaseManager_Connect(t *testing.T) {
 }
 
 func TestDatabaseManager_HealthCheck(t *testing.T) {
-	_, err := setupTestDB()
-	require.NoError(t, err)
+	_ = testutils.SetupTestDB(t)
 
 	// We'll need to set the db field via reflection or create a test method
 	// For now, let's skip this complex test
@@ -83,8 +62,7 @@ func TestUser_PasswordHashing(t *testing.T) {
 }
 
 func TestUser_BeforeCreate(t *testing.T) {
-	db, err := setupTestDB()
-	require.NoError(t, err)
+	db := testutils.SetupTestDB(t)
 
 	// Hash password manually since model doesn't have this method
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
@@ -109,6 +87,7 @@ func TestUser_BeforeCreate(t *testing.T) {
 }
 
 func TestTransaction_CalculateValue(t *testing.T) {
+	// This test doesn't need a database
 	transaction := &models.Transaction{
 		Quantity: 100,
 		Price:    25.50,
@@ -121,8 +100,7 @@ func TestTransaction_CalculateValue(t *testing.T) {
 }
 
 func TestTransaction_BeforeCreate(t *testing.T) {
-	db, err := setupTestDB()
-	require.NoError(t, err)
+	db := testutils.SetupTestDB(t)
 
 	// Create a test user first
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
@@ -137,7 +115,7 @@ func TestTransaction_BeforeCreate(t *testing.T) {
 	require.NoError(t, err)
 
 	transaction := &models.Transaction{
-		UserID:          user.ID,
+		UserID:          user.UserID,
 		Symbol:          "AAPL",
 		TradeType:       "buy",
 		Quantity:        100,
@@ -156,13 +134,12 @@ func TestTransaction_BeforeCreate(t *testing.T) {
 }
 
 func TestSeeder_SeedDevelopmentData(t *testing.T) {
-	db, err := setupTestDB()
-	require.NoError(t, err)
+	db := testutils.SetupTestDB(t)
 
 	seeder := database.NewSeeder(db)
 
 	// Seed development data
-	err = seeder.SeedDevelopmentData()
+	err := seeder.SeedDevelopmentData()
 	assert.NoError(t, err)
 
 	// Verify users were created

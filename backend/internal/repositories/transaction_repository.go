@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/transaction-tracker/backend/internal/models"
+	"github.com/transaction-tracker/backend/internal/utils"
 	"gorm.io/gorm"
 )
 
@@ -41,8 +42,6 @@ func (r *TransactionRepository) CreateMany(transactions []models.Transaction) ([
 	var createdTransactions []models.Transaction
 
 	for i, transaction := range transactions {
-		// ignore id from frontend
-		transaction.ID = 0
 		// Create transaction
 		if err := tx.Create(&transaction).Error; err != nil {
 			tx.Rollback()
@@ -59,35 +58,51 @@ func (r *TransactionRepository) CreateMany(transactions []models.Transaction) ([
 	return createdTransactions, nil
 }
 
-// GetByID retrieves a transaction by ID
-func (r *TransactionRepository) GetByID(id uint) (*models.Transaction, error) {
+// GetByID retrieves a transaction by transaction_id (UUID)
+func (r *TransactionRepository) GetByID(id string) (*models.Transaction, error) {
 	var transaction models.Transaction
-	err := r.db.Preload("User").First(&transaction, id).Error
+	uuidBytes, err := utils.ParseUUID(id)
+	if err != nil {
+		return nil, fmt.Errorf("invalid transaction_id: %w", err)
+	}
+	err = r.db.Preload("User").Where("transaction_id = ?", uuidBytes.UUID[:]).First(&transaction).Error
 	if err != nil {
 		return nil, err
 	}
 	return &transaction, nil
 }
 
-// GetByUserID retrieves all transactions for a user
-func (r *TransactionRepository) GetByUserID(userID uint) ([]models.Transaction, error) {
+// GetByUserID retrieves all transactions for a user by user_id (UUID)
+func (r *TransactionRepository) GetByUserID(userID string) ([]models.Transaction, error) {
 	var transactions []models.Transaction
-	err := r.db.Where("user_id = ?", userID).Preload("User").Find(&transactions).Error
+	uuidBytes, err := utils.ParseUUID(userID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user_id: %w", err)
+	}
+	err = r.db.Where("user_id = ?", uuidBytes.UUID[:]).Preload("User").Find(&transactions).Error
 	return transactions, err
 }
 
-// UpdateByID updates a transaction by ID
-func (r *TransactionRepository) UpdateByID(id uint, updates map[string]interface{}) error {
-	return r.db.Model(&models.Transaction{}).Where("id = ?", id).Updates(updates).Error
+// UpdateByID updates a transaction by transaction_id (UUID)
+func (r *TransactionRepository) UpdateByID(id string, updates map[string]interface{}) error {
+	uuidBytes, err := utils.ParseUUID(id)
+	if err != nil {
+		return fmt.Errorf("invalid transaction_id: %w", err)
+	}
+	return r.db.Model(&models.Transaction{}).Where("transaction_id = ?", uuidBytes.UUID[:]).Updates(updates).Error
 }
 
-// DeleteByID soft deletes a transaction by ID
-func (r *TransactionRepository) DeleteByID(id uint) error {
-	return r.db.Delete(&models.Transaction{}, id).Error
+// DeleteByID soft deletes a transaction by transaction_id (UUID)
+func (r *TransactionRepository) DeleteByID(id string) error {
+	uuidBytes, err := utils.ParseUUID(id)
+	if err != nil {
+		return fmt.Errorf("invalid transaction_id: %w", err)
+	}
+	return r.db.Where("transaction_id = ?", uuidBytes.UUID[:]).Delete(&models.Transaction{}).Error
 }
 
 // GetWithFilters retrieves transactions with advanced filtering
-func (r *TransactionRepository) GetWithFilters(userID *uint, symbols []string, types []string, exchanges []string, brokers []string, currencies []string,
+func (r *TransactionRepository) GetWithFilters(userID *string, symbols []string, types []string, exchanges []string, brokers []string, currencies []string,
 	startDate *time.Time, endDate *time.Time, minAmount *float64, maxAmount *float64,
 	orderBy string, orderDirection string, limit int, offset int) ([]models.Transaction, error) {
 
@@ -96,13 +111,17 @@ func (r *TransactionRepository) GetWithFilters(userID *uint, symbols []string, t
 
 	// Apply filters
 	if userID != nil {
-		query = query.Where("user_id = ?", *userID)
+		uuidBytes, err := utils.ParseUUID(*userID)
+		if err != nil {
+			return nil, fmt.Errorf("invalid user_id: %w", err)
+		}
+		query = query.Where("user_id = ?", uuidBytes.UUID[:])
 	}
 	if len(symbols) > 0 {
 		query = query.Where("symbol IN ?", symbols)
 	}
 	if len(types) > 0 {
-		query = query.Where("type IN ?", types)
+		query = query.Where("trade_type IN ?", types)
 	}
 	if len(exchanges) > 0 {
 		query = query.Where("exchange IN ?", exchanges)
@@ -154,21 +173,25 @@ func (r *TransactionRepository) GetWithFilters(userID *uint, symbols []string, t
 }
 
 // CountWithFilters returns the count of transactions based on filters
-func (r *TransactionRepository) CountWithFilters(userID *uint, symbols []string, types []string, exchanges []string, brokers []string, currencies []string,
+func (r *TransactionRepository) CountWithFilters(userID *string, symbols []string, types []string, exchanges []string, brokers []string, currencies []string,
 	startDate *time.Time, endDate *time.Time, minAmount *float64, maxAmount *float64) (int64, error) {
 
 	var count int64
 	query := r.db.Model(&models.Transaction{})
 
-	// Apply same filters as GetWithFilters
+	// Apply filters
 	if userID != nil {
-		query = query.Where("user_id = ?", *userID)
+		uuidBytes, err := utils.ParseUUID(*userID)
+		if err != nil {
+			return 0, fmt.Errorf("invalid user_id: %w", err)
+		}
+		query = query.Where("user_id = ?", uuidBytes.UUID[:])
 	}
 	if len(symbols) > 0 {
 		query = query.Where("symbol IN ?", symbols)
 	}
 	if len(types) > 0 {
-		query = query.Where("type IN ?", types)
+		query = query.Where("trade_type IN ?", types)
 	}
 	if len(exchanges) > 0 {
 		query = query.Where("exchange IN ?", exchanges)
@@ -193,14 +216,14 @@ func (r *TransactionRepository) CountWithFilters(userID *uint, symbols []string,
 	}
 
 	if err := query.Count(&count).Error; err != nil {
-		return 0, fmt.Errorf("failed to count transactions: %w", err)
+		return 0, fmt.Errorf("failed to count filtered transactions: %w", err)
 	}
 
 	return count, nil
 }
 
 // GetPortfolioSummaryByUserID returns portfolio summary for a user
-func (r *TransactionRepository) GetPortfolioSummaryByUserID(userID uint) (map[string]interface{}, error) {
+func (r *TransactionRepository) GetPortfolioSummaryByUserID(userID string) (map[string]interface{}, error) {
 	var result struct {
 		TotalTransactions int64   `json:"total_transactions"`
 		TotalBuyAmount    float64 `json:"total_buy_amount"`
@@ -208,23 +231,28 @@ func (r *TransactionRepository) GetPortfolioSummaryByUserID(userID uint) (map[st
 		UniqueSymbols     int64   `json:"unique_symbols"`
 	}
 
+	uuidBytes, err := utils.ParseUUID(userID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user_id: %w", err)
+	}
+
 	// Count total transactions
-	if err := r.db.Model(&models.Transaction{}).Where("user_id = ?", userID).Count(&result.TotalTransactions).Error; err != nil {
+	if err := r.db.Model(&models.Transaction{}).Where("user_id = ?", uuidBytes.UUID[:]).Count(&result.TotalTransactions).Error; err != nil {
 		return nil, fmt.Errorf("failed to count transactions: %w", err)
 	}
 
 	// Sum buy amounts
-	if err := r.db.Model(&models.Transaction{}).Where("user_id = ? AND type = ?", userID, "Buy").Select("COALESCE(SUM(amount), 0)").Scan(&result.TotalBuyAmount).Error; err != nil {
+	if err := r.db.Model(&models.Transaction{}).Where("user_id = ? AND trade_type = ?", uuidBytes.UUID[:], "Buy").Select("COALESCE(SUM(amount), 0)").Scan(&result.TotalBuyAmount).Error; err != nil {
 		return nil, fmt.Errorf("failed to sum buy amounts: %w", err)
 	}
 
 	// Sum sell amounts
-	if err := r.db.Model(&models.Transaction{}).Where("user_id = ? AND type = ?", userID, "Sell").Select("COALESCE(SUM(amount), 0)").Scan(&result.TotalSellAmount).Error; err != nil {
+	if err := r.db.Model(&models.Transaction{}).Where("user_id = ? AND trade_type = ?", uuidBytes.UUID[:], "Sell").Select("COALESCE(SUM(amount), 0)").Scan(&result.TotalSellAmount).Error; err != nil {
 		return nil, fmt.Errorf("failed to sum sell amounts: %w", err)
 	}
 
 	// Count unique symbols
-	if err := r.db.Model(&models.Transaction{}).Where("user_id = ?", userID).Distinct("symbol").Count(&result.UniqueSymbols).Error; err != nil {
+	if err := r.db.Model(&models.Transaction{}).Where("user_id = ?", uuidBytes.UUID[:]).Distinct("symbol").Count(&result.UniqueSymbols).Error; err != nil {
 		return nil, fmt.Errorf("failed to count unique symbols: %w", err)
 	}
 
@@ -238,7 +266,7 @@ func (r *TransactionRepository) GetPortfolioSummaryByUserID(userID uint) (map[st
 }
 
 // GetSymbolHoldingsByUserID returns current holdings for a user grouped by symbol
-func (r *TransactionRepository) GetSymbolHoldingsByUserID(userID uint) ([]map[string]interface{}, error) {
+func (r *TransactionRepository) GetSymbolHoldingsByUserID(userID string) ([]map[string]interface{}, error) {
 	var holdings []struct {
 		Symbol       string  `json:"symbol"`
 		TotalBought  float64 `json:"total_bought"`
@@ -248,14 +276,19 @@ func (r *TransactionRepository) GetSymbolHoldingsByUserID(userID uint) ([]map[st
 		AvgSellPrice float64 `json:"avg_sell_price"`
 	}
 
+	uuidBytes, err := utils.ParseUUID(userID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user_id: %w", err)
+	}
+
 	query := `
 		SELECT
 			symbol,
-			COALESCE(SUM(CASE WHEN type = 'Buy' THEN quantity ELSE 0 END), 0) as total_bought,
-			COALESCE(SUM(CASE WHEN type = 'Sell' THEN quantity ELSE 0 END), 0) as total_sold,
-			COALESCE(SUM(CASE WHEN type = 'Buy' THEN quantity WHEN type = 'Sell' THEN -quantity ELSE 0 END), 0) as net_quantity,
-			COALESCE(AVG(CASE WHEN type = 'Buy' THEN price ELSE NULL END), 0) as avg_buy_price,
-			COALESCE(AVG(CASE WHEN type = 'Sell' THEN price ELSE NULL END), 0) as avg_sell_price
+			COALESCE(SUM(CASE WHEN trade_type = 'Buy' THEN quantity ELSE 0 END), 0) as total_bought,
+			COALESCE(SUM(CASE WHEN trade_type = 'Sell' THEN quantity ELSE 0 END), 0) as total_sold,
+			COALESCE(SUM(CASE WHEN trade_type = 'Buy' THEN quantity WHEN trade_type = 'Sell' THEN -quantity ELSE 0 END), 0) as net_quantity,
+			COALESCE(AVG(CASE WHEN trade_type = 'Buy' THEN price ELSE NULL END), 0) as avg_buy_price,
+			COALESCE(AVG(CASE WHEN trade_type = 'Sell' THEN price ELSE NULL END), 0) as avg_sell_price
 		FROM transactions
 		WHERE user_id = ? AND deleted_at IS NULL
 		GROUP BY symbol
@@ -263,7 +296,7 @@ func (r *TransactionRepository) GetSymbolHoldingsByUserID(userID uint) ([]map[st
 		ORDER BY symbol
 	`
 
-	if err := r.db.Raw(query, userID).Scan(&holdings).Error; err != nil {
+	if err := r.db.Raw(query, uuidBytes.UUID[:]).Scan(&holdings).Error; err != nil {
 		return nil, fmt.Errorf("failed to get symbol holdings: %w", err)
 	}
 

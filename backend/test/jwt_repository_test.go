@@ -1,31 +1,25 @@
 package test
 
 import (
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"gorm.io/driver/sqlite"
+	testutils "github.com/transaction-tracker/backend/testutils"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 
 	"github.com/transaction-tracker/backend/internal/models"
 	"github.com/transaction-tracker/backend/internal/repositories"
+	"github.com/transaction-tracker/backend/internal/utils"
 )
 
 // setupJWTRepositoryTest sets up the test environment for JWT repository tests
 func setupJWTRepositoryTest(t *testing.T) (*gorm.DB, repositories.JWTRepository, *models.User) {
-	// Create in-memory SQLite database
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Silent),
-	})
-	require.NoError(t, err)
-
-	// Auto-migrate the schemas
-	err = db.AutoMigrate(&models.User{}, &models.JWTToken{})
-	require.NoError(t, err)
+	// Use shared MySQL test DB
+	db := testutils.SetupTestDB(t)
 
 	jwtRepo := repositories.NewJWTRepository(db)
 
@@ -34,7 +28,7 @@ func setupJWTRepositoryTest(t *testing.T) (*gorm.DB, repositories.JWTRepository,
 		Username: "testuser",
 		Email:    "test@example.com",
 	}
-	err = testUser.SetPassword("password123")
+	err := testUser.SetPassword("password123")
 	require.NoError(t, err)
 
 	err = db.Create(testUser).Error
@@ -51,11 +45,11 @@ func TestJWTRepository_Create(t *testing.T) {
 	expiresAt := time.Now().Add(24 * time.Hour)
 	deviceInfo := `{"device": "test", "browser": "test"}`
 
-	token, err := jwtRepo.Create(testUser.ID, tokenHash, expiresAt, deviceInfo)
+	token, err := jwtRepo.Create(testUser.UserID, tokenHash, expiresAt, deviceInfo)
 	assert.NoError(t, err)
 	assert.NotNil(t, token)
 	assert.NotEmpty(t, token.ID)
-	assert.Equal(t, testUser.ID, token.UserID)
+	assert.Equal(t, testUser.UserID, token.UserID)
 	assert.Equal(t, tokenHash, token.TokenHash)
 
 	// Verify token was stored in database
@@ -74,11 +68,11 @@ func TestJWTRepository_Create_DuplicateTokenHash(t *testing.T) {
 	deviceInfo := `{"device": "test", "browser": "test"}`
 
 	// Create first token
-	_, err := jwtRepo.Create(testUser.ID, tokenHash, expiresAt, deviceInfo)
+	_, err := jwtRepo.Create(testUser.UserID, tokenHash, expiresAt, deviceInfo)
 	assert.NoError(t, err)
 
 	// Try to create second token with same hash
-	_, err = jwtRepo.Create(testUser.ID, tokenHash, expiresAt, deviceInfo)
+	_, err = jwtRepo.Create(testUser.UserID, tokenHash, expiresAt, deviceInfo)
 	assert.Error(t, err) // Should fail due to unique constraint
 }
 
@@ -90,7 +84,7 @@ func TestJWTRepository_FindByTokenHash(t *testing.T) {
 	expiresAt := time.Now().Add(24 * time.Hour)
 	deviceInfo := `{"device": "test", "browser": "test"}`
 
-	token, err := jwtRepo.Create(testUser.ID, tokenHash, expiresAt, deviceInfo)
+	token, err := jwtRepo.Create(testUser.UserID, tokenHash, expiresAt, deviceInfo)
 	require.NoError(t, err)
 
 	// Test successful retrieval
@@ -118,7 +112,7 @@ func TestJWTRepository_FindByTokenHash_RevokedToken(t *testing.T) {
 	expiresAt := time.Now().Add(24 * time.Hour)
 	deviceInfo := `{"device": "test", "browser": "test"}`
 
-	token, err := jwtRepo.Create(testUser.ID, tokenHash, expiresAt, deviceInfo)
+	token, err := jwtRepo.Create(testUser.UserID, tokenHash, expiresAt, deviceInfo)
 	require.NoError(t, err)
 
 	// Manually revoke the token
@@ -141,7 +135,7 @@ func TestJWTRepository_RevokeToken(t *testing.T) {
 	expiresAt := time.Now().Add(24 * time.Hour)
 	deviceInfo := `{"device": "test", "browser": "test"}`
 
-	token, err := jwtRepo.Create(testUser.ID, tokenHash, expiresAt, deviceInfo)
+	token, err := jwtRepo.Create(testUser.UserID, tokenHash, expiresAt, deviceInfo)
 	require.NoError(t, err)
 
 	// Revoke the token
@@ -161,7 +155,8 @@ func TestJWTRepository_RevokeToken_NotFound(t *testing.T) {
 
 	// Try to revoke non-existent token - the repository doesn't check if token exists
 	// It just updates 0 rows, which is not an error in GORM
-	err := jwtRepo.RevokeToken("non_existent_id")
+	nonExistentID := utils.UUID{UUID: uuid.MustParse("00000000-0000-0000-0000-000000000000")}
+	err := jwtRepo.RevokeToken(nonExistentID)
 	assert.NoError(t, err) // This succeeds but affects 0 rows
 }
 
@@ -175,7 +170,7 @@ func TestJWTRepository_FindActiveTokensByUserID(t *testing.T) {
 		expiresAt := time.Now().Add(24 * time.Hour)
 		deviceInfo := `{"device": "test", "browser": "test"}`
 
-		_, err := jwtRepo.Create(testUser.ID, tokenHash, expiresAt, deviceInfo)
+		_, err := jwtRepo.Create(testUser.UserID, tokenHash, expiresAt, deviceInfo)
 		require.NoError(t, err)
 	}
 
@@ -184,20 +179,20 @@ func TestJWTRepository_FindActiveTokensByUserID(t *testing.T) {
 	expiresAt := time.Now().Add(24 * time.Hour)
 	deviceInfo := `{"device": "test", "browser": "test"}`
 
-	revokedToken, err := jwtRepo.Create(testUser.ID, revokedHash, expiresAt, deviceInfo)
+	revokedToken, err := jwtRepo.Create(testUser.UserID, revokedHash, expiresAt, deviceInfo)
 	require.NoError(t, err)
 	err = jwtRepo.RevokeToken(revokedToken.ID)
 	require.NoError(t, err)
 
 	// Get active tokens
-	retrievedTokens, err := jwtRepo.FindActiveTokensByUserID(testUser.ID)
+	retrievedTokens, err := jwtRepo.FindActiveTokensByUserID(testUser.UserID)
 	assert.NoError(t, err)
 	assert.Len(t, retrievedTokens, 2)
 
 	// Verify only active tokens are returned
 	for _, token := range retrievedTokens {
 		assert.False(t, token.IsRevoked())
-		assert.Equal(t, testUser.ID, token.UserID)
+		assert.Equal(t, testUser.UserID, token.UserID)
 	}
 }
 
@@ -205,7 +200,7 @@ func TestJWTRepository_FindActiveTokensByUserID_NoTokens(t *testing.T) {
 	_, jwtRepo, testUser := setupJWTRepositoryTest(t)
 
 	// Get active tokens for user with no tokens
-	retrievedTokens, err := jwtRepo.FindActiveTokensByUserID(testUser.ID)
+	retrievedTokens, err := jwtRepo.FindActiveTokensByUserID(testUser.UserID)
 	assert.NoError(t, err)
 	assert.Empty(t, retrievedTokens)
 }
@@ -219,14 +214,14 @@ func TestJWTRepository_CleanupExpiredTokens(t *testing.T) {
 	expiredTime := time.Now().Add(-1 * time.Hour) // Expired 1 hour ago
 	deviceInfo := `{"device": "test", "browser": "test"}`
 
-	_, err := jwtRepo.Create(testUser.ID, expiredHash, expiredTime, deviceInfo)
+	_, err := jwtRepo.Create(testUser.UserID, expiredHash, expiredTime, deviceInfo)
 	require.NoError(t, err)
 
 	// Create valid token
 	validHash := "valid_hash_" + uuid.New().String()
 	validTime := time.Now().Add(24 * time.Hour) // Expires in 24 hours
 
-	validToken, err := jwtRepo.Create(testUser.ID, validHash, validTime, deviceInfo)
+	validToken, err := jwtRepo.Create(testUser.UserID, validHash, validTime, deviceInfo)
 	require.NoError(t, err)
 
 	// Delete expired tokens
@@ -250,7 +245,7 @@ func TestJWTRepository_CleanupExpiredTokens_NoExpiredTokens(t *testing.T) {
 		expiresAt := time.Now().Add(24 * time.Hour)
 		deviceInfo := `{"device": "test", "browser": "test"}`
 
-		_, err := jwtRepo.Create(testUser.ID, tokenHash, expiresAt, deviceInfo)
+		_, err := jwtRepo.Create(testUser.UserID, tokenHash, expiresAt, deviceInfo)
 		require.NoError(t, err)
 	}
 
@@ -268,7 +263,7 @@ func TestJWTRepository_UpdateLastUsed(t *testing.T) {
 	expiresAt := time.Now().Add(24 * time.Hour)
 	deviceInfo := `{"device": "test", "browser": "test"}`
 
-	token, err := jwtRepo.Create(testUser.ID, tokenHash, expiresAt, deviceInfo)
+	token, err := jwtRepo.Create(testUser.UserID, tokenHash, expiresAt, deviceInfo)
 	require.NoError(t, err)
 
 	// Initially no last used timestamp
@@ -292,9 +287,11 @@ func TestJWTRepository_TokenWithLargeDeviceInfo(t *testing.T) {
 	// Create token with large device info
 	tokenHash := "test_hash_" + uuid.New().String()
 	expiresAt := time.Now().Add(24 * time.Hour)
-	largeDeviceInfo := `{"device": "` + string(make([]byte, 1000)) + `", "browser": "test"}`
+	// Create a large string with valid JSON characters
+	largeString := strings.Repeat("X", 1000)
+	largeDeviceInfo := `{"device": "` + largeString + `", "browser": "test"}`
 
-	token, err := jwtRepo.Create(testUser.ID, tokenHash, expiresAt, largeDeviceInfo)
+	token, err := jwtRepo.Create(testUser.UserID, tokenHash, expiresAt, largeDeviceInfo)
 	assert.NoError(t, err)
 
 	// Retrieve and verify

@@ -8,6 +8,7 @@ import (
 	"github.com/transaction-tracker/backend/internal/models"
 	"github.com/transaction-tracker/backend/internal/repositories"
 	"github.com/transaction-tracker/backend/internal/services"
+	"github.com/transaction-tracker/backend/internal/utils"
 	"gorm.io/gorm"
 )
 
@@ -168,7 +169,8 @@ func (h *AuthHandler) Me(c *gin.Context) {
 		return
 	}
 
-	userID, ok := userIDInterface.(uint)
+	// Expect UUID wrapped in utils.UUID
+	userIDWrapper, ok := userIDInterface.(utils.UUID)
 	if !ok {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Invalid user ID",
@@ -177,7 +179,7 @@ func (h *AuthHandler) Me(c *gin.Context) {
 	}
 
 	// Get user information
-	user, err := h.userRepo.FindByID(userID)
+	user, err := h.userRepo.FindByUserID(userIDWrapper)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"error": "User not found",

@@ -7,6 +7,8 @@ import { GoogleIcon } from '@/components/icons'
 import { Title } from '@/components/ui/title'
 import { ROUTES } from '@/constants'
 import { Link } from '@/components/ui/link'
+import { AuthService } from '@/services/auth.service'
+import { useNavigate } from 'react-router-dom'
 
 export default function SignUpPage() {
   const [email, setEmail] = React.useState('')
@@ -16,15 +18,42 @@ export default function SignUpPage() {
   const [confirmPassword, setConfirmPassword] = React.useState('')
   const [passwordTooShort, setPasswordTooShort] = React.useState(false)
   const [passwordMismatch, setPasswordMismatch] = React.useState(false)
+  const [isLoading, setIsLoading] = React.useState(false)
+  const [error, setError] = React.useState<string | null>(null)
+  const [success, setSuccess] = React.useState(false)
+  const navigate = useNavigate()
   const isFormValid =
     email.trim() && firstName.trim() && password.length >= 8 && password === confirmPassword
 
-  function handleSignUp(e: React.FormEvent) {
+  async function handleSignUp(e: React.FormEvent) {
     e.preventDefault()
     setPasswordTooShort(password.length > 0 && password.length < 8)
     setPasswordMismatch(confirmPassword.length > 0 && password !== confirmPassword)
+    setError(null)
+    setSuccess(false)
     if (!isFormValid) return
-    // TODO: submit form logic here
+    setIsLoading(true)
+    try {
+      const result = await AuthService.signUp({
+        email,
+        firstName,
+        lastName: lastName || undefined,
+        password,
+        confirmPassword,
+      })
+      if (result.success) {
+        setSuccess(true)
+        setError(null)
+        setTimeout(() => navigate(ROUTES.LOGIN), 1200)
+      } else {
+        setError(result.message || 'Sign up failed')
+      }
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Sign up failed'
+      setError(errorMessage)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -114,9 +143,15 @@ export default function SignUpPage() {
               </div>
 
               {/* Primary Sign Up Button */}
-              <Button size="lg" className="w-full" type="submit">
-                Sign Up
+              <Button size="lg" className="w-full" type="submit" disabled={isLoading}>
+                {isLoading ? 'Signing Up...' : 'Sign Up'}
               </Button>
+              {error && <div className="text-xs text-destructive mt-2 text-center">{error}</div>}
+              {success && (
+                <div className="text-xs text-success mt-2 text-center">
+                  Sign up successful! Please log in.
+                </div>
+              )}
 
               {/* Reminder Message */}
               <div className="text-xs text-muted-foreground mt-2">

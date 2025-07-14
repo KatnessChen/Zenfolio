@@ -121,7 +121,7 @@ func (s *Seeder) seedTransactions() error {
 	// Sample transaction data
 	transactions := []models.Transaction{
 		{
-			UserID:          demoUser.ID,
+			UserID:          demoUser.UserID,
 			TradeType:       types.TradeTypeBuy,
 			Symbol:          "AAPL",
 			Quantity:        100,
@@ -129,12 +129,12 @@ func (s *Seeder) seedTransactions() error {
 			Amount:          15025.00,
 			Currency:        "USD",
 			Broker:          "Firstrade",
-			Account:         "Main",
+			Exchange:        "NASDAQ",
 			TransactionDate: time.Now().AddDate(0, 0, -30),
 			UserNotes:       "Buy Apple Inc. shares",
 		},
 		{
-			UserID:          demoUser.ID,
+			UserID:          demoUser.UserID,
 			TradeType:       types.TradeTypeBuy,
 			Symbol:          "GOOGL",
 			Quantity:        50,
@@ -142,12 +142,12 @@ func (s *Seeder) seedTransactions() error {
 			Amount:          140000.00,
 			Currency:        "USD",
 			Broker:          "Firstrade",
-			Account:         "Main",
+			Exchange:        "NASDAQ",
 			TransactionDate: time.Now().AddDate(0, 0, -25),
 			UserNotes:       "Buy Alphabet Inc. shares",
 		},
 		{
-			UserID:          demoUser.ID,
+			UserID:          demoUser.UserID,
 			TradeType:       types.TradeTypeSell,
 			Symbol:          "AAPL",
 			Quantity:        50,
@@ -155,12 +155,12 @@ func (s *Seeder) seedTransactions() error {
 			Amount:          7787.50,
 			Currency:        "USD",
 			Broker:          "Firstrade",
-			Account:         "Main",
+			Exchange:        "NASDAQ",
 			TransactionDate: time.Now().AddDate(0, 0, -20),
 			UserNotes:       "Sell Apple Inc. shares",
 		},
 		{
-			UserID:          demoUser.ID,
+			UserID:          demoUser.UserID,
 			TradeType:       types.TradeTypeBuy,
 			Symbol:          "MSFT",
 			Quantity:        75,
@@ -168,12 +168,12 @@ func (s *Seeder) seedTransactions() error {
 			Amount:          31147.50,
 			Currency:        "USD",
 			Broker:          "Firstrade",
-			Account:         "Main",
+			Exchange:        "NASDAQ",
 			TransactionDate: time.Now().AddDate(0, 0, -15),
 			UserNotes:       "Buy Microsoft Corp. shares",
 		},
 		{
-			UserID:          demoUser.ID,
+			UserID:          demoUser.UserID,
 			TradeType:       types.TradeTypeDividend,
 			Symbol:          "AAPL",
 			Quantity:        50,
@@ -181,12 +181,12 @@ func (s *Seeder) seedTransactions() error {
 			Amount:          12.00,
 			Currency:        "USD",
 			Broker:          "Firstrade",
-			Account:         "Main",
+			Exchange:        "NASDAQ",
 			TransactionDate: time.Now().AddDate(0, 0, -10),
 			UserNotes:       "Apple Inc. dividend payment",
 		},
 		{
-			UserID:          demoUser.ID,
+			UserID:          demoUser.UserID,
 			TradeType:       types.TradeTypeBuy,
 			Symbol:          "TSLA",
 			Quantity:        25,
@@ -194,12 +194,12 @@ func (s *Seeder) seedTransactions() error {
 			Amount:          6145.00,
 			Currency:        "USD",
 			Broker:          "Firstrade",
-			Account:         "Main",
+			Exchange:        "NASDAQ",
 			TransactionDate: time.Now().AddDate(0, 0, -5),
 			UserNotes:       "Buy Tesla Inc. shares",
 		},
 		{
-			UserID:          demoUser.ID,
+			UserID:          demoUser.UserID,
 			TradeType:       types.TradeTypeBuy,
 			Symbol:          "NVDA",
 			Quantity:        10,
@@ -207,7 +207,7 @@ func (s *Seeder) seedTransactions() error {
 			Amount:          8755.00,
 			Currency:        "USD",
 			Broker:          "Firstrade",
-			Account:         "Main",
+			Exchange:        "NASDAQ",
 			TransactionDate: time.Now().AddDate(0, 0, -3),
 			UserNotes:       "Buy NVIDIA Corp. shares",
 		},
@@ -222,7 +222,7 @@ func (s *Seeder) seedTransactions() error {
 	// Add some transactions for john_doe
 	johnTransactions := []models.Transaction{
 		{
-			UserID:          johnUser.ID,
+			UserID:          johnUser.UserID,
 			TradeType:       types.TradeTypeBuy,
 			Symbol:          "SPY",
 			Quantity:        200,
@@ -230,12 +230,12 @@ func (s *Seeder) seedTransactions() error {
 			Amount:          84100.00,
 			Currency:        "USD",
 			Broker:          "Vanguard",
-			Account:         "IRA",
+			Exchange:        "NASDAQ",
 			TransactionDate: time.Now().AddDate(0, 0, -45),
 			UserNotes:       "Buy SPDR S&P 500 ETF",
 		},
 		{
-			UserID:          johnUser.ID,
+			UserID:          johnUser.UserID,
 			TradeType:       types.TradeTypeBuy,
 			Symbol:          "VTI",
 			Quantity:        100,
@@ -243,7 +243,7 @@ func (s *Seeder) seedTransactions() error {
 			Amount:          22575.00,
 			Currency:        "USD",
 			Broker:          "Vanguard",
-			Account:         "Taxable",
+			Exchange:        "NASDAQ",
 			TransactionDate: time.Now().AddDate(0, 0, -40),
 			UserNotes:       "Buy Vanguard Total Stock Market ETF",
 		},
@@ -285,7 +285,7 @@ func (s *Seeder) SeedTestData() error {
 
 	// Create test transactions
 	testTransaction := models.Transaction{
-		UserID:          testUser.ID,
+		UserID:          testUser.UserID,
 		TradeType:       types.TradeTypeBuy,
 		Symbol:          "TEST",
 		Quantity:        1,
@@ -293,7 +293,7 @@ func (s *Seeder) SeedTestData() error {
 		Amount:          1.00,
 		Currency:        "USD",
 		Broker:          "Test Broker",
-		Account:         "Test",
+		Exchange:        "NASDAQ",
 		TransactionDate: time.Now(),
 		UserNotes:       "Test transaction",
 	}
@@ -311,7 +311,7 @@ func (s *Seeder) ClearTestData() error {
 	log.Println("Clearing test data...")
 
 	// Delete test transactions (those belonging to test_user)
-	if err := s.db.Unscoped().Where("user_id IN (SELECT id FROM users WHERE username = ?)", "test_user").Delete(&models.Transaction{}).Error; err != nil {
+	if err := s.db.Unscoped().Where("user_id IN (SELECT user_id FROM users WHERE username = ?)", "test_user").Delete(&models.Transaction{}).Error; err != nil {
 		return err
 	}
 

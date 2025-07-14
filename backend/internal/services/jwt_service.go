@@ -10,14 +10,15 @@ import (
 	"github.com/transaction-tracker/backend/config"
 	"github.com/transaction-tracker/backend/internal/models"
 	"github.com/transaction-tracker/backend/internal/repositories"
+	"github.com/transaction-tracker/backend/internal/utils"
 )
 
 // JWTClaims represents the claims in our JWT token
 type JWTClaims struct {
-	UserID   uint   `json:"user_id"`
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	TokenID  string `json:"token_id"`
+	UserID   utils.UUID `json:"user_id"`
+	Username string     `json:"username"`
+	Email    string     `json:"email"`
+	TokenID  string     `json:"token_id"`
 	jwt.RegisteredClaims
 }
 
@@ -34,7 +35,7 @@ type JWTService interface {
 	GenerateToken(user *models.User, deviceInfo DeviceInfo) (string, error)
 	ValidateToken(tokenString string) (*JWTClaims, error)
 	RevokeToken(tokenString string) error
-	GetActiveTokens(userID uint) ([]models.JWTToken, error)
+	GetActiveTokens(userID utils.UUID) ([]models.JWTToken, error)
 	CleanupExpiredTokens() error
 	ExtractTokenID(tokenString string) (string, error)
 }
@@ -74,7 +75,7 @@ func (s *jwtService) GenerateToken(user *models.User, deviceInfo DeviceInfo) (st
 
 	// Create JWT claims
 	claims := &JWTClaims{
-		UserID:   user.ID,
+		UserID:   user.UserID,
 		Username: user.Username,
 		Email:    user.Email,
 		TokenID:  tokenID,
@@ -83,7 +84,7 @@ func (s *jwtService) GenerateToken(user *models.User, deviceInfo DeviceInfo) (st
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			NotBefore: jwt.NewNumericDate(time.Now()),
 			Issuer:    "transaction-tracker",
-			Subject:   fmt.Sprintf("user:%d", user.ID),
+			Subject:   fmt.Sprintf("user:%s", user.UserID.String()),
 		},
 	}
 
@@ -100,7 +101,7 @@ func (s *jwtService) GenerateToken(user *models.User, deviceInfo DeviceInfo) (st
 	tokenHash := repositories.HashToken(compositeString)
 
 	// Store token in database
-	_, err = s.jwtRepository.Create(user.ID, tokenHash, expiresAt, string(deviceInfoJSON))
+	_, err = s.jwtRepository.Create(user.UserID, tokenHash, expiresAt, string(deviceInfoJSON))
 	if err != nil {
 		return "", fmt.Errorf("failed to store token in database: %w", err)
 	}
@@ -186,7 +187,7 @@ func (s *jwtService) RevokeToken(tokenString string) error {
 }
 
 // GetActiveTokens returns all active tokens for a user
-func (s *jwtService) GetActiveTokens(userID uint) ([]models.JWTToken, error) {
+func (s *jwtService) GetActiveTokens(userID utils.UUID) ([]models.JWTToken, error) {
 	return s.jwtRepository.FindActiveTokensByUserID(userID)
 }
 

@@ -5,7 +5,6 @@ export const API_ENDPOINTS = {
     LOGIN: '/login',
     SIGNUP: '/signup',
     LOGOUT: '/logout',
-    REFRESH_TOKEN: '/refresh-token',
     ME: '/me',
   },
 
@@ -24,11 +23,6 @@ export const API_ENDPOINTS = {
   // Other endpoints
   HELLO_WORLD: '/hello-world',
 } as const
-
-// Helper to get full API path
-export const getApiPath = (endpoint: string): string => {
-  return `/api/v1${endpoint}`
-}
 
 // Typed endpoint paths
 export type ApiEndpoint =

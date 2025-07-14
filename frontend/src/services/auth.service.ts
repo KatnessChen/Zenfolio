@@ -1,19 +1,20 @@
 import { apiClient } from '@/lib/api-client'
-import { ROUTES } from '@/constants'
+import { API_ENDPOINTS } from '@/constants/api'
 import type { LoginRequest, LoginResponse } from '@/types/auth'
 import type { User } from '@/types'
+import { toSnakeCase } from '@/utils'
 
 export class AuthService {
   // Login user
   static async login(credentials: LoginRequest): Promise<LoginResponse> {
-    const response = await apiClient.post<LoginResponse>(ROUTES.LOGIN, credentials)
+    const response = await apiClient.post<LoginResponse>(API_ENDPOINTS.AUTH.LOGIN, credentials)
     return response.data
   }
 
   // Logout user
   static async logout(): Promise<void> {
     try {
-      await apiClient.post(ROUTES.LOGOUT)
+      await apiClient.post(API_ENDPOINTS.AUTH.LOGOUT)
     } catch (error) {
       // Even if logout fails on server, we should clear local data
       console.error('Logout request failed:', error)
@@ -25,8 +26,24 @@ export class AuthService {
 
   // Get current user info
   static async getCurrentUser(): Promise<User> {
-    const response = await apiClient.get<{ success: boolean; data: User }>(ROUTES.ME)
+    const response = await apiClient.get<{ success: boolean; data: User }>(API_ENDPOINTS.AUTH.ME)
     return response.data.data
+  }
+
+  // Sign up user
+  static async signUp(data: {
+    email: string
+    firstName: string
+    lastName?: string
+    password: string
+    confirmPassword: string
+  }): Promise<{ success: boolean; message: string }> {
+    const payload = toSnakeCase(data)
+    const response = await apiClient.post<{ success: boolean; message: string }>(
+      API_ENDPOINTS.AUTH.SIGNUP,
+      payload
+    )
+    return response.data
   }
 
   // Token management

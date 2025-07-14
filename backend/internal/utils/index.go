@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"github.com/google/uuid"
 	"github.com/transaction-tracker/backend/internal/types"
 )
 
@@ -16,4 +17,9 @@ func TradeTypeFromString(s string) (types.TradeType, bool) {
 	default:
 		return "", false
 	}
+}
+
+// GenerateUUID generates a new UUID string (v4)
+func GenerateUUID() string {
+	return uuid.New().String()
 }

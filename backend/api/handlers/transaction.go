@@ -100,7 +100,7 @@ type TransactionQueryParams struct {
 // modelToTransactionData converts a models.Transaction to types.TransactionData
 func modelToTransactionData(transaction models.Transaction) types.TransactionData {
 	return types.TransactionData{
-		ID:              fmt.Sprint(transaction.ID),
+		ID:              transaction.TransactionID.String(),
 		Symbol:          transaction.Symbol,
 		TradeType:       types.TradeType(transaction.TradeType),
 		Quantity:        transaction.Quantity,
@@ -111,7 +111,6 @@ func modelToTransactionData(transaction models.Transaction) types.TransactionDat
 		Exchange:        transaction.Exchange,
 		TransactionDate: transaction.TransactionDate.Format("2006-01-02"),
 		UserNotes:       transaction.UserNotes,
-		Account:         transaction.Account,
 	}
 }
 
@@ -196,8 +195,18 @@ func (h *TransactionsHandler) CreateTransactions(c *gin.Context) {
 		return
 	}
 
+	userUUID, ok := userID.(string)
+	if !ok || userUUID == "" {
+		c.JSON(http.StatusUnauthorized, CreateTransactionsResponse{
+			Success: false,
+			Message: "Invalid user ID in context",
+			Errors:  map[string][]string{"auth": {"Invalid user ID in context"}},
+		})
+		return
+	}
+
 	// Create transactions using injected service
-	createdTransactions, err := h.transactionService.CreateTransactions(userID.(uint), validatedTransactions)
+	createdTransactions, err := h.transactionService.CreateTransactions(userUUID, validatedTransactions)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, CreateTransactionsResponse{
 			Success: false,
@@ -233,6 +242,16 @@ func (h *TransactionsHandler) GetTransactionHistory(c *gin.Context) {
 		return
 	}
 
+	userUUID, ok := userID.(string)
+	if !ok || userUUID == "" {
+		c.JSON(http.StatusUnauthorized, GetTransactionsResponse{
+			Success: false,
+			Message: "Invalid user ID in context",
+			Errors:  map[string][]string{"auth": {"Invalid user ID in context"}},
+		})
+		return
+	}
+
 	// Parse and validate query parameters
 	params, validationErrors := parseTransactionQueryParams(c)
 	if len(validationErrors) > 0 {
@@ -245,9 +264,8 @@ func (h *TransactionsHandler) GetTransactionHistory(c *gin.Context) {
 	}
 
 	// Build filter with user ID (security requirement)
-	uid := userID.(uint)
 	filter := services.TransactionFilter{
-		UserID:         &uid, // Ensure user can only see their own transactions
+		UserID:         &userUUID, // Ensure user can only see their own transactions
 		Symbols:        params.Symbols,
 		TradeTypes:     params.TradeTypes,
 		Exchanges:      params.Exchanges,
@@ -339,10 +357,10 @@ func validateTransaction(transaction TransactionRequest) error {
 		return fmt.Errorf("symbol must be between 1 and 10 characters")
 	}
 
-	// Validate symbol format (alphanumeric uppercase)
-	symbolRegex := regexp.MustCompile(`^[A-Z0-9]{1,10}$`)
+	// Validate symbol format (alphanumeric uppercase, allow dot for e.g. BRK.B)
+	symbolRegex := regexp.MustCompile(`^[A-Z0-9]{1,8}(\.[A-Z0-9]{1,2})?$`)
 	if !symbolRegex.MatchString(transaction.Symbol) {
-		return fmt.Errorf("symbol must contain only uppercase letters and numbers")
+		return fmt.Errorf("symbol must contain only uppercase letters, numbers, and optionally a single dot (e.g. BRK.B)")
 	}
 
 	// Validate currency
@@ -429,7 +447,7 @@ func parseTransactionQueryParams(c *gin.Context) (params TransactionQueryParams,
 	if symbolParam := c.Query("symbol"); symbolParam != "" {
 		symbols := strings.Split(symbolParam, ",")
 		var validSymbols []string
-		symbolRegex := regexp.MustCompile(`^[A-Z0-9]{1,10}$`)
+		symbolRegex := regexp.MustCompile(`^[A-Z0-9]{1,8}(\.[A-Z0-9]{1,2})?$`)
 
 		for _, symbol := range symbols {
 			symbol = strings.TrimSpace(symbol)
@@ -447,14 +465,14 @@ func parseTransactionQueryParams(c *gin.Context) (params TransactionQueryParams,
 	}
 
 	// Parse types (comma-separated)
-	if typesParam := c.Query("type"); typesParam != "" {
+	if typesParam := c.Query("trade_type"); typesParam != "" {
 		typeList := strings.Split(typesParam, ",")
 		var validTypes []string
 
 		for _, tradeType := range typeList {
 			tradeType = strings.TrimSpace(tradeType)
 			if _, ok := utils.TradeTypeFromString(tradeType); !ok {
-				validationErrors["type"] = []string{"Must be one of: Buy, Sell, Dividends (comma-separated for multiple)"}
+				validationErrors["trade_type"] = []string{"Must be one of: Buy, Sell, Dividends (comma-separated for multiple)"}
 				break
 			} else {
 				validTypes = append(validTypes, tradeType)

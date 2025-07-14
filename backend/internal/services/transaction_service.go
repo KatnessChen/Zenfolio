@@ -3,13 +3,15 @@ package services
 import (
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/transaction-tracker/backend/internal/models"
 	"github.com/transaction-tracker/backend/internal/repositories"
+	"github.com/transaction-tracker/backend/internal/utils"
 )
 
 // TransactionFilter represents filters for transaction queries
 type TransactionFilter struct {
-	UserID         *uint
+	UserID         *string
 	Symbols        []string // Support multiple symbols
 	TradeTypes     []string // Support multiple types
 	Exchanges      []string // Support multiple exchanges
@@ -38,10 +40,15 @@ func NewTransactionService(transactionRepo *repositories.TransactionRepository) 
 }
 
 // CreateTransactions creates multiple transactions in a batch (business logic)
-func (s *TransactionService) CreateTransactions(userID uint, transactions []models.Transaction) ([]models.Transaction, error) {
+func (s *TransactionService) CreateTransactions(userID string, transactions []models.Transaction) ([]models.Transaction, error) {
+	parsedUserID, err := uuid.Parse(userID)
+	if err != nil {
+		return nil, err
+	}
+	userUUID := utils.UUID{UUID: parsedUserID}
 	// Set user ID for each transaction (business logic)
 	for i := range transactions {
-		transactions[i].UserID = userID
+		transactions[i].UserID = userUUID
 	}
 
 	// Delegate to repository for database operations
@@ -49,12 +56,12 @@ func (s *TransactionService) CreateTransactions(userID uint, transactions []mode
 }
 
 // GetPortfolioSummary returns portfolio summary for a user
-func (s *TransactionService) GetPortfolioSummary(userID uint) (map[string]interface{}, error) {
+func (s *TransactionService) GetPortfolioSummary(userID string) (map[string]interface{}, error) {
 	return s.transactionRepo.GetPortfolioSummaryByUserID(userID)
 }
 
 // GetSymbolHoldings returns current holdings for a user grouped by symbol
-func (s *TransactionService) GetSymbolHoldings(userID uint) ([]map[string]interface{}, error) {
+func (s *TransactionService) GetSymbolHoldings(userID string) ([]map[string]interface{}, error) {
 	return s.transactionRepo.GetSymbolHoldingsByUserID(userID)
 }
 

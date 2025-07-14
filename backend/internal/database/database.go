@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	"gorm.io/driver/mysql"
@@ -13,7 +12,6 @@ import (
 	"gorm.io/gorm/logger"
 
 	"github.com/transaction-tracker/backend/config"
-	"github.com/transaction-tracker/backend/internal/models"
 )
 
 // DB holds the database connection
@@ -136,28 +134,6 @@ func (dm *DatabaseManager) Close() error {
 	return sqlDB.Close()
 }
 
-// AutoMigrate runs database migrations
-func (dm *DatabaseManager) AutoMigrate() error {
-	if dm.db == nil {
-		return fmt.Errorf("database connection is nil")
-	}
-
-	log.Println("Running database migrations...")
-
-	// Run auto-migration for all models
-	err := dm.db.AutoMigrate(
-		&models.User{},
-		&models.Transaction{},
-	)
-
-	if err != nil {
-		return fmt.Errorf("failed to run auto-migration: %w", err)
-	}
-
-	log.Println("Database migrations completed successfully")
-	return nil
-}
-
 // CreateIndexes creates additional database indexes for performance
 func (dm *DatabaseManager) CreateIndexes() error {
 	if dm.db == nil {
@@ -190,20 +166,6 @@ func (dm *DatabaseManager) GetConnectionStats() (*sql.DBStats, error) {
 	return &stats, nil
 }
 
-// shouldRunMigrations checks if migrations should run based on environment
-func shouldRunMigrations() bool {
-	env := os.Getenv("APP_ENV")
-	skipMigrations := os.Getenv("SKIP_MIGRATIONS")
-
-	// Skip migrations if explicitly disabled
-	if skipMigrations == "true" || skipMigrations == "1" {
-		return false
-	}
-
-	// Run migrations in development, staging, or when not set
-	return env == "" || env == "development" || env == "staging"
-}
-
 // Initialize initializes the database with the given configuration
 func Initialize(cfg *config.Config) (*DatabaseManager, error) {
 	dbConfig := config.GetDatabaseConfig(cfg)
@@ -212,22 +174,6 @@ func Initialize(cfg *config.Config) (*DatabaseManager, error) {
 	// Connect with retry logic
 	if err := dm.ConnectWithRetry(5, 2*time.Second); err != nil {
 		return nil, err
-	}
-
-	if shouldRunMigrations() {
-		log.Println("Running database migrations...")
-
-		// Run migrations
-		if err := dm.AutoMigrate(); err != nil {
-			return nil, err
-		}
-
-		// Create additional indexes
-		if err := dm.CreateIndexes(); err != nil {
-			log.Printf("Warning: Failed to create indexes: %v", err)
-		}
-	} else {
-		log.Println("Skipping database migrations (production environment or explicitly disabled)")
 	}
 
 	return dm, nil

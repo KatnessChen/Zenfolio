@@ -1,5 +1,6 @@
 import axios from 'axios'
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
+import { API_ENDPOINTS } from '@/constants/api'
 
 // API configuration
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
@@ -42,7 +43,7 @@ class ApiClient {
         if (error.response?.status === 401) {
           // Token expired or invalid
           this.clearAuthData()
-          window.location.href = '/login'
+          window.location.href = API_ENDPOINTS.AUTH.LOGIN
         }
         return Promise.reject(error)
       }

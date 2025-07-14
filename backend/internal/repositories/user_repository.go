@@ -4,13 +4,14 @@ import (
 	"fmt"
 
 	"github.com/transaction-tracker/backend/internal/models"
+	"github.com/transaction-tracker/backend/internal/utils"
 	"gorm.io/gorm"
 )
 
 // UserRepository defines the interface for user operations
 type UserRepository interface {
 	Create(user *models.User) error
-	FindByID(id uint) (*models.User, error)
+	FindByUserID(userID utils.UUID) (*models.User, error)
 	FindByEmail(email string) (*models.User, error)
 	Update(user *models.User) error
 }
@@ -33,10 +34,10 @@ func (r *userRepository) Create(user *models.User) error {
 	return nil
 }
 
-// FindByID finds a user by ID
-func (r *userRepository) FindByID(id uint) (*models.User, error) {
+// FindByUserID finds a user by user ID (UUID)
+func (r *userRepository) FindByUserID(userID utils.UUID) (*models.User, error) {
 	var user models.User
-	err := r.db.First(&user, id).Error
+	err := r.db.Where("user_id = ?", userID).First(&user).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, fmt.Errorf("user not found")

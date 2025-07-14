@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-	"time"
 
 	"gorm.io/gorm"
 )
@@ -15,54 +14,13 @@ import (
 func GetAllMigrations() []Migration {
 	return []Migration{
 		{
-			ID:          "001_create_users_table",
-			Description: "Create users table with authentication and profile information (simplified schema)",
-			CreatedAt:   time.Date(2025, 6, 16, 0, 0, 0, 0, time.UTC),
+			ID:          "000_init_schema",
+			Description: "Unified schema: users, transactions, jwt_tokens with UUID primary keys",
 			Up: func(db *gorm.DB) error {
-				return executeSQLFile(db, "001_create_users_table.sql")
+				return executeSQLFile(db, "000_init_schema.sql")
 			},
 			Down: func(db *gorm.DB) error {
-				// Drop users table and its indexes
-				return db.Exec("DROP TABLE IF EXISTS users").Error
-			},
-		},
-		{
-			ID:          "002_create_transactions_table",
-			Description: "Create transactions table with simplified financial transaction tracking",
-			CreatedAt:   time.Date(2025, 6, 16, 0, 1, 0, 0, time.UTC),
-			Up: func(db *gorm.DB) error {
-				return executeSQLFile(db, "002_create_transactions_table.sql")
-			},
-			Down: func(db *gorm.DB) error {
-				// Drop transactions table and its indexes
-				return db.Exec("DROP TABLE IF EXISTS transactions").Error
-			},
-		},
-		{
-			ID:          "003_create_jwt_tokens_table",
-			Description: "Create JWT tokens table for token lifecycle management",
-			CreatedAt:   time.Date(2025, 6, 19, 0, 0, 0, 0, time.UTC),
-			Up: func(db *gorm.DB) error {
-				return executeSQLFile(db, "003_create_jwt_tokens_table.sql")
-			},
-			Down: func(db *gorm.DB) error {
-				// Drop jwt_tokens table and its indexes
-				return db.Exec("DROP TABLE IF EXISTS jwt_tokens").Error
-			},
-		},
-		{
-			ID:          "004_add_deleted_at_to_jwt_tokens",
-			Description: "Add deleted_at column to jwt_tokens table for soft delete support",
-			CreatedAt:   time.Date(2025, 6, 19, 0, 1, 0, 0, time.UTC),
-			Up: func(db *gorm.DB) error {
-				return executeSQLFile(db, "004_add_deleted_at_to_jwt_tokens.sql")
-			},
-			Down: func(db *gorm.DB) error {
-				// Remove deleted_at column and its index
-				if err := db.Exec("DROP INDEX IF EXISTS idx_jwt_tokens_deleted_at ON jwt_tokens").Error; err != nil {
-					return err
-				}
-				return db.Exec("ALTER TABLE jwt_tokens DROP COLUMN deleted_at").Error
+				return db.Exec("DROP TABLE IF EXISTS jwt_tokens; DROP TABLE IF EXISTS transactions; DROP TABLE IF EXISTS users;").Error
 			},
 		},
 	}
@@ -126,4 +84,10 @@ func executeSQLFile(db *gorm.DB, filename string) error {
 	}
 
 	return nil
+}
+
+// ApplyAllMigrations creates a migrator with all default migrations and applies them.
+func ApplyAllMigrations(db *gorm.DB) error {
+	migrator := NewMigratorWithDefaults(db)
+	return migrator.ApplyAll()
 }
