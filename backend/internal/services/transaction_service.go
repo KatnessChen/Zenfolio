@@ -129,3 +129,24 @@ func (s *TransactionService) UpdateTransaction(userID uuid.UUID, transactionID u
 	// Return updated transaction
 	return s.transactionRepo.GetByID(transactionID)
 }
+
+// DeleteTransaction deletes a transaction by ID for a specific user
+func (s *TransactionService) DeleteTransaction(userID uuid.UUID, transactionID uuid.UUID) error {
+	// Check if transaction exists and belongs to user
+	tx, err := s.transactionRepo.GetByIDAndUserID(transactionID, userID)
+	if err != nil {
+		return fmt.Errorf("not_found")
+	}
+	if tx.UserID != userID {
+		return fmt.Errorf("forbidden")
+	}
+
+	// Delete the transaction
+	return s.transactionRepo.DeleteByIDAndUserID(transactionID, userID)
+}
+
+// DeleteTransactions deletes multiple transactions by IDs for a specific user
+func (s *TransactionService) DeleteTransactions(userID uuid.UUID, transactionIDs []uuid.UUID) ([]uuid.UUID, error) {
+	// Use repository method that handles batch deletion with ownership checks
+	return s.transactionRepo.DeleteByIDsAndUserID(transactionIDs, userID)
+}

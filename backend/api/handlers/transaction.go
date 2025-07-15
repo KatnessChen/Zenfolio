@@ -682,3 +682,224 @@ func parseTimeframe(timeframe string, params *TransactionQueryParams) error {
 
 	return nil
 }
+
+// DeleteTransactionRequest represents the request structure for batch deleting transactions
+type DeleteTransactionRequest struct {
+	IDs []string `json:"ids" binding:"required,min=1"`
+}
+
+// DeleteTransactionResponse represents the response for deleting transactions
+type DeleteTransactionResponse struct {
+	Success bool                   `json:"success"`
+	Message string                 `json:"message"`
+	Data    *DeleteTransactionData `json:"data,omitempty"`
+	Errors  map[string][]string    `json:"errors,omitempty"`
+}
+
+// DeleteTransactionData represents the data part of delete transaction response
+type DeleteTransactionData struct {
+	DeletedIDs []string `json:"deleted_ids"`
+}
+
+// DeleteTransaction handles DELETE /transaction-history/:id
+func (h *TransactionsHandler) DeleteTransaction(c *gin.Context) {
+	idParam := c.Param("id")
+	if idParam == "" {
+		c.JSON(http.StatusBadRequest, DeleteTransactionResponse{
+			Success: false,
+			Message: "Transaction ID is required",
+			Errors:  map[string][]string{"id": {"Transaction ID is required"}},
+		})
+		return
+	}
+
+	transactionID, err := uuid.Parse(idParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, DeleteTransactionResponse{
+			Success: false,
+			Message: "Invalid transaction ID format",
+			Errors:  map[string][]string{"id": {"Invalid transaction ID format"}},
+		})
+		return
+	}
+
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, DeleteTransactionResponse{
+			Success: false,
+			Message: "Unauthorized",
+			Errors:  map[string][]string{"auth": {"User not authenticated"}},
+		})
+		return
+	}
+
+	userUUID, ok := userID.(uuid.UUID)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, DeleteTransactionResponse{
+			Success: false,
+			Message: "Invalid user ID in context",
+			Errors:  map[string][]string{"auth": {"Invalid user ID in context"}},
+		})
+		return
+	}
+
+	err = h.transactionService.DeleteTransaction(userUUID, transactionID)
+	if err != nil {
+		switch err.Error() {
+		case "not_found":
+			c.JSON(http.StatusNotFound, DeleteTransactionResponse{
+				Success: false,
+				Message: "Transaction does not exist",
+				Errors:  map[string][]string{"id": {"Transaction does not exist"}},
+			})
+			return
+		case "forbidden":
+			c.JSON(http.StatusForbidden, DeleteTransactionResponse{
+				Success: false,
+				Message: "Not the owner",
+				Errors:  map[string][]string{"auth": {"Not the owner"}},
+			})
+			return
+		default:
+			c.JSON(http.StatusInternalServerError, DeleteTransactionResponse{
+				Success: false,
+				Message: "Failed to delete transaction",
+				Errors:  map[string][]string{"server": {"Failed to delete transaction"}},
+			})
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, DeleteTransactionResponse{
+		Success: true,
+		Message: "Transaction deleted successfully",
+		Data:    &DeleteTransactionData{DeletedIDs: []string{idParam}},
+	})
+}
+
+// DeleteTransactions handles DELETE /transaction-history with batch deletion
+func (h *TransactionsHandler) DeleteTransactions(c *gin.Context) {
+	// Check if batch deletion is requested via query parameters
+	idsParam := c.Query("ids")
+	if idsParam != "" {
+		// Handle batch deletion via query parameters
+		h.handleBatchDeletionByQuery(c, idsParam)
+		return
+	}
+
+	// Handle batch deletion via request body
+	var req DeleteTransactionRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, DeleteTransactionResponse{
+			Success: false,
+			Message: "Invalid request format",
+			Errors:  map[string][]string{"json": {"Invalid JSON format"}},
+		})
+		return
+	}
+
+	h.handleBatchDeletionByBody(c, req.IDs)
+}
+
+// handleBatchDeletionByQuery handles batch deletion via query parameters
+func (h *TransactionsHandler) handleBatchDeletionByQuery(c *gin.Context, idsParam string) {
+	idStrings := strings.Split(idsParam, ",")
+	h.handleBatchDeletionByBody(c, idStrings)
+}
+
+// handleBatchDeletionByBody handles batch deletion logic
+func (h *TransactionsHandler) handleBatchDeletionByBody(c *gin.Context, idStrings []string) {
+	if len(idStrings) == 0 {
+		c.JSON(http.StatusBadRequest, DeleteTransactionResponse{
+			Success: false,
+			Message: "At least one transaction ID is required",
+			Errors:  map[string][]string{"ids": {"At least one transaction ID is required"}},
+		})
+		return
+	}
+
+	// Parse UUIDs
+	var transactionIDs []uuid.UUID
+	var validationErrors []string
+
+	for _, idStr := range idStrings {
+		idStr = strings.TrimSpace(idStr)
+		if idStr == "" {
+			continue
+		}
+
+		transactionID, err := uuid.Parse(idStr)
+		if err != nil {
+			validationErrors = append(validationErrors, fmt.Sprintf("Invalid transaction ID format: %s", idStr))
+			continue
+		}
+		transactionIDs = append(transactionIDs, transactionID)
+	}
+
+	if len(validationErrors) > 0 {
+		c.JSON(http.StatusBadRequest, DeleteTransactionResponse{
+			Success: false,
+			Message: "Validation failed",
+			Errors:  map[string][]string{"ids": validationErrors},
+		})
+		return
+	}
+
+	if len(transactionIDs) == 0 {
+		c.JSON(http.StatusBadRequest, DeleteTransactionResponse{
+			Success: false,
+			Message: "No valid transaction IDs provided",
+			Errors:  map[string][]string{"ids": {"No valid transaction IDs provided"}},
+		})
+		return
+	}
+
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, DeleteTransactionResponse{
+			Success: false,
+			Message: "Unauthorized",
+			Errors:  map[string][]string{"auth": {"User not authenticated"}},
+		})
+		return
+	}
+
+	userUUID, ok := userID.(uuid.UUID)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, DeleteTransactionResponse{
+			Success: false,
+			Message: "Invalid user ID in context",
+			Errors:  map[string][]string{"auth": {"Invalid user ID in context"}},
+		})
+		return
+	}
+
+	deletedIDs, err := h.transactionService.DeleteTransactions(userUUID, transactionIDs)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, DeleteTransactionResponse{
+			Success: false,
+			Message: "Failed to delete transactions",
+			Errors:  map[string][]string{"server": {"Failed to delete transactions"}},
+		})
+		return
+	}
+
+	// Convert UUIDs back to strings
+	deletedIDStrings := make([]string, len(deletedIDs))
+	for i, id := range deletedIDs {
+		deletedIDStrings[i] = id.String()
+	}
+
+	var message string
+	if len(deletedIDStrings) == 1 {
+		message = "Transaction deleted successfully"
+	} else {
+		message = fmt.Sprintf("%d transactions deleted successfully", len(deletedIDStrings))
+	}
+
+	c.JSON(http.StatusOK, DeleteTransactionResponse{
+		Success: true,
+		Message: message,
+		Data:    &DeleteTransactionData{DeletedIDs: deletedIDStrings},
+	})
+}

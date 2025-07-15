@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Card, CardContent } from './ui/card'
 import { Input } from './ui/input'
+import { Checkbox } from './ui/checkbox'
 import { EditIcon } from './icons/EditIcon'
 import { DeleteIcon } from './icons/DeleteIcon'
 import type { TransactionData } from '@/types'
@@ -11,6 +12,9 @@ interface TransactionCardProps {
   onEdit: (transaction: TransactionData) => void
   onDelete: (id: string) => void
   onUpdateNotes?: (id: string, notes: string) => void
+  // Multi-select props
+  isSelected?: boolean
+  onSelect?: (id: string, selected: boolean) => void
 }
 
 export function TransactionCard({
@@ -18,6 +22,8 @@ export function TransactionCard({
   onEdit,
   onDelete,
   onUpdateNotes,
+  isSelected = false,
+  onSelect,
 }: TransactionCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [isEditingNotes, setIsEditingNotes] = useState(false)
@@ -77,9 +83,21 @@ export function TransactionCard({
       onClick={handleCardClick}
     >
       <CardContent className="p-4">
-        {/* Row 1: Symbol + Trade Type */}
+        {/* Row 1: Checkbox + Symbol + Trade Type */}
         <div className="flex justify-between items-center mb-2 transition-all duration-200 hover:translate-x-1">
-          <span className="text-foreground font-semibold text-lg">{transaction.symbol}</span>
+          <div className="flex items-center gap-3">
+            {onSelect && (
+              <Checkbox
+                checked={isSelected}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  e.stopPropagation()
+                  onSelect(transaction.transaction_id || '', e.target.checked)
+                }}
+                onClick={(e) => e.stopPropagation()}
+              />
+            )}
+            <span className="text-foreground font-semibold text-lg">{transaction.symbol}</span>
+          </div>
           <span
             className={`font-medium text-sm transition-all duration-200 ${getTradeTypeColorClass(transaction.trade_type)}`}
           >

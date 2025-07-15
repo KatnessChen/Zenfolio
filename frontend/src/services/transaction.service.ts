@@ -57,9 +57,35 @@ export class TransactionService {
     return response.data.data
   }
 
-  // Delete a transaction (for future use)
-  static async deleteTransaction(id: string): Promise<void> {
-    await apiClient.delete(`${API_ENDPOINTS.TRANSACTIONS.HISTORY}/${id}`)
+  // Delete a single transaction
+  static async deleteTransaction(id: string): Promise<{ success: boolean; message: string }> {
+    const response = await apiClient.delete<{
+      success: boolean
+      message: string
+      data?: { deleted_ids: string[] }
+    }>(`${API_ENDPOINTS.TRANSACTIONS.HISTORY}/${id}`)
+    return {
+      success: response.data.success,
+      message: response.data.message,
+    }
+  }
+
+  // Delete multiple transactions in batch
+  static async deleteTransactions(
+    ids: string[]
+  ): Promise<{ success: boolean; message: string; deletedIds: string[] }> {
+    const response = await apiClient.delete<{
+      success: boolean
+      message: string
+      data?: { deleted_ids: string[] }
+    }>(`${API_ENDPOINTS.TRANSACTIONS.HISTORY}`, {
+      data: { ids },
+    })
+    return {
+      success: response.data.success,
+      message: response.data.message,
+      deletedIds: response.data.data?.deleted_ids || [],
+    }
   }
 
   // Update a transaction (for future use)

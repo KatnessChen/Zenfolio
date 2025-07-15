@@ -95,6 +95,53 @@ func (r *TransactionRepository) DeleteByID(id uuid.UUID) error {
 	return r.db.Where("transaction_id = ?", id).Delete(&models.Transaction{}).Error
 }
 
+// DeleteByIDAndUserID soft deletes a transaction by transaction_id and user_id (UUID)
+func (r *TransactionRepository) DeleteByIDAndUserID(id uuid.UUID, userID uuid.UUID) error {
+	return r.db.Where("transaction_id = ? AND user_id = ?", id, userID).Delete(&models.Transaction{}).Error
+}
+
+// DeleteByIDsAndUserID soft deletes multiple transactions by transaction_ids and user_id (UUID)
+func (r *TransactionRepository) DeleteByIDsAndUserID(ids []uuid.UUID, userID uuid.UUID) ([]uuid.UUID, error) {
+	var deletedIDs []uuid.UUID
+
+	// Start a database transaction
+	tx := r.db.Begin()
+	if tx.Error != nil {
+		return nil, fmt.Errorf("failed to begin transaction: %w", tx.Error)
+	}
+
+	// Ensure rollback on any error
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	for _, id := range ids {
+		// Check if transaction exists and belongs to user
+		var transaction models.Transaction
+		if err := tx.Where("transaction_id = ? AND user_id = ?", id, userID).First(&transaction).Error; err != nil {
+			// Skip non-existent or unauthorized transactions
+			continue
+		}
+
+		// Delete the transaction
+		if err := tx.Where("transaction_id = ? AND user_id = ?", id, userID).Delete(&models.Transaction{}).Error; err != nil {
+			tx.Rollback()
+			return nil, fmt.Errorf("failed to delete transaction %s: %w", id.String(), err)
+		}
+
+		deletedIDs = append(deletedIDs, id)
+	}
+
+	// Commit the transaction
+	if err := tx.Commit().Error; err != nil {
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return deletedIDs, nil
+}
+
 // GetWithFilters retrieves transactions with advanced filtering
 func (r *TransactionRepository) GetWithFilters(userID *uuid.UUID, symbols []string, types []string, exchanges []string, brokers []string, currencies []string,
 	startDate *time.Time, endDate *time.Time, minAmount *float64, maxAmount *float64,

@@ -1,24 +1,16 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { type ReactNode } from 'react'
 
 interface ConfirmationModalProps {
-  /** Whether the modal is visible */
   isOpen: boolean
-  /** Modal title */
   title: string
-  /** Modal description/message */
-  message: string
-  /** Text for the confirm button */
+  message: string | ReactNode
   confirmText?: string
-  /** Text for the cancel button */
   cancelText?: string
-  /** Variant for the confirm button */
   confirmVariant?: 'default' | 'destructive'
-  /** Callback when confirm button is clicked */
   onConfirm: () => void
-  /** Callback when cancel button is clicked */
   onCancel: () => void
-  /** Whether the confirm action is loading */
   isLoading?: boolean
 }
 
@@ -35,11 +27,6 @@ export function ConfirmationModal({
 }: ConfirmationModalProps) {
   if (!isOpen) return null
 
-  const confirmButtonClass =
-    confirmVariant === 'destructive'
-      ? 'bg-red-600 hover:bg-red-700 text-white'
-      : 'bg-blue-600 hover:bg-blue-700 text-white'
-
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <Card className="w-[400px]">
@@ -50,7 +37,7 @@ export function ConfirmationModal({
             <Button onClick={onCancel} variant="outline" disabled={isLoading}>
               {cancelText}
             </Button>
-            <Button onClick={onConfirm} className={confirmButtonClass} disabled={isLoading}>
+            <Button onClick={onConfirm} variant={confirmVariant} disabled={isLoading}>
               {isLoading ? 'Loading...' : confirmText}
             </Button>
           </div>

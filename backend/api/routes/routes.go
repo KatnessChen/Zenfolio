@@ -60,6 +60,8 @@ func SetupRouter(cfg *config.Config) *gin.Engine {
 		api.GET(constants.TransactionHistoryEndpoint, handlersProvider.Transactions.GetTransactionHistory)
 		api.POST(constants.TransactionHistoryEndpoint, handlersProvider.Transactions.CreateTransactions)
 		api.PUT(constants.TransactionHistoryEndpoint+"/:id", handlersProvider.Transactions.UpdateTransaction)
+		api.DELETE(constants.TransactionHistoryEndpoint+"/:id", handlersProvider.Transactions.DeleteTransaction)
+		api.DELETE(constants.TransactionHistoryEndpoint, handlersProvider.Transactions.DeleteTransactions)
 	}
 
 	return r
