@@ -8,8 +8,10 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Dropdown, DropdownItem } from '@/components/ui/dropdown'
 import DropdownTrigger from '@/components/ui/dropdown-trigger'
+import { ConfirmationModal } from '@/components/ui/confirmation-modal'
 import {
   Table,
   TableBody,
@@ -95,10 +97,21 @@ export default function TransactionHistoryPage() {
   const itemsPerPage = 10
   const totalPages = Math.ceil(transactions.length / itemsPerPage)
 
+  // Delete confirmation modal states
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [transactionToDelete, setTransactionToDelete] = useState<TransactionData | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  // Multi-select states
+  const [selectedTransactions, setSelectedTransactions] = useState<string[]>([])
+  const [bulkDeleteModalOpen, setBulkDeleteModalOpen] = useState(false)
+
   // Get current page transactions
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
-  const currentTransactions = transactions.slice(startIndex, endIndex)
+  const currentTransactions = transactions
+    .slice(startIndex, endIndex)
+    .filter((transaction) => !!transaction.transaction_id)
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -132,9 +145,136 @@ export default function TransactionHistoryPage() {
     navigate(ROUTES.TRANSACTIONS_MANUAL_ADD, { state: { initial: transaction } })
   }
 
-  const handleDeleteTransaction = (id: string) => {
-    // TODO: Implement delete confirmation and API call
-    console.log('Deleting transaction:', id)
+  const handleDeleteTransaction = (transaction: TransactionData) => {
+    setTransactionToDelete(transaction)
+    setDeleteModalOpen(true)
+  }
+
+  const handleDeleteTransactionById = (id: string | undefined) => {
+    const transaction = transactions.find((t) => t.transaction_id === id)
+    if (transaction) {
+      handleDeleteTransaction(transaction)
+    }
+  }
+
+  const confirmDeleteTransaction = async () => {
+    if (!transactionToDelete) return
+
+    setIsDeleting(true)
+    try {
+      if (!transactionToDelete.transaction_id) {
+        throw new Error('Transaction ID is missing')
+      }
+
+      const result = await TransactionService.deleteTransaction(transactionToDelete.transaction_id)
+
+      if (result.success) {
+        showToast({
+          type: 'success',
+          title: 'Transaction Deleted',
+          message: result.message || 'Transaction has been deleted successfully',
+          duration: 3000,
+        })
+
+        // Refresh the transaction list
+        fetchTransactions()
+      } else {
+        showToast({
+          type: 'error',
+          title: 'Delete Failed',
+          message: result.message || 'Failed to delete transaction',
+          duration: 5000,
+        })
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete transaction'
+      showToast({
+        type: 'error',
+        title: 'Delete Failed',
+        message: errorMessage,
+        duration: 5000,
+      })
+    } finally {
+      setIsDeleting(false)
+      setDeleteModalOpen(false)
+      setTransactionToDelete(null)
+    }
+  }
+
+  const cancelDeleteTransaction = () => {
+    setDeleteModalOpen(false)
+    setTransactionToDelete(null)
+  }
+
+  // Multi-select handlers
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const allIds = currentTransactions
+        .map((t) => t.transaction_id)
+        .filter((transaction_id): transaction_id is string => transaction_id !== undefined)
+      setSelectedTransactions(allIds)
+    } else {
+      setSelectedTransactions([])
+    }
+  }
+
+  const handleSelectTransaction = (transaction_id: string | undefined, checked: boolean) => {
+    if (!transaction_id) return
+
+    if (checked) {
+      setSelectedTransactions((prev) => [...prev, transaction_id])
+    } else {
+      setSelectedTransactions((prev) => prev.filter((selectedId) => selectedId !== transaction_id))
+    }
+  }
+
+  const handleBulkDelete = () => {
+    if (selectedTransactions.length === 0) return
+    setBulkDeleteModalOpen(true)
+  }
+
+  const confirmBulkDelete = async () => {
+    if (selectedTransactions.length === 0) return
+
+    setIsDeleting(true)
+    try {
+      const result = await TransactionService.deleteTransactions(selectedTransactions)
+
+      if (result.success) {
+        showToast({
+          type: 'success',
+          title: 'Transactions Deleted',
+          message: `${selectedTransactions.length} transaction(s) deleted successfully`,
+          duration: 3000,
+        })
+
+        // Refresh the transaction list
+        fetchTransactions()
+        setSelectedTransactions([])
+      } else {
+        showToast({
+          type: 'error',
+          title: 'Delete Failed',
+          message: result.message || 'Failed to delete transactions',
+          duration: 5000,
+        })
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete transactions'
+      showToast({
+        type: 'error',
+        title: 'Delete Failed',
+        message: errorMessage,
+        duration: 5000,
+      })
+    } finally {
+      setIsDeleting(false)
+      setBulkDeleteModalOpen(false)
+    }
+  }
+
+  const cancelBulkDelete = () => {
+    setBulkDeleteModalOpen(false)
   }
 
   // Optionally show loading and error states in the UI
@@ -285,13 +425,18 @@ export default function TransactionHistoryPage() {
             </div>
 
             {/* Filter Action Buttons */}
-            <div className="flex gap-3">
+            <div className="flex gap-3 items-center">
               <Button variant="default" onClick={handleApplyFilters}>
                 Apply Filters
               </Button>
               <Button variant="secondary" onClick={handleClearFilters}>
                 Clear Filters
               </Button>
+              {selectedTransactions.length > 0 && (
+                <Button variant="destructive" onClick={handleBulkDelete} className="ml-4">
+                  Delete Selected ({selectedTransactions.length})
+                </Button>
+              )}
             </div>
           </section>
 
@@ -305,11 +450,26 @@ export default function TransactionHistoryPage() {
                     <Table>
                       <TableHeader>
                         <TableRow>
+                          <TableHead className="w-[50px]">
+                            <Checkbox
+                              checked={
+                                selectedTransactions.length === currentTransactions.length &&
+                                currentTransactions.length > 0
+                              }
+                              indeterminate={
+                                selectedTransactions.length > 0 &&
+                                selectedTransactions.length < currentTransactions.length
+                              }
+                              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                handleSelectAll(e.target.checked)
+                              }
+                            />
+                          </TableHead>
                           <TableHead
                             sortable
                             sortDirection={sortField === 'transaction_date' ? sortDirection : null}
                             onSort={() => handleSort('transaction_date')}
-                            className="w-[160px]"
+                            className="min-w-[120px]"
                           >
                             Trade Date
                           </TableHead>
@@ -375,7 +535,22 @@ export default function TransactionHistoryPage() {
                       </TableHeader>
                       <TableBody>
                         {currentTransactions.map((transaction) => (
-                          <TableRow key={transaction.id}>
+                          <TableRow key={transaction.transaction_id}>
+                            <TableCell>
+                              <Checkbox
+                                checked={
+                                  !!transaction.transaction_id &&
+                                  selectedTransactions.includes(transaction.transaction_id)
+                                }
+                                disabled={!transaction.transaction_id}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                  handleSelectTransaction(
+                                    transaction.transaction_id,
+                                    e.target.checked
+                                  )
+                                }
+                              />
+                            </TableCell>
                             <TableCell>{transaction.transaction_date}</TableCell>
                             <TableCell className="font-medium">{transaction.symbol}</TableCell>
                             <TableCell
@@ -418,7 +593,9 @@ export default function TransactionHistoryPage() {
                                 </Button>
                                 <Button
                                   variant="ghost"
-                                  onClick={() => handleDeleteTransaction(transaction.id)}
+                                  onClick={() =>
+                                    handleDeleteTransactionById(transaction.transaction_id)
+                                  }
                                   title="Delete transaction"
                                 >
                                   <DeleteIcon
@@ -441,10 +618,15 @@ export default function TransactionHistoryPage() {
             <div className="md:hidden space-y-3">
               {currentTransactions.map((transaction) => (
                 <TransactionCard
-                  key={transaction.id}
+                  key={transaction.transaction_id || transaction.id}
                   transaction={transaction}
                   onEdit={handleEditTransaction}
-                  onDelete={handleDeleteTransaction}
+                  onDelete={() => handleDeleteTransactionById(transaction.transaction_id)}
+                  isSelected={
+                    !!transaction.transaction_id &&
+                    selectedTransactions.includes(transaction.transaction_id)
+                  }
+                  onSelect={handleSelectTransaction}
                 />
               ))}
             </div>
@@ -509,6 +691,47 @@ export default function TransactionHistoryPage() {
           </section>
         </>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={deleteModalOpen}
+        title="Delete Transaction"
+        message={
+          transactionToDelete ? (
+            <>
+              Are you sure you want to delete the transaction for{' '}
+              <strong>{transactionToDelete.symbol}</strong> (
+              <strong>{transactionToDelete.trade_type}</strong>)?
+            </>
+          ) : (
+            'Are you sure you want to delete this transaction?'
+          )
+        }
+        confirmText="Delete"
+        cancelText="Cancel"
+        confirmVariant="destructive"
+        onConfirm={confirmDeleteTransaction}
+        onCancel={cancelDeleteTransaction}
+        isLoading={isDeleting}
+      />
+
+      {/* Bulk Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={bulkDeleteModalOpen}
+        title="Delete Multiple Transactions"
+        message={
+          <>
+            Are you sure you want to delete <strong>{selectedTransactions.length}</strong> selected
+            transaction(s)?
+          </>
+        }
+        confirmText={`Delete ${selectedTransactions.length} Transaction${selectedTransactions.length > 1 ? 's' : ''}`}
+        cancelText="Cancel"
+        confirmVariant="destructive"
+        onConfirm={confirmBulkDelete}
+        onCancel={cancelBulkDelete}
+        isLoading={isDeleting}
+      />
     </div>
   )
 }

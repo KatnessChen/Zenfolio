@@ -1423,6 +1423,360 @@
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           }
+        },
+        {
+          "id": "delete-transaction",
+          "name": "Delete Transaction",
+          "request": {
+            "name": "Delete Transaction",
+            "description": {
+              "content": "Delete a single transaction by ID",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": ["api", "v1", "transaction-history", ":id"],
+              "host": ["{{baseUrl}}"],
+              "query": [],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{transactionId}}",
+                  "description": "Transaction ID to delete"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "description": {
+                  "content": "Added as a part of security scheme: bearer",
+                  "type": "text/plain"
+                },
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "method": "DELETE",
+            "body": null,
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "delete-transaction-success",
+              "name": "Success - Transaction Deleted",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "transaction-history",
+                    "123e4567-e89b-12d3-a456-426614174000"
+                  ],
+                  "host": ["{{baseUrl}}"],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "DELETE",
+                "body": null
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Transaction deleted successfully\",\n  \"data\": {\n    \"deleted_ids\": [\"123e4567-e89b-12d3-a456-426614174000\"]\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "delete-transaction-not-found",
+              "name": "Transaction Not Found",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "transaction-history",
+                    "nonexistent-id"
+                  ],
+                  "host": ["{{baseUrl}}"],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "DELETE",
+                "body": null
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Transaction does not exist\",\n  \"errors\": {\n    \"id\": [\"Transaction does not exist\"]\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "delete-transactions-batch",
+          "name": "Delete Transactions (Batch)",
+          "request": {
+            "name": "Delete Transactions (Batch)",
+            "description": {
+              "content": "Delete multiple transactions in batch via request body",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": ["api", "v1", "transaction-history"],
+              "host": ["{{baseUrl}}"],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "description": {
+                  "content": "Added as a part of security scheme: bearer",
+                  "type": "text/plain"
+                },
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "method": "DELETE",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [\n    \"123e4567-e89b-12d3-a456-426614174000\",\n    \"987fcdeb-51a2-43d1-9f4e-123456789abc\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "delete-transactions-batch-success",
+              "name": "Success - Transactions Deleted",
+              "originalRequest": {
+                "url": {
+                  "path": ["api", "v1", "transaction-history"],
+                  "host": ["{{baseUrl}}"],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"ids\": [\n    \"123e4567-e89b-12d3-a456-426614174000\",\n    \"987fcdeb-51a2-43d1-9f4e-123456789abc\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"2 transactions deleted successfully\",\n  \"data\": {\n    \"deleted_ids\": [\n      \"123e4567-e89b-12d3-a456-426614174000\",\n      \"987fcdeb-51a2-43d1-9f4e-123456789abc\"\n    ]\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "delete-transactions-query",
+          "name": "Delete Transactions (Query Params)",
+          "request": {
+            "name": "Delete Transactions (Query Params)",
+            "description": {
+              "content": "Delete multiple transactions via query parameters",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": ["api", "v1", "transaction-history"],
+              "host": ["{{baseUrl}}"],
+              "query": [
+                {
+                  "key": "ids",
+                  "value": "123e4567-e89b-12d3-a456-426614174000,987fcdeb-51a2-43d1-9f4e-123456789abc",
+                  "description": "Comma-separated list of transaction IDs to delete"
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "description": {
+                  "content": "Added as a part of security scheme: bearer",
+                  "type": "text/plain"
+                },
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "method": "DELETE",
+            "body": null,
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "delete-transactions-query-success",
+              "name": "Success - Transactions Deleted",
+              "originalRequest": {
+                "url": {
+                  "path": ["api", "v1", "transaction-history"],
+                  "host": ["{{baseUrl}}"],
+                  "query": [
+                    {
+                      "key": "ids",
+                      "value": "123e4567-e89b-12d3-a456-426614174000,987fcdeb-51a2-43d1-9f4e-123456789abc"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "DELETE",
+                "body": null
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"2 transactions deleted successfully\",\n  \"data\": {\n    \"deleted_ids\": [\n      \"123e4567-e89b-12d3-a456-426614174000\",\n      \"987fcdeb-51a2-43d1-9f4e-123456789abc\"\n    ]\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
         }
       ]
     }
