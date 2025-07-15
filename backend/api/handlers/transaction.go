@@ -690,10 +690,10 @@ type DeleteTransactionRequest struct {
 
 // DeleteTransactionResponse represents the response for deleting transactions
 type DeleteTransactionResponse struct {
-	Success bool                     `json:"success"`
-	Message string                   `json:"message"`
-	Data    *DeleteTransactionData   `json:"data,omitempty"`
-	Errors  map[string][]string      `json:"errors,omitempty"`
+	Success bool                   `json:"success"`
+	Message string                 `json:"message"`
+	Data    *DeleteTransactionData `json:"data,omitempty"`
+	Errors  map[string][]string    `json:"errors,omitempty"`
 }
 
 // DeleteTransactionData represents the data part of delete transaction response
