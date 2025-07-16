@@ -1,11 +1,13 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/joho/godotenv"
 	"github.com/transaction-tracker/backend/internal/constants"
 )
 
@@ -27,6 +29,12 @@ type Config struct {
 // Load loads the configuration from environment variables
 // with sensible defaults when variables are not set
 func Load() (*Config, error) {
+	// Load .env file if it exists
+	envPath := ".env"
+	if err := godotenv.Load(envPath); err != nil {
+		fmt.Printf("Warning: .env file not found at %s or error loading it: %v\n", envPath, err)
+	}
+
 	serverAddr := os.Getenv("SERVER_ADDR")
 	if serverAddr == "" {
 		serverAddr = constants.DefaultServerAddr
