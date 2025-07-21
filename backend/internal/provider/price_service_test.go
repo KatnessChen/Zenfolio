@@ -45,7 +45,10 @@ func TestPriceServiceClient_GetCurrentPrices(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+			return
+		}
 	}))
 	defer server.Close()
 
@@ -82,7 +85,10 @@ func TestPriceServiceClient_GetCurrentPrices_Error(t *testing.T) {
 				Message: "Invalid symbols provided",
 			},
 		}
-		json.NewEncoder(w).Encode(response)
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+			return
+		}
 	}))
 	defer server.Close()
 
@@ -116,7 +122,10 @@ func TestPriceServiceClient_HealthCheck(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+			return
+		}
 	}))
 	defer server.Close()
 
@@ -155,7 +164,10 @@ func TestPriceServiceManager_GetCurrentPrice(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+			return
+		}
 	}))
 	defer server.Close()
 

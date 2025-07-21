@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"math"
 	"strconv"
 )
 
@@ -24,4 +25,9 @@ func ParseUint(s string, defaultValue uint) (uint, error) {
 	}
 
 	return uint(val), nil
+}
+
+// RoundTo4 rounds a float64 to 4 decimal places
+func RoundTo4(val float64) float64 {
+	return math.Round(val*1e4) / 1e4
 }

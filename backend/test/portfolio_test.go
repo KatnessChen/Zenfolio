@@ -17,19 +17,25 @@ import (
 	"github.com/transaction-tracker/backend/internal/provider"
 	"github.com/transaction-tracker/backend/internal/repositories"
 	"github.com/transaction-tracker/backend/internal/services"
+	"github.com/transaction-tracker/backend/internal/types"
 	"github.com/transaction-tracker/backend/internal/utils"
 )
 
-func TestPortfolioHandler_GetStockBasicInfo(t *testing.T) {
+func TestPortfolioHandler_GetSingleHoldingBasicInfo(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	// Setup test database
 	db := utils.SetupTestDB(t)
-	defer utils.CleanupTestDB(t, db)
+	defer func() {
+		sqlDB, err := db.DB()
+		if err == nil {
+			sqlDB.Close()
+		}
+	}()
 
 	// Create test user
 	testUser := models.User{
-		ID:       uuid.New(),
+		UserID:   uuid.New(),
 		Username: "testuser",
 		Email:    "test@example.com",
 	}
@@ -38,10 +44,10 @@ func TestPortfolioHandler_GetStockBasicInfo(t *testing.T) {
 	// Create test transactions for AAPL
 	testTransactions := []models.Transaction{
 		{
-			ID:              uuid.New(),
-			UserID:          testUser.ID,
+			TransactionID:   uuid.New(),
+			UserID:          testUser.UserID,
 			Symbol:          "AAPL",
-			TradeType:       "Buy",
+			TradeType:       types.TradeTypeBuy,
 			Quantity:        100,
 			Price:           150.0,
 			Amount:          15000.0,
@@ -51,10 +57,10 @@ func TestPortfolioHandler_GetStockBasicInfo(t *testing.T) {
 			TransactionDate: time.Now().AddDate(0, -1, 0), // 1 month ago
 		},
 		{
-			ID:              uuid.New(),
-			UserID:          testUser.ID,
+			TransactionID:   uuid.New(),
+			UserID:          testUser.UserID,
 			Symbol:          "AAPL",
-			TradeType:       "Buy",
+			TradeType:       types.TradeTypeBuy,
 			Quantity:        50,
 			Price:           160.0,
 			Amount:          8000.0,
@@ -86,7 +92,7 @@ func TestPortfolioHandler_GetStockBasicInfo(t *testing.T) {
 	// Create test router
 	router := gin.New()
 	router.Use(func(c *gin.Context) {
-		c.Set("user_id", testUser.ID.String())
+		c.Set("user_id", testUser.UserID)
 		c.Next()
 	})
 	router.GET("/portfolio/holdings/:symbol", portfolioHandler.GetSingleHoldingBasicInfo)

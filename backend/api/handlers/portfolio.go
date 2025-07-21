@@ -35,8 +35,8 @@ func (h *PortfolioHandler) GetSingleHoldingBasicInfo(c *gin.Context) {
 		return
 	}
 
-	userID, err := uuid.Parse(userIDStr.(string))
-	if err != nil {
+	userID, ok := userIDStr.(uuid.UUID)
+	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"success": false,
 			"message": "Invalid user ID",

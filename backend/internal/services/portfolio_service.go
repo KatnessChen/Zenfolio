@@ -10,6 +10,7 @@ import (
 	"github.com/transaction-tracker/backend/internal/models"
 	"github.com/transaction-tracker/backend/internal/provider"
 	"github.com/transaction-tracker/backend/internal/repositories"
+	"github.com/transaction-tracker/backend/internal/utils"
 )
 
 // PortfolioService handles portfolio-related business logic
@@ -65,15 +66,15 @@ func (s *PortfolioService) GetSingleHoldingBasicInfo(ctx context.Context, userID
 
 	return &models.SingleHolding{
 		Symbol:               symbol,
-		TotalQuantity:        totalQuantity,
-		TotalCost:            totalCost,
-		UnitCost:             unitCost,
+		TotalQuantity:        utils.RoundTo4(totalQuantity),
+		TotalCost:            utils.RoundTo4(totalCost),
+		UnitCost:             utils.RoundTo4(unitCost),
 		CurrentPrice:         currentPrice,
-		MarketValue:          marketValue,
-		SimpleReturnRate:     simpleReturnRate,
-		AnnualizedReturnRate: annualizedReturnRate,
-		RealizedGainLoss:     realizedGainLoss,
-		UnrealizedGainLoss:   unrealizedGainLoss,
+		MarketValue:          utils.RoundTo4(marketValue),
+		SimpleReturnRate:     utils.RoundTo4(simpleReturnRate),
+		AnnualizedReturnRate: utils.RoundTo4(annualizedReturnRate),
+		RealizedGainLoss:     utils.RoundTo4(realizedGainLoss),
+		UnrealizedGainLoss:   utils.RoundTo4(unrealizedGainLoss),
 	}, nil
 }
 
