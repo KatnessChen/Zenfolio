@@ -132,6 +132,8 @@ Return ONLY a valid JSON object in this exact structure:
 - Verify date is reasonable and properly formatted
 - Check that trade_type matches transaction context
 - Validate numeric fields are actually numbers
+- Format the amount as a positive number.
+
 
 ## Output Requirements
 - Return ONLY the JSON object, no additional text

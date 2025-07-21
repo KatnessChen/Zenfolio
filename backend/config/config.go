@@ -24,6 +24,16 @@ type Config struct {
 	AIModel    string
 	AITimeout  int
 	AIMaxRetry int
+	// Price Service Configuration
+	PriceService PriceServiceConfig
+}
+
+// PriceServiceConfig holds configuration for Price Service integration
+type PriceServiceConfig struct {
+	BaseURL    string
+	APIKey     string
+	Timeout    time.Duration
+	MaxRetries int
 }
 
 // Load loads the configuration from environment variables
@@ -78,6 +88,14 @@ func Load() (*Config, error) {
 
 	jwtExpirationHours := getEnvOrDefaultInt("JWT_EXPIRATION_HOURS", constants.DefaultJWTExpiry)
 
+	// Price Service configuration
+	priceServiceConfig := PriceServiceConfig{
+		BaseURL:    getEnvOrDefault("PRICE_SERVICE_BASE_URL", "http://localhost:8081"),
+		APIKey:     getEnvOrDefault("PRICE_SERVICE_API_KEY", ""),
+		Timeout:    time.Duration(getEnvOrDefaultInt("PRICE_SERVICE_TIMEOUT", 30)) * time.Second,
+		MaxRetries: getEnvOrDefaultInt("PRICE_SERVICE_MAX_RETRIES", 3),
+	}
+
 	return &Config{
 		ServerAddress:      serverAddr,
 		Environment:        environment,
@@ -89,6 +107,7 @@ func Load() (*Config, error) {
 		AIModel:            aiModel,
 		AITimeout:          aiTimeout,
 		AIMaxRetry:         aiMaxRetry,
+		PriceService:       priceServiceConfig,
 	}, nil
 }
 

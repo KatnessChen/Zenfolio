@@ -1,0 +1,43 @@
+root: "."
+
+# Command to run when files change
+cmd: "go run main.go"
+
+# Watch these directories for changes
+watch_dirs:
+  - "."
+
+# Watch only Go files for better performance
+include_files:
+  - "*.go"
+
+# Ignore these directories
+ignore_dirs:
+  - "test"
+  - "migrations"
+  - "scripts"
+  - "docs"
+  - "tmp"
+  - ".git"
+  - "vendor"
+
+# Ignore these file patterns
+ignore_files:
+  - "*.md"
+  - "*.log"
+  - "*.out"
+  - "*_test.go"
+  - "*.yaml"
+  - "*.yml"
+  - "*.json"
+  - "*.txt"
+  - "coverage.out"
+
+# Colors for output
+colors:
+  main: "cyan"
+  build: "yellow"
+  runner: "green"
+
+# Show build output
+build_delay: 600

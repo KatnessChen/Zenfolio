@@ -4,11 +4,6 @@
 *.dll
 *.so
 *.dylib
-backend/backend
-backend/transaction-tracker
-backend/transaction-tracker-test
-price_service/price_service
-price_service/tmp
 
 # Test binary, built with `go test -c`
 *.test
@@ -47,6 +42,11 @@ node_modules/
 npm-debug.log
 
 # Build output
+backend/backend
+backend/transaction-tracker
+backend/transaction-tracker-test
+price_service/price-service
+price_service/tmp
 frontend/dist
 frontend/build
 frontend/out
@@ -59,3 +59,4 @@ frontend/public/build
 # AI model outputs and test data
 backend/output/
 backend/test-data/
+backend/tmp/runner-build

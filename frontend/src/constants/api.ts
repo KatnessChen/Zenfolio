@@ -20,6 +20,11 @@ export const API_ENDPOINTS = {
     HISTORY: '/transaction-history',
   },
 
+  // Portfolio endpoints
+  PORTFOLIO: {
+    HOLDINGS: '/portfolio/holdings',
+  },
+
   // Other endpoints
   HELLO_WORLD: '/hello-world',
 } as const
@@ -29,4 +34,5 @@ export type ApiEndpoint =
   | (typeof API_ENDPOINTS.AUTH)[keyof typeof API_ENDPOINTS.AUTH]
   | (typeof API_ENDPOINTS.HEALTH)[keyof typeof API_ENDPOINTS.HEALTH]
   | (typeof API_ENDPOINTS.TRANSACTIONS)[keyof typeof API_ENDPOINTS.TRANSACTIONS]
+  | (typeof API_ENDPOINTS.PORTFOLIO)[keyof typeof API_ENDPOINTS.PORTFOLIO]
   | typeof API_ENDPOINTS.HELLO_WORLD
