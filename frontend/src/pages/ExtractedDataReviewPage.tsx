@@ -420,12 +420,7 @@ export default function ExtractedDataReviewPage() {
                     Add Row
                   </Button>
                   {selectedRows.size > 0 && (
-                    <Button
-                      onClick={handleDeleteRows}
-                      variant="outline"
-                      size="sm"
-                      className="text-red-600 hover:text-red-700"
-                    >
+                    <Button onClick={handleDeleteRows} variant="destructive" size="sm">
                       <DeleteIcon className="w-4 h-4 mr-2" />
                       Delete Selected ({selectedRows.size})
                     </Button>
@@ -692,9 +687,9 @@ export default function ExtractedDataReviewPage() {
           </Button>
           {getTransactionCount(currentFileIndex) > 0 && (
             <Button
+              variant="default"
               onClick={handleConfirmImport}
               disabled={!areAllFilesProcessed() || hasValidationErrors() || isImporting}
-              className="bg-green-600 hover:bg-green-700 text-white"
             >
               {isImporting
                 ? 'Importing...'

@@ -337,3 +337,15 @@ func (r *TransactionRepository) GetSymbolHoldingsByUserID(userID uuid.UUID) ([]m
 
 	return result, nil
 }
+
+// GetByUserIDAndSymbol retrieves all transactions for a specific user and symbol
+func (r *TransactionRepository) GetByUserIDAndSymbol(userID uuid.UUID, symbol string) ([]models.Transaction, error) {
+	var transactions []models.Transaction
+	err := r.db.Where("user_id = ? AND symbol = ?", userID, symbol).
+		Order("transaction_date ASC").
+		Find(&transactions).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to get transactions for user %s and symbol %s: %w", userID, symbol, err)
+	}
+	return transactions, nil
+}

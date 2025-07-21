@@ -62,6 +62,9 @@ func SetupRouter(cfg *config.Config) *gin.Engine {
 		api.PUT(constants.TransactionHistoryEndpoint+"/:id", handlersProvider.Transactions.UpdateTransaction)
 		api.DELETE(constants.TransactionHistoryEndpoint+"/:id", handlersProvider.Transactions.DeleteTransaction)
 		api.DELETE(constants.TransactionHistoryEndpoint, handlersProvider.Transactions.DeleteTransactions)
+
+		// Portfolio routes
+		api.GET("/portfolio/holdings/:symbol", handlersProvider.Portfolio.GetSingleHoldingBasicInfo)
 	}
 
 	return r
