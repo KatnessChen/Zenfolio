@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -106,6 +107,7 @@ func (h *PriceHandler) GetCurrentPrices(c *gin.Context) {
 		for _, price := range fetchedPrices {
 			if err := h.cache.SetCurrentPrice(c.Request.Context(), price.Symbol, &price); err != nil {
 				// Log error but continue
+				log.Printf("error caching current price for %s: %v", price.Symbol, err)
 			}
 			result = append(result, price)
 		}
@@ -175,6 +177,7 @@ func (h *PriceHandler) GetHistoricalPrices(c *gin.Context) {
 	// Cache the result
 	if err := h.cache.SetHistoricalPrice(c.Request.Context(), symbol, resolution, historicalData); err != nil {
 		// Log error but continue
+		log.Printf("error caching historical price for %s: %v", symbol, err)
 	}
 
 	c.JSON(http.StatusOK, models.SuccessResponse{

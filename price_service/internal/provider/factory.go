@@ -7,22 +7,22 @@ import (
 	"github.com/transaction-tracker/price_service/internal/config"
 )
 
-// ProviderType represents different stock price providers
-type ProviderType string
+// Type represents different stock price providers
+type Type string
 
 const (
-	ProviderAlphaVantage ProviderType = "alpha_vantage"
+	AlphaVantage Type = "alpha_vantage"
 	// Future providers can be added here
-	// ProviderYahoo       ProviderType = "yahoo_finance"
-	// ProviderFinnhub     ProviderType = "finnhub"
+	// ProviderYahoo       Type = "yahoo_finance"
+	// ProviderFinnhub     Type = "finnhub"
 )
 
 // NewProvider creates a new stock price provider based on configuration
 func NewProvider(cfg *config.Config) (StockPriceProvider, error) {
-	providerType := ProviderType(strings.ToLower(cfg.StockAPI.Provider))
+	providerType := Type(strings.ToLower(cfg.StockAPI.Provider))
 
 	switch providerType {
-	case ProviderAlphaVantage, "":
+	case AlphaVantage, "":
 		if cfg.StockAPI.APIKey == "" {
 			return nil, fmt.Errorf("API key is required for Alpha Vantage provider")
 		}
