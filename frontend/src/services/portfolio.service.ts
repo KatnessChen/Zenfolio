@@ -37,7 +37,7 @@ export interface ApiResponse<T> {
  */
 export async function fetchSingleHoldingBasicInfo(
   symbol: string,
-  analysisType: 'basic' = 'basic'
+  analysisType: 'basic'
 ): Promise<SingleHoldingBasicInfoResponse> {
   const url = `${API_ENDPOINTS.PORTFOLIO.HOLDINGS}/${symbol.toUpperCase()}?analysis_type=${analysisType}`
 

@@ -122,7 +122,7 @@ func TestPortfolioHandler_GetSingleHoldingBasicInfo(t *testing.T) {
 	})
 
 	t.Run("Error - Symbol not found", func(t *testing.T) {
-		req, err := http.NewRequest("GET", "/portfolio/holdings/NONEXISTENT?analysis_type=basic", nil)
+		req, err := http.NewRequest("GET", "/portfolio/holdings/NOTFOUND?analysis_type=basic", nil)
 		require.NoError(t, err)
 
 		w := httptest.NewRecorder()

@@ -288,5 +288,7 @@ func (c *priceServiceClient) IsHealthy() bool {
 	c.mutex.RLock()
 	defer c.mutex.RUnlock()
 
-	return time.Since(c.lastHealthy) < 5*time.Minute
+	const healthCheckTimeout = 5 * time.Minute
+
+	return time.Since(c.lastHealthy) < healthCheckTimeout
 }
