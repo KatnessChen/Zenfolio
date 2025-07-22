@@ -4,7 +4,7 @@
 import { API_ENDPOINTS } from '@/constants/api'
 import { apiClient } from '@/lib/api-client'
 
-export interface SingleHoldingBasicInfo {
+export interface SingleHoldingBasicInfoResponse {
   symbol: string
   total_quantity: number
   total_cost: number
@@ -18,8 +18,8 @@ export interface SingleHoldingBasicInfo {
   timestamp: string
 }
 
-export interface SingleHoldingBasicInfoResponse {
-  data: SingleHoldingBasicInfo
+export interface AllHoldingsResponse {
+  holdings: SingleHoldingBasicInfoResponse[]
   timestamp: string
 }
 
@@ -52,6 +52,22 @@ export async function fetchSingleHoldingBasicInfo(
     return result.data!
   } catch (error) {
     console.error('Error fetching stock basic info:', error)
+    throw error
+  }
+}
+
+/**
+ * Fetch all portfolio holdings for the current user
+ * @returns Promise with all holdings data
+ */
+export async function fetchAllHoldings(): Promise<AllHoldingsResponse> {
+  const url = API_ENDPOINTS.PORTFOLIO.HOLDINGS
+
+  try {
+    const response = await apiClient.get<AllHoldingsResponse>(url)
+    return response.data
+  } catch (error) {
+    console.error('Error fetching all holdings:', error)
     throw error
   }
 }

@@ -18,8 +18,14 @@ type SingleHolding struct {
 
 // SingleHoldingResponse represents the response structure for stock basic info
 type SingleHoldingResponse struct {
-	Data      SingleHolding `json:"data"`
-	Timestamp time.Time     `json:"timestamp"`
+	SingleHolding
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// AllHoldingsResponse represents the response structure for all holdings
+type AllHoldingsResponse struct {
+	Holdings  []SingleHolding `json:"holdings"`
+	Timestamp time.Time       `json:"timestamp"`
 }
 
 // PortfolioAnalysisType represents the type of analysis requested

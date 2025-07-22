@@ -50,16 +50,6 @@ func (s *TransactionService) CreateTransactions(userID uuid.UUID, transactions [
 	return s.transactionRepo.CreateMany(transactions)
 }
 
-// GetPortfolioSummary returns portfolio summary for a user
-func (s *TransactionService) GetPortfolioSummary(userID uuid.UUID) (map[string]interface{}, error) {
-	return s.transactionRepo.GetPortfolioSummaryByUserID(userID)
-}
-
-// GetSymbolHoldings returns current holdings for a user grouped by symbol
-func (s *TransactionService) GetSymbolHoldings(userID uuid.UUID) ([]map[string]interface{}, error) {
-	return s.transactionRepo.GetSymbolHoldingsByUserID(userID)
-}
-
 // GetTransactionsWithFilter retrieves transactions with advanced filtering (business logic method)
 func (s *TransactionService) GetTransactionsWithFilter(filter TransactionFilter) ([]models.Transaction, error) {
 	return s.transactionRepo.GetWithFilters(

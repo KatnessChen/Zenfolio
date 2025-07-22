@@ -16,6 +16,7 @@ import ProcessingPage from '@/pages/ProcessingPage'
 import SettingsPage from '@/pages/SettingsPage'
 import ManualTransactionPage from '@/pages/ManualTransactionPage'
 import ManualDataReviewPage from '@/pages/ManualDataReviewPage'
+import SingleHoldingDetailPage from '@/pages/SingleHoldingDetailPage'
 import UploadImageGuard from '@/components/UploadImageGuard'
 
 function App() {
@@ -52,6 +53,10 @@ function App() {
                   <Route
                     path={ROUTES.TRANSACTIONS_MANUAL_REVIEW}
                     element={<ManualDataReviewPage />}
+                  />
+                  <Route
+                    path={`${ROUTES.PORTFOLIO_HOLDING}/:symbol`}
+                    element={<SingleHoldingDetailPage />}
                   />
                   <Route path={ROUTES.SETTINGS} element={<SettingsPage />} />
                 </Route>

@@ -1,3 +1,8 @@
+// Format percent values with sign
+export function formatPercent(value: number): string {
+  const sign = value >= 0 ? '+' : ''
+  return `${sign}${value.toFixed(2)}%`
+}
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 
@@ -43,4 +48,21 @@ export function toSnakeCase<T extends object>(obj: T): Record<string, unknown> {
       typeof value === 'object' && value !== null ? toSnakeCase(value) : value,
     ])
   )
+}
+
+export function snakeToCamel<T>(obj: T): T {
+  if (obj === null) return obj
+  if (Array.isArray(obj)) {
+    return obj.map(snakeToCamel) as unknown as T
+  } else if (typeof obj === 'object') {
+    return Object.entries(obj as Record<string, unknown>).reduce(
+      (acc, [key, value]) => {
+        const camelKey = key.replace(/_([a-z])/g, (_, c) => c.toUpperCase())
+        ;(acc as Record<string, unknown>)[camelKey] = snakeToCamel(value)
+        return acc
+      },
+      {} as Record<string, unknown>
+    ) as T
+  }
+  return obj
 }

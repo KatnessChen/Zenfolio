@@ -9,6 +9,7 @@ export const ROUTES = {
   TRANSACTIONS_UPLOAD_REVIEW: '/transactions/upload-review',
   TRANSACTIONS_MANUAL_ADD: '/transactions/manual-add',
   TRANSACTIONS_MANUAL_REVIEW: '/transactions/manual-review',
+  PORTFOLIO_HOLDING: '/portfolio/holding',
   SETTINGS: '/settings',
   UI_DEMO: '/ui-demo',
   CONTACT: '/contact',
