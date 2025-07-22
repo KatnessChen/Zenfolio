@@ -11,7 +11,6 @@ interface HoldingDetailData {
   symbol: string
   companyName: string
   currentPrice: number
-  priceChange: number
   priceChangePercent: number
   totalQuantity: number
   totalCost: number
@@ -50,7 +49,6 @@ export default function SingleHoldingDetailPage() {
         symbol: response.symbol,
         companyName: response.symbol,
         currentPrice: response.current_price,
-        priceChange: 0, // Mock data - will need to be provided by API
         priceChangePercent: response.simple_return_rate,
         totalQuantity: response.total_quantity,
         totalCost: response.total_cost,
