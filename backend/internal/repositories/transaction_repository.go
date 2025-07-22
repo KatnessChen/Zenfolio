@@ -90,11 +90,6 @@ func (r *TransactionRepository) UpdateByID(id uuid.UUID, updates map[string]inte
 	return r.db.Model(&models.Transaction{}).Where("transaction_id = ?", id).Updates(updates).Error
 }
 
-// DeleteByID soft deletes a transaction by transaction_id (UUID)
-func (r *TransactionRepository) DeleteByID(id uuid.UUID) error {
-	return r.db.Where("transaction_id = ?", id).Delete(&models.Transaction{}).Error
-}
-
 // DeleteByIDAndUserID soft deletes a transaction by transaction_id and user_id (UUID)
 func (r *TransactionRepository) DeleteByIDAndUserID(id uuid.UUID, userID uuid.UUID) error {
 	return r.db.Where("transaction_id = ? AND user_id = ?", id, userID).Delete(&models.Transaction{}).Error

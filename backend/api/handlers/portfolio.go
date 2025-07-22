@@ -74,7 +74,7 @@ func (h *PortfolioHandler) GetSingleHoldingBasicInfo(c *gin.Context) {
 	}
 
 	// Get stock basic info from service
-	stockInfo, err := h.portfolioService.GetSingleHoldingBasicInfo(c.Request.Context(), userID, symbol)
+	holdingInfo, err := h.portfolioService.GetSingleHoldingBasicInfo(c.Request.Context(), userID, symbol)
 	if err != nil {
 		if strings.Contains(err.Error(), "no transactions found") || strings.Contains(err.Error(), "no current holdings") {
 			c.JSON(http.StatusNotFound, gin.H{
@@ -99,8 +99,8 @@ func (h *PortfolioHandler) GetSingleHoldingBasicInfo(c *gin.Context) {
 
 	// Create response
 	response := models.SingleHoldingResponse{
-		Data:      *stockInfo,
-		Timestamp: time.Now(),
+		SingleHolding: *holdingInfo,
+		Timestamp:     time.Now(),
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -108,4 +108,44 @@ func (h *PortfolioHandler) GetSingleHoldingBasicInfo(c *gin.Context) {
 		"message": "Stock basic info retrieved successfully",
 		"data":    response,
 	})
+}
+
+// GetAllHoldings handles GET /api/v1/portfolio/holdings
+func (h *PortfolioHandler) GetAllHoldings(c *gin.Context) {
+	// Get user ID from JWT token (from auth middleware)
+	userIDStr, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"message": "User ID not found in token",
+		})
+		return
+	}
+
+	userID, ok := userIDStr.(uuid.UUID)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"message": "Invalid user ID",
+		})
+		return
+	}
+
+	// Get all holdings from service
+	holdings, err := h.portfolioService.GetAllHoldings(c.Request.Context(), userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"message": "Failed to get holdings information",
+		})
+		return
+	}
+
+	// Create response
+	response := models.AllHoldingsResponse{
+		Holdings:  holdings,
+		Timestamp: time.Now(),
+	}
+
+	c.JSON(http.StatusOK, response)
 }

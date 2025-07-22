@@ -78,6 +78,69 @@ func (s *PortfolioService) GetSingleHoldingBasicInfo(ctx context.Context, userID
 	}, nil
 }
 
+// GetAllHoldings retrieves basic information for all current holdings of a user
+func (s *PortfolioService) GetAllHoldings(ctx context.Context, userID uuid.UUID) ([]models.SingleHolding, error) {
+	// Get all transactions for this user
+	transactions, err := s.transactionRepo.GetByUserID(userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get transactions for user: %w", err)
+	}
+
+	if len(transactions) == 0 {
+		return []models.SingleHolding{}, nil
+	}
+
+	// Group transactions by symbol
+	transactionsBySymbol := make(map[string][]models.Transaction)
+	for _, tx := range transactions {
+		transactionsBySymbol[tx.Symbol] = append(transactionsBySymbol[tx.Symbol], tx)
+	}
+
+	var holdings []models.SingleHolding
+	for symbol, symbolTransactions := range transactionsBySymbol {
+		// Calculate basic metrics for this symbol
+		totalQuantity, totalCost, unitCost, realizedGainLoss := s.calculateHoldingMetrics(symbolTransactions)
+
+		// Skip if user no longer holds this stock
+		if totalQuantity <= 0 {
+			continue
+		}
+
+		// Get current price from PriceServiceManager
+		currentPriceData, err := s.priceManager.GetCurrentPrice(ctx, symbol)
+		if err != nil {
+			// Log error but continue with other holdings
+			fmt.Printf("Warning: failed to get current price for %s: %v\n", symbol, err)
+			continue
+		}
+
+		currentPrice := currentPriceData.CurrentPrice
+		marketValue := totalQuantity * currentPrice
+		unrealizedGainLoss := marketValue - totalCost
+
+		// Calculate return rates
+		simpleReturnRate := s.calculateSimpleReturnRate(totalCost, marketValue)
+		annualizedReturnRate := s.calculateAnnualizedReturnRate(symbolTransactions, totalCost, marketValue)
+
+		holding := models.SingleHolding{
+			Symbol:               symbol,
+			TotalQuantity:        utils.RoundTo4(totalQuantity),
+			TotalCost:            utils.RoundTo4(totalCost),
+			UnitCost:             utils.RoundTo4(unitCost),
+			CurrentPrice:         currentPrice,
+			MarketValue:          utils.RoundTo4(marketValue),
+			SimpleReturnRate:     utils.RoundTo4(simpleReturnRate),
+			AnnualizedReturnRate: utils.RoundTo4(annualizedReturnRate),
+			RealizedGainLoss:     utils.RoundTo4(realizedGainLoss),
+			UnrealizedGainLoss:   utils.RoundTo4(unrealizedGainLoss),
+		}
+
+		holdings = append(holdings, holding)
+	}
+
+	return holdings, nil
+}
+
 // calculateHoldingMetrics calculates total quantity, cost, unit cost, and realized gains/losses
 func (s *PortfolioService) calculateHoldingMetrics(transactions []models.Transaction) (totalQuantity, totalCost, unitCost, realizedGainLoss float64) {
 	var totalBoughtQuantity, totalBoughtCost float64
