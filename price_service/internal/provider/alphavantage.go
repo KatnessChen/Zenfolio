@@ -2,9 +2,11 @@ package provider
 
 import (
 	"context"
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"sort"
@@ -14,6 +16,9 @@ import (
 
 	"github.com/transaction-tracker/price_service/internal/models"
 )
+
+//go:embed testdata/alphavantage-ibm-daily.json
+var ibmDailyTestData []byte
 
 // AlphaVantageProvider implements StockPriceProvider using Alpha Vantage API
 type AlphaVantageProvider struct {
@@ -100,8 +105,8 @@ func (a *AlphaVantageProvider) getCurrentPriceForSymbol(ctx context.Context, sym
 }
 
 func (a *AlphaVantageProvider) GetHistoricalPrices(ctx context.Context, symbol string, resolution models.Resolution) (*models.SymbolHistoricalPrice, error) {
-	params := url.Values{}
 
+	params := url.Values{}
 	// Map our resolution to Alpha Vantage function
 	switch resolution {
 	case models.ResolutionDaily:
@@ -118,9 +123,19 @@ func (a *AlphaVantageProvider) GetHistoricalPrices(ctx context.Context, symbol s
 	params.Set("apikey", a.APIKey)
 	params.Set("outputsize", "full") // Get full historical data
 
-	resp, err := a.makeRequest(ctx, params)
-	if err != nil {
-		return nil, err
+	var resp []byte
+	var err error
+	if strings.EqualFold(symbol, "IBM") && resolution == models.ResolutionDaily {
+		// Read mock response for IBM daily from file to avoid rate limit
+		resp, err = readIBMTestData()
+		if err != nil {
+			return nil, fmt.Errorf("failed to read IBM mock data: %w", err)
+		}
+	} else {
+		resp, err = a.makeRequest(ctx, params)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Parse the response based on resolution
@@ -211,6 +226,56 @@ func (a *AlphaVantageProvider) GetHistoricalPrices(ctx context.Context, symbol s
 	}, nil
 }
 
+func (a *AlphaVantageProvider) GetHistoricalPriceByDate(ctx context.Context, symbol string, date string) (*models.SymbolHistoricalPrice, error) {
+	// Reuse existing GetHistoricalPrices with daily resolution
+	historicalData, err := a.GetHistoricalPrices(ctx, symbol, models.ResolutionDaily)
+	if err != nil {
+		return nil, err
+	}
+
+	// Try to find the exact date, or the previous available data point before the given date
+	var previousData *models.ClosePrice
+
+	for _, priceData := range historicalData.HistoricalPrices {
+		if priceData.Date == date {
+			// Exact match found
+			return &models.SymbolHistoricalPrice{
+				Symbol:     symbol,
+				Resolution: models.ResolutionDaily,
+				HistoricalPrices: []models.ClosePrice{
+					{
+						Date:  date,
+						Price: priceData.Price,
+					},
+				},
+			}, nil
+		}
+
+		// Since prices are sorted newest to oldest, find the first date that's before our target date
+		if priceData.Date < date {
+			previousData = &models.ClosePrice{
+				Date:  priceData.Date,
+				Price: priceData.Price,
+			}
+			break
+		}
+	}
+
+	// If we found a previous data point, return it
+	if previousData != nil {
+		return &models.SymbolHistoricalPrice{
+			Symbol:     symbol,
+			Resolution: models.ResolutionDaily,
+			HistoricalPrices: []models.ClosePrice{
+				*previousData,
+			},
+		}, nil
+	}
+
+	// If no data found at all (no previous data point)
+	return nil, fmt.Errorf("no data found for symbol %s on or before date %s", symbol, date)
+}
+
 func (a *AlphaVantageProvider) ValidateSymbol(ctx context.Context, symbol string) bool {
 	// For Alpha Vantage, we can try a simple quote request
 	_, err := a.getCurrentPriceForSymbol(ctx, symbol)
@@ -219,6 +284,10 @@ func (a *AlphaVantageProvider) ValidateSymbol(ctx context.Context, symbol string
 
 func (a *AlphaVantageProvider) makeRequest(ctx context.Context, params url.Values) ([]byte, error) {
 	reqURL := fmt.Sprintf("%s?%s", a.BaseURL, params.Encode())
+
+	// Log the request URL for debugging (sanitize API key for security)
+	sanitizedURL := strings.Replace(reqURL, a.APIKey, "[API_KEY]", -1)
+	log.Printf("Alpha Vantage API Request: %s", sanitizedURL)
 
 	req, err := http.NewRequestWithContext(ctx, "GET", reqURL, nil)
 	if err != nil {
@@ -241,4 +310,9 @@ func (a *AlphaVantageProvider) makeRequest(ctx context.Context, params url.Value
 	}
 
 	return body, nil
+}
+
+// readIBMTestData loads the IBM daily mock JSON from the test data directory
+func readIBMTestData() ([]byte, error) {
+	return ibmDailyTestData, nil
 }

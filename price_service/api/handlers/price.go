@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -134,6 +135,171 @@ func (h *PriceHandler) GetHistoricalPrices(c *gin.Context) {
 		return
 	}
 
+	// Parse date-related parameters
+	dateParam := strings.TrimSpace(c.Query("date"))
+	fromParam := strings.TrimSpace(c.Query("from"))
+	toParam := strings.TrimSpace(c.Query("to"))
+
+	// Validate parameter combinations
+	if err := h.validateDateParameters(dateParam, fromParam, toParam); err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{
+			Success: false,
+			Error: models.ErrorDetail{
+				Code:    models.ErrInvalidInput,
+				Message: err.Error(),
+			},
+		})
+		return
+	}
+
+	// Handle single date query
+	if dateParam != "" {
+		// Validate date format and future date using the shared validation method
+		if err := h.validateSingleDate(dateParam); err != nil {
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{
+				Success: false,
+				Error: models.ErrorDetail{
+					Code:    models.ErrInvalidInput,
+					Message: err.Error(),
+				},
+			})
+			return
+		}
+
+		// Check if we have daily historical data cached that might contain our date
+		cachedData, err := h.cache.GetHistoricalPrice(c.Request.Context(), symbol, models.ResolutionDaily)
+		if err == nil && cachedData != nil {
+			// Filter for the specific date
+			for _, priceData := range cachedData.HistoricalPrices {
+				if priceData.Date == dateParam {
+					result := &models.SymbolHistoricalPrice{
+						Symbol:     symbol,
+						Resolution: models.ResolutionDaily,
+						HistoricalPrices: []models.ClosePrice{
+							{
+								Date:  dateParam,
+								Price: priceData.Price,
+							},
+						},
+					}
+
+					c.JSON(http.StatusOK, models.SuccessResponse{
+						Success: true,
+						Data:    result,
+					})
+					return
+				}
+			}
+		}
+
+		// If not found in cache, fetch from provider
+		historicalData, err := h.provider.GetHistoricalPriceByDate(c.Request.Context(), symbol, dateParam)
+		if err != nil {
+			c.JSON(http.StatusServiceUnavailable, models.ErrorResponse{
+				Success: false,
+				Error: models.ErrorDetail{
+					Code:    models.ErrServiceUnavailable,
+					Message: "failed to fetch historical data for date",
+				},
+			})
+			return
+		}
+
+		// Ensure the resolution is set to daily for date-specific queries
+		historicalData.Resolution = models.ResolutionDaily
+
+		c.JSON(http.StatusOK, models.SuccessResponse{
+			Success:   true,
+			Data:      historicalData,
+			Timestamp: time.Now(),
+		})
+		return
+	}
+
+	// Handle date range query
+	if fromParam != "" && toParam != "" {
+		// Check if we have daily historical data cached that might contain our date range
+		cachedData, err := h.cache.GetHistoricalPrice(c.Request.Context(), symbol, models.ResolutionDaily)
+		if err == nil && cachedData != nil {
+			// Check cache coverage for the requested date range
+			coverage := h.checkCacheCoverage(cachedData, fromParam, toParam)
+
+			switch coverage {
+			case "full":
+				// Cache covers full range → filter and return
+				filteredData := h.filterHistoricalDataByDateParams(cachedData, dateParam, fromParam, toParam)
+				if len(filteredData.HistoricalPrices) > 0 {
+					c.JSON(http.StatusOK, models.SuccessResponse{
+						Success: true,
+						Data:    filteredData,
+					})
+					return
+				}
+			case "partial":
+				// Cache covers partial range → invalidate cache, fetch fresh data
+
+				// Invalidate the existing cache to ensure we get fresh data from provider
+				if err := h.cache.DeleteHistoricalPrice(c.Request.Context(), symbol, models.ResolutionDaily); err != nil {
+					log.Printf("error invalidating cache for %s: %v", symbol, err)
+				}
+
+				freshData, err := h.provider.GetHistoricalPrices(c.Request.Context(), symbol, models.ResolutionDaily)
+				if err != nil {
+					c.JSON(http.StatusServiceUnavailable, models.ErrorResponse{
+						Success: false,
+						Error: models.ErrorDetail{
+							Code:    models.ErrServiceUnavailable,
+							Message: "failed to fetch historical data for date range",
+						},
+					})
+					return
+				}
+
+				// Update cache with fresh data
+				if err := h.cache.SetHistoricalPrice(c.Request.Context(), symbol, models.ResolutionDaily, freshData); err != nil {
+					log.Printf("error updating cache for %s: %v", symbol, err)
+				}
+
+				// Filter for the requested date range
+				filteredData := h.filterHistoricalDataByDateParams(freshData, dateParam, fromParam, toParam)
+				c.JSON(http.StatusOK, models.SuccessResponse{
+					Success: true,
+					Data:    filteredData,
+				})
+				return
+			}
+		}
+
+		// If no cache coverage → fetch full daily data and cache
+		historicalData, err := h.provider.GetHistoricalPrices(c.Request.Context(), symbol, models.ResolutionDaily)
+		if err != nil {
+			c.JSON(http.StatusServiceUnavailable, models.ErrorResponse{
+				Success: false,
+				Error: models.ErrorDetail{
+					Code:    models.ErrServiceUnavailable,
+					Message: "failed to fetch historical data for date range",
+				},
+			})
+			return
+		}
+
+		// Cache the full daily data
+		if err := h.cache.SetHistoricalPrice(c.Request.Context(), symbol, models.ResolutionDaily, historicalData); err != nil {
+			log.Printf("error caching historical price for %s: %v", symbol, err)
+		}
+
+		// Filter for the requested date range
+		filteredData := h.filterHistoricalDataByDateParams(historicalData, dateParam, fromParam, toParam)
+
+		c.JSON(http.StatusOK, models.SuccessResponse{
+			Success:   true,
+			Data:      filteredData,
+			Timestamp: time.Now(),
+		})
+		return
+	}
+
+	// Handle resolution-based query
 	resolutionStr := c.DefaultQuery("resolution", "daily")
 
 	// Validate resolution
@@ -161,7 +327,7 @@ func (h *PriceHandler) GetHistoricalPrices(c *gin.Context) {
 		return
 	}
 
-	// Fetch from provider
+	// If cache not found, fetch from provider
 	historicalData, err := h.provider.GetHistoricalPrices(c.Request.Context(), symbol, resolution)
 	if err != nil {
 		c.JSON(http.StatusServiceUnavailable, models.ErrorResponse{
@@ -174,15 +340,237 @@ func (h *PriceHandler) GetHistoricalPrices(c *gin.Context) {
 		return
 	}
 
-	// Cache the result
-	if err := h.cache.SetHistoricalPrice(c.Request.Context(), symbol, resolution, historicalData); err != nil {
-		// Log error but continue
-		log.Printf("error caching historical price for %s: %v", symbol, err)
-	}
-
 	c.JSON(http.StatusOK, models.SuccessResponse{
 		Success:   true,
 		Data:      historicalData,
 		Timestamp: time.Now(),
 	})
+}
+
+// validateDateParameters validates the combination of date parameters
+func (h *PriceHandler) validateDateParameters(date, from, to string) error {
+	hasDate := date != ""
+	hasFrom := from != ""
+	hasTo := to != ""
+
+	// Check for parameter conflicts
+	if hasDate && (hasFrom || hasTo) {
+		return fmt.Errorf("cannot use 'date' parameter with 'from'/'to' parameters")
+	}
+
+	// Check for incomplete date range
+	if hasFrom && !hasTo {
+		return fmt.Errorf("both 'from' and 'to' parameters are required for date range queries")
+	}
+	if hasTo && !hasFrom {
+		return fmt.Errorf("both 'from' and 'to' parameters are required for date range queries")
+	}
+
+	// Validate date formats and future dates
+	if hasDate {
+		if err := h.validateSingleDate(date); err != nil {
+			return err
+		}
+	}
+
+	if hasFrom && hasTo {
+		if err := h.validateSingleDate(from); err != nil {
+			return fmt.Errorf("invalid 'from' date: %v", err)
+		}
+		if err := h.validateSingleDate(to); err != nil {
+			return fmt.Errorf("invalid 'to' date: %v", err)
+		}
+
+		// Validate date range order
+		fromDate, _ := time.Parse("2006-01-02", from)
+		toDate, _ := time.Parse("2006-01-02", to)
+		if fromDate.After(toDate) {
+			return fmt.Errorf("'from' date must be earlier than or equal to 'to' date")
+		}
+	}
+
+	return nil
+}
+
+// validateSingleDate validates a single date parameter
+func (h *PriceHandler) validateSingleDate(dateStr string) error {
+	parsedDate, err := time.Parse("2006-01-02", dateStr)
+	if err != nil {
+		return fmt.Errorf("invalid date format, use YYYY-MM-DD")
+	}
+
+	if parsedDate.After(time.Now()) {
+		return fmt.Errorf("date cannot be in the future")
+	}
+
+	return nil
+}
+
+// filterHistoricalDataByDateParams filters historical data based on date parameters
+// If dateParam is provided, filters for that specific date
+// If fromDate and toDate are provided, filters for the date range (inclusive)
+func (h *PriceHandler) filterHistoricalDataByDateParams(data *models.SymbolHistoricalPrice, dateParam, fromDate, toDate string) *models.SymbolHistoricalPrice {
+	var filteredPrices []models.ClosePrice
+
+	// Handle single date filtering
+	if dateParam != "" {
+		for _, priceData := range data.HistoricalPrices {
+			if priceData.Date == dateParam {
+				filteredPrices = append(filteredPrices, priceData)
+			}
+		}
+		return &models.SymbolHistoricalPrice{
+			Symbol:           data.Symbol,
+			Resolution:       models.ResolutionDaily, // Always daily for date-specific queries
+			HistoricalPrices: filteredPrices,
+		}
+	}
+
+	// Handle date range filtering
+	if fromDate != "" && toDate != "" {
+		fromTime, _ := time.Parse("2006-01-02", fromDate)
+		toTime, _ := time.Parse("2006-01-02", toDate)
+
+		for _, priceData := range data.HistoricalPrices {
+			priceTime, err := time.Parse("2006-01-02", priceData.Date)
+			if err != nil {
+				continue // Skip invalid dates
+			}
+
+			// Include dates within the range (inclusive)
+			if (priceTime.Equal(fromTime) || priceTime.After(fromTime)) &&
+				(priceTime.Equal(toTime) || priceTime.Before(toTime)) {
+				filteredPrices = append(filteredPrices, priceData)
+			}
+		}
+	}
+
+	return &models.SymbolHistoricalPrice{
+		Symbol:           data.Symbol,
+		Resolution:       models.ResolutionDaily, // Always daily for date-specific queries
+		HistoricalPrices: filteredPrices,
+	}
+}
+
+// checkCacheCoverage determines if the cached data covers the requested date range
+func (h *PriceHandler) checkCacheCoverage(data *models.SymbolHistoricalPrice, fromDate, toDate string) string {
+	if len(data.HistoricalPrices) == 0 {
+		return "none"
+	}
+
+	fromTime, _ := time.Parse("2006-01-02", fromDate)
+	toTime, _ := time.Parse("2006-01-02", toDate)
+
+	// Get the latest (most recent) price record from cache (first record since sorted newest to oldest)
+	lastPriceDate, err := time.Parse("2006-01-02", data.HistoricalPrices[0].Date)
+	if err != nil {
+		return "none"
+	}
+
+	// Compare requested date range with last price record
+	// Adjust toDate to the last trading day if it falls on weekend or holiday
+	adjustedToDate := h.getLastTradingDay(toTime)
+
+	// 1. If both fromDate and toDate are later than last price record → no coverage
+	if fromTime.After(lastPriceDate) && adjustedToDate.After(lastPriceDate) {
+		return "none"
+	}
+
+	// 2. If fromDate is earlier than last price record and toDate is later → partial coverage
+	if fromTime.Before(lastPriceDate) && adjustedToDate.After(lastPriceDate) {
+		return "partial"
+	}
+
+	// 3. If last price record is later than or equal to adjusted toDate → full coverage
+	if lastPriceDate.After(adjustedToDate) || lastPriceDate.Equal(adjustedToDate) {
+		return "full"
+	}
+
+	// Default case: partial coverage
+	return "partial"
+}
+
+// isUSMarketHoliday checks if a given date is a US stock market holiday
+func (h *PriceHandler) isUSMarketHoliday(date time.Time) bool {
+	month := date.Month()
+	day := date.Day()
+
+	// New Year's Day (January 1)
+	if month == time.January && day == 1 {
+		return true
+	}
+
+	// Martin Luther King Jr. Day (3rd Monday in January)
+	if month == time.January && date.Weekday() == time.Monday {
+		if day >= 15 && day <= 21 {
+			return true
+		}
+	}
+
+	// Presidents' Day (3rd Monday in February)
+	if month == time.February && date.Weekday() == time.Monday {
+		if day >= 15 && day <= 21 {
+			return true
+		}
+	}
+
+	// Good Friday (Friday before Easter - complex calculation, simplified for major years)
+	// Memorial Day (last Monday in May)
+	if month == time.May && date.Weekday() == time.Monday && day >= 25 {
+		return true
+	}
+
+	// Juneteenth (June 19)
+	if month == time.June && day == 19 {
+		return true
+	}
+
+	// Independence Day (July 4)
+	if month == time.July && day == 4 {
+		return true
+	}
+
+	// Labor Day (1st Monday in September)
+	if month == time.September && date.Weekday() == time.Monday && day <= 7 {
+		return true
+	}
+
+	// Thanksgiving (4th Thursday in November)
+	if month == time.November && date.Weekday() == time.Thursday {
+		if day >= 22 && day <= 28 {
+			return true
+		}
+	}
+
+	// Christmas Day (December 25)
+	if month == time.December && day == 25 {
+		return true
+	}
+
+	return false
+}
+
+// getLastTradingDay returns the last trading day on or before the given date
+func (h *PriceHandler) getLastTradingDay(date time.Time) time.Time {
+	adjustedDate := date
+
+	// Keep going back until we find a trading day
+	for {
+		// Skip weekends
+		if adjustedDate.Weekday() == time.Saturday || adjustedDate.Weekday() == time.Sunday {
+			adjustedDate = adjustedDate.AddDate(0, 0, -1)
+			continue
+		}
+
+		// Skip US market holidays
+		if h.isUSMarketHoliday(adjustedDate) {
+			adjustedDate = adjustedDate.AddDate(0, 0, -1)
+			continue
+		}
+
+		// Found a trading day
+		break
+	}
+
+	return adjustedDate
 }

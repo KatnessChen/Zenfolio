@@ -1,4 +1,7 @@
-Extract details of a ClickUp task including subtasks by running following curl command:
+Follow the steps to get Clickup task description:
+
+1. Get the $CLICKUP_API_TOKEN in the `/.env`
+2. Extract details of a ClickUp task including subtasks by running following curl command
 
 ```
 curl -s -H "Authorization: $CLICKUP_API_TOKEN" \
