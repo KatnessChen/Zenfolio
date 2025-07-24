@@ -20,6 +20,16 @@ type PriceHandler struct {
 	config   *config.Config
 }
 
+type CacheCoverage string
+
+const (
+	CacheCoverageNone    CacheCoverage = "none"
+	CacheCoveragePartial CacheCoverage = "partial"
+	CacheCoverageFull    CacheCoverage = "full"
+)
+
+const DateFormat = "2006-01-02"
+
 func NewPriceHandler(cache *cache.Service, provider provider.StockPriceProvider, config *config.Config) *PriceHandler {
 	return &PriceHandler{
 		cache:    cache,
@@ -183,16 +193,16 @@ func (h *PriceHandler) handleSingleDateQuery(c *gin.Context, symbol, dateParam s
 	}
 
 	// Adjust the requested date to the last trading day
-	requestedDate, _ := time.Parse("2006-01-02", dateParam)
+	requestedDate, _ := time.Parse(DateFormat, dateParam)
 	adjustedDate := h.getLastTradingDay(requestedDate)
-	adjustedDateStr := adjustedDate.Format("2006-01-02")
+	adjustedDateStr := adjustedDate.Format(DateFormat)
 
 	// Check if we have daily historical data cached
 	cachedData, err := h.cache.GetHistoricalPrice(c.Request.Context(), symbol, models.ResolutionDaily)
 	if err == nil && cachedData != nil && len(cachedData.HistoricalPrices) > 0 {
 		// Get the most recent price record (first record since sorted newest to oldest)
 		latestPriceRecord := cachedData.HistoricalPrices[0]
-		latestDate, err := time.Parse("2006-01-02", latestPriceRecord.Date)
+		latestDate, err := time.Parse(DateFormat, latestPriceRecord.Date)
 		if err == nil {
 			// If the latest record is on or after the adjusted date, we have the data in cache
 			if latestDate.Equal(adjustedDate) || latestDate.After(adjustedDate) {
@@ -286,7 +296,7 @@ func (h *PriceHandler) handleDateRangeQuery(c *gin.Context, symbol, fromParam, t
 		coverage := h.checkCacheCoverage(cachedData, fromParam, toParam)
 
 		switch coverage {
-		case "full":
+		case CacheCoverageFull:
 			// Cache covers full range → filter and return
 			filteredData := h.filterHistoricalDataByDateParams(cachedData, "", fromParam, toParam)
 			if len(filteredData.HistoricalPrices) > 0 {
@@ -296,7 +306,7 @@ func (h *PriceHandler) handleDateRangeQuery(c *gin.Context, symbol, fromParam, t
 				})
 				return
 			}
-		case "partial":
+		case CacheCoveragePartial:
 			// Cache covers partial range → invalidate cache, fetch fresh data
 
 			// Invalidate the existing cache to ensure we get fresh data from provider
@@ -443,8 +453,8 @@ func (h *PriceHandler) validateDateParameters(date, from, to string) error {
 		}
 
 		// Validate date range order
-		fromDate, _ := time.Parse("2006-01-02", from)
-		toDate, _ := time.Parse("2006-01-02", to)
+		fromDate, _ := time.Parse(DateFormat, from)
+		toDate, _ := time.Parse(DateFormat, to)
 		if fromDate.After(toDate) {
 			return fmt.Errorf("'from' date must be earlier than or equal to 'to' date")
 		}
@@ -455,7 +465,7 @@ func (h *PriceHandler) validateDateParameters(date, from, to string) error {
 
 // validateSingleDate validates a single date parameter
 func (h *PriceHandler) validateSingleDate(dateStr string) error {
-	parsedDate, err := time.Parse("2006-01-02", dateStr)
+	parsedDate, err := time.Parse(DateFormat, dateStr)
 	if err != nil {
 		return fmt.Errorf("invalid date format, use YYYY-MM-DD")
 	}
@@ -489,11 +499,11 @@ func (h *PriceHandler) filterHistoricalDataByDateParams(data *models.SymbolHisto
 
 	// Handle date range filtering
 	if fromDate != "" && toDate != "" {
-		fromTime, _ := time.Parse("2006-01-02", fromDate)
-		toTime, _ := time.Parse("2006-01-02", toDate)
+		fromTime, _ := time.Parse(DateFormat, fromDate)
+		toTime, _ := time.Parse(DateFormat, toDate)
 
 		for _, priceData := range data.HistoricalPrices {
-			priceTime, err := time.Parse("2006-01-02", priceData.Date)
+			priceTime, err := time.Parse(DateFormat, priceData.Date)
 			if err != nil {
 				continue // Skip invalid dates
 			}
@@ -514,18 +524,18 @@ func (h *PriceHandler) filterHistoricalDataByDateParams(data *models.SymbolHisto
 }
 
 // checkCacheCoverage determines if the cached data covers the requested date range
-func (h *PriceHandler) checkCacheCoverage(data *models.SymbolHistoricalPrice, fromDate, toDate string) string {
+func (h *PriceHandler) checkCacheCoverage(data *models.SymbolHistoricalPrice, fromDate, toDate string) CacheCoverage {
 	if len(data.HistoricalPrices) == 0 {
-		return "none"
+		return CacheCoverageNone
 	}
 
-	fromTime, _ := time.Parse("2006-01-02", fromDate)
-	toTime, _ := time.Parse("2006-01-02", toDate)
+	fromTime, _ := time.Parse(DateFormat, fromDate)
+	toTime, _ := time.Parse(DateFormat, toDate)
 
 	// Get the latest (most recent) price record from cache (first record since sorted newest to oldest)
-	lastPriceDate, err := time.Parse("2006-01-02", data.HistoricalPrices[0].Date)
+	lastPriceDate, err := time.Parse(DateFormat, data.HistoricalPrices[0].Date)
 	if err != nil {
-		return "none"
+		return CacheCoverageNone
 	}
 
 	// Compare requested date range with last price record
@@ -534,21 +544,21 @@ func (h *PriceHandler) checkCacheCoverage(data *models.SymbolHistoricalPrice, fr
 
 	// 1. If both fromDate and toDate are later than last price record → no coverage
 	if fromTime.After(lastPriceDate) && adjustedToDate.After(lastPriceDate) {
-		return "none"
+		return CacheCoverageNone
 	}
 
 	// 2. If fromDate is earlier than last price record and toDate is later → partial coverage
 	if fromTime.Before(lastPriceDate) && adjustedToDate.After(lastPriceDate) {
-		return "partial"
+		return CacheCoveragePartial
 	}
 
 	// 3. If last price record is later than or equal to adjusted toDate → full coverage
 	if lastPriceDate.After(adjustedToDate) || lastPriceDate.Equal(adjustedToDate) {
-		return "full"
+		return CacheCoverageFull
 	}
 
 	// Default case: partial coverage
-	return "partial"
+	return CacheCoveragePartial
 }
 
 // isUSMarketHoliday checks if a given date is a US stock market holiday
@@ -575,7 +585,7 @@ func (h *PriceHandler) isUSMarketHoliday(date time.Time) bool {
 		}
 	}
 
-	// Good Friday (Friday before Easter - complex calculation, simplified for major years)
+	// Good Friday (Friday before Easter)
 	// Memorial Day (last Monday in May)
 	if month == time.May && date.Weekday() == time.Monday && day >= 25 {
 		return true
