@@ -154,152 +154,213 @@ func (h *PriceHandler) GetHistoricalPrices(c *gin.Context) {
 
 	// Handle single date query
 	if dateParam != "" {
-		// Validate date format and future date using the shared validation method
-		if err := h.validateSingleDate(dateParam); err != nil {
-			c.JSON(http.StatusBadRequest, models.ErrorResponse{
-				Success: false,
-				Error: models.ErrorDetail{
-					Code:    models.ErrInvalidInput,
-					Message: err.Error(),
-				},
-			})
-			return
-		}
-
-		// Check if we have daily historical data cached that might contain our date
-		cachedData, err := h.cache.GetHistoricalPrice(c.Request.Context(), symbol, models.ResolutionDaily)
-		if err == nil && cachedData != nil {
-			// Filter for the specific date
-			for _, priceData := range cachedData.HistoricalPrices {
-				if priceData.Date == dateParam {
-					result := &models.SymbolHistoricalPrice{
-						Symbol:     symbol,
-						Resolution: models.ResolutionDaily,
-						HistoricalPrices: []models.ClosePrice{
-							{
-								Date:  dateParam,
-								Price: priceData.Price,
-							},
-						},
-					}
-
-					c.JSON(http.StatusOK, models.SuccessResponse{
-						Success: true,
-						Data:    result,
-					})
-					return
-				}
-			}
-		}
-
-		// If not found in cache, fetch from provider
-		historicalData, err := h.provider.GetHistoricalPriceByDate(c.Request.Context(), symbol, dateParam)
-		if err != nil {
-			c.JSON(http.StatusServiceUnavailable, models.ErrorResponse{
-				Success: false,
-				Error: models.ErrorDetail{
-					Code:    models.ErrServiceUnavailable,
-					Message: "failed to fetch historical data for date",
-				},
-			})
-			return
-		}
-
-		// Ensure the resolution is set to daily for date-specific queries
-		historicalData.Resolution = models.ResolutionDaily
-
-		c.JSON(http.StatusOK, models.SuccessResponse{
-			Success:   true,
-			Data:      historicalData,
-			Timestamp: time.Now(),
-		})
+		h.handleSingleDateQuery(c, symbol, dateParam)
 		return
 	}
 
 	// Handle date range query
 	if fromParam != "" && toParam != "" {
-		// Check if we have daily historical data cached that might contain our date range
-		cachedData, err := h.cache.GetHistoricalPrice(c.Request.Context(), symbol, models.ResolutionDaily)
-		if err == nil && cachedData != nil {
-			// Check cache coverage for the requested date range
-			coverage := h.checkCacheCoverage(cachedData, fromParam, toParam)
+		h.handleDateRangeQuery(c, symbol, fromParam, toParam)
+		return
+	}
 
-			switch coverage {
-			case "full":
-				// Cache covers full range → filter and return
-				filteredData := h.filterHistoricalDataByDateParams(cachedData, dateParam, fromParam, toParam)
-				if len(filteredData.HistoricalPrices) > 0 {
-					c.JSON(http.StatusOK, models.SuccessResponse{
-						Success: true,
-						Data:    filteredData,
-					})
-					return
+	// Handle resolution-based query
+	h.handleResolutionQuery(c, symbol)
+}
+
+// handleSingleDateQuery processes single date historical price requests
+func (h *PriceHandler) handleSingleDateQuery(c *gin.Context, symbol, dateParam string) {
+	// Validate date format and future date using the shared validation method
+	if err := h.validateSingleDate(dateParam); err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{
+			Success: false,
+			Error: models.ErrorDetail{
+				Code:    models.ErrInvalidInput,
+				Message: err.Error(),
+			},
+		})
+		return
+	}
+
+	// Adjust the requested date to the last trading day
+	requestedDate, _ := time.Parse("2006-01-02", dateParam)
+	adjustedDate := h.getLastTradingDay(requestedDate)
+	adjustedDateStr := adjustedDate.Format("2006-01-02")
+
+	// Check if we have daily historical data cached
+	cachedData, err := h.cache.GetHistoricalPrice(c.Request.Context(), symbol, models.ResolutionDaily)
+	if err == nil && cachedData != nil && len(cachedData.HistoricalPrices) > 0 {
+		// Get the most recent price record (first record since sorted newest to oldest)
+		latestPriceRecord := cachedData.HistoricalPrices[0]
+		latestDate, err := time.Parse("2006-01-02", latestPriceRecord.Date)
+		if err == nil {
+			// If the latest record is on or after the adjusted date, we have the data in cache
+			if latestDate.Equal(adjustedDate) || latestDate.After(adjustedDate) {
+				// Find the exact date in cache
+				for _, priceData := range cachedData.HistoricalPrices {
+					if priceData.Date == adjustedDateStr {
+						result := &models.SymbolHistoricalPrice{
+							Symbol:     symbol,
+							Resolution: models.ResolutionDaily,
+							HistoricalPrices: []models.ClosePrice{
+								{
+									Date:  adjustedDateStr,
+									Price: priceData.Price,
+								},
+							},
+						}
+
+						c.JSON(http.StatusOK, models.SuccessResponse{
+							Success: true,
+							Data:    result,
+						})
+						return
+					}
 				}
-			case "partial":
-				// Cache covers partial range → invalidate cache, fetch fresh data
+			}
+		}
 
-				// Invalidate the existing cache to ensure we get fresh data from provider
-				if err := h.cache.DeleteHistoricalPrice(c.Request.Context(), symbol, models.ResolutionDaily); err != nil {
-					log.Printf("error invalidating cache for %s: %v", symbol, err)
-				}
+		// If latest record is before the adjusted date, invalidate cache and fetch fresh data
+		if err := h.cache.DeleteHistoricalPrice(c.Request.Context(), symbol, models.ResolutionDaily); err != nil {
+			log.Printf("error invalidating cache for %s: %v", symbol, err)
+		}
+	}
 
-				freshData, err := h.provider.GetHistoricalPrices(c.Request.Context(), symbol, models.ResolutionDaily)
-				if err != nil {
-					c.JSON(http.StatusServiceUnavailable, models.ErrorResponse{
-						Success: false,
-						Error: models.ErrorDetail{
-							Code:    models.ErrServiceUnavailable,
-							Message: "failed to fetch historical data for date range",
-						},
-					})
-					return
-				}
+	// Fetch from provider (either no cache or cache needs update)
+	historicalData, err := h.provider.GetHistoricalPrices(c.Request.Context(), symbol, models.ResolutionDaily)
+	if err != nil {
+		c.JSON(http.StatusServiceUnavailable, models.ErrorResponse{
+			Success: false,
+			Error: models.ErrorDetail{
+				Code:    models.ErrServiceUnavailable,
+				Message: "failed to fetch historical data for date",
+			},
+		})
+		return
+	}
 
-				// Update cache with fresh data
-				if err := h.cache.SetHistoricalPrice(c.Request.Context(), symbol, models.ResolutionDaily, freshData); err != nil {
-					log.Printf("error updating cache for %s: %v", symbol, err)
-				}
+	// Cache the fresh data
+	if err := h.cache.SetHistoricalPrice(c.Request.Context(), symbol, models.ResolutionDaily, historicalData); err != nil {
+		log.Printf("error caching historical price for %s: %v", symbol, err)
+	}
 
-				// Filter for the requested date range
-				filteredData := h.filterHistoricalDataByDateParams(freshData, dateParam, fromParam, toParam)
+	// Find the adjusted date in the fresh data
+	for _, priceData := range historicalData.HistoricalPrices {
+		if priceData.Date == adjustedDateStr {
+			result := &models.SymbolHistoricalPrice{
+				Symbol:     symbol,
+				Resolution: models.ResolutionDaily,
+				HistoricalPrices: []models.ClosePrice{
+					{
+						Date:  adjustedDateStr,
+						Price: priceData.Price,
+					},
+				},
+			}
+
+			c.JSON(http.StatusOK, models.SuccessResponse{
+				Success:   true,
+				Data:      result,
+				Timestamp: time.Now(),
+			})
+			return
+		}
+	}
+
+	// If we still can't find the adjusted date, return error
+	c.JSON(http.StatusNotFound, models.ErrorResponse{
+		Success: false,
+		Error: models.ErrorDetail{
+			Code:    models.ErrSymbolNotFound,
+			Message: fmt.Sprintf("no data available for trading date %s", adjustedDateStr),
+		},
+	})
+}
+
+// handleDateRangeQuery processes date range historical price requests
+func (h *PriceHandler) handleDateRangeQuery(c *gin.Context, symbol, fromParam, toParam string) {
+	// Check if we have daily historical data cached that might contain our date range
+	cachedData, err := h.cache.GetHistoricalPrice(c.Request.Context(), symbol, models.ResolutionDaily)
+	if err == nil && cachedData != nil {
+		// Check cache coverage for the requested date range
+		coverage := h.checkCacheCoverage(cachedData, fromParam, toParam)
+
+		switch coverage {
+		case "full":
+			// Cache covers full range → filter and return
+			filteredData := h.filterHistoricalDataByDateParams(cachedData, "", fromParam, toParam)
+			if len(filteredData.HistoricalPrices) > 0 {
 				c.JSON(http.StatusOK, models.SuccessResponse{
 					Success: true,
 					Data:    filteredData,
 				})
 				return
 			}
-		}
+		case "partial":
+			// Cache covers partial range → invalidate cache, fetch fresh data
 
-		// If no cache coverage → fetch full daily data and cache
-		historicalData, err := h.provider.GetHistoricalPrices(c.Request.Context(), symbol, models.ResolutionDaily)
-		if err != nil {
-			c.JSON(http.StatusServiceUnavailable, models.ErrorResponse{
-				Success: false,
-				Error: models.ErrorDetail{
-					Code:    models.ErrServiceUnavailable,
-					Message: "failed to fetch historical data for date range",
-				},
+			// Invalidate the existing cache to ensure we get fresh data from provider
+			if err := h.cache.DeleteHistoricalPrice(c.Request.Context(), symbol, models.ResolutionDaily); err != nil {
+				log.Printf("error invalidating cache for %s: %v", symbol, err)
+			}
+
+			freshData, err := h.provider.GetHistoricalPrices(c.Request.Context(), symbol, models.ResolutionDaily)
+			if err != nil {
+				c.JSON(http.StatusServiceUnavailable, models.ErrorResponse{
+					Success: false,
+					Error: models.ErrorDetail{
+						Code:    models.ErrServiceUnavailable,
+						Message: "failed to fetch historical data for date range",
+					},
+				})
+				return
+			}
+
+			// Update cache with fresh data
+			if err := h.cache.SetHistoricalPrice(c.Request.Context(), symbol, models.ResolutionDaily, freshData); err != nil {
+				log.Printf("error updating cache for %s: %v", symbol, err)
+			}
+
+			// Filter for the requested date range
+			filteredData := h.filterHistoricalDataByDateParams(freshData, "", fromParam, toParam)
+			c.JSON(http.StatusOK, models.SuccessResponse{
+				Success: true,
+				Data:    filteredData,
 			})
 			return
 		}
+	}
 
-		// Cache the full daily data
-		if err := h.cache.SetHistoricalPrice(c.Request.Context(), symbol, models.ResolutionDaily, historicalData); err != nil {
-			log.Printf("error caching historical price for %s: %v", symbol, err)
-		}
-
-		// Filter for the requested date range
-		filteredData := h.filterHistoricalDataByDateParams(historicalData, dateParam, fromParam, toParam)
-
-		c.JSON(http.StatusOK, models.SuccessResponse{
-			Success:   true,
-			Data:      filteredData,
-			Timestamp: time.Now(),
+	// If no cache coverage → fetch full daily data and cache
+	historicalData, err := h.provider.GetHistoricalPrices(c.Request.Context(), symbol, models.ResolutionDaily)
+	if err != nil {
+		c.JSON(http.StatusServiceUnavailable, models.ErrorResponse{
+			Success: false,
+			Error: models.ErrorDetail{
+				Code:    models.ErrServiceUnavailable,
+				Message: "failed to fetch historical data for date range",
+			},
 		})
 		return
 	}
 
-	// Handle resolution-based query
+	// Cache the full daily data
+	if err := h.cache.SetHistoricalPrice(c.Request.Context(), symbol, models.ResolutionDaily, historicalData); err != nil {
+		log.Printf("error caching historical price for %s: %v", symbol, err)
+	}
+
+	// Filter for the requested date range
+	filteredData := h.filterHistoricalDataByDateParams(historicalData, "", fromParam, toParam)
+
+	c.JSON(http.StatusOK, models.SuccessResponse{
+		Success:   true,
+		Data:      filteredData,
+		Timestamp: time.Now(),
+	})
+}
+
+// handleResolutionQuery processes resolution-based historical price requests
+func (h *PriceHandler) handleResolutionQuery(c *gin.Context, symbol string) {
 	resolutionStr := c.DefaultQuery("resolution", "daily")
 
 	// Validate resolution
