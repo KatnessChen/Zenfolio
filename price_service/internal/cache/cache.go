@@ -63,7 +63,7 @@ func (s *Service) SetCurrentPrice(ctx context.Context, symbol string, price *mod
 		return err
 	}
 
-	var stockPriceCacheTTL time.Duration = 1 * time.Minute
+	var stockPriceCacheTTL = 1 * time.Minute
 
 	return s.client.Set(ctx, key, data, stockPriceCacheTTL).Err()
 }
