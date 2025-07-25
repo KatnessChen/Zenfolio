@@ -21,12 +21,12 @@ func SetupRouter(cfg *config.Config) *gin.Engine {
 		panic("Failed to initialize cache service: " + err.Error())
 	}
 
-	stockProvider, err := provider.NewProvider(cfg)
+	thirdPartyProviderMap, err := provider.NewThirdPartyProviderMap(cfg)
 	if err != nil {
 		panic("Failed to initialize stock price provider: " + err.Error())
 	}
 
-	priceHandler := handlers.NewPriceHandler(cacheService, stockProvider, cfg)
+	priceHandler := handlers.NewPriceHandler(cacheService, thirdPartyProviderMap, cfg)
 	cacheHandler := handlers.NewCacheHandler(cacheService)
 
 	rateLimiter := middlewares.NewRateLimiter(cfg.RateLimit.RequestsPerWindow, cfg.RateLimit.WindowDuration)

@@ -418,6 +418,31 @@ func (h *PriceHandler) handleResolutionQuery(c *gin.Context, symbol string) {
 	})
 }
 
+// ValidateDateParameters validates the combination of date parameters
+func (h *PriceHandler) ValidateDateParameters(date, from, to string) error {
+	return h.validateDateParameters(date, from, to)
+}
+
+func (h *PriceHandler) ValidateSingleDate(dateStr string) error {
+	return h.validateSingleDate(dateStr)
+}
+
+func (h *PriceHandler) FilterHistoricalDataByDateParams(data *models.SymbolHistoricalPrice, dateParam, fromDate, toDate string) *models.SymbolHistoricalPrice {
+	return h.filterHistoricalDataByDateParams(data, dateParam, fromDate, toDate)
+}
+
+func (h *PriceHandler) CheckCacheCoverage(data *models.SymbolHistoricalPrice, fromDate, toDate string) CacheCoverage {
+	return h.checkCacheCoverage(data, fromDate, toDate)
+}
+
+func (h *PriceHandler) IsUSMarketHoliday(date time.Time) bool {
+	return h.isUSMarketHoliday(date)
+}
+
+func (h *PriceHandler) GetLastTradingDay(date time.Time) time.Time {
+	return h.getLastTradingDay(date)
+}
+
 // validateDateParameters validates the combination of date parameters
 func (h *PriceHandler) validateDateParameters(date, from, to string) error {
 	hasDate := date != ""
