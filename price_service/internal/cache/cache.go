@@ -99,6 +99,13 @@ func (s *Service) SetHistoricalPrice(ctx context.Context, symbol string, resolut
 	return s.client.Set(ctx, key, data, historicalTTL).Err()
 }
 
+// DeleteHistoricalPrice removes historical price data from cache
+func (s *Service) DeleteHistoricalPrice(ctx context.Context, symbol string, resolution models.Resolution) error {
+	today := time.Now().Format("2006-01-02")
+	key := fmt.Sprintf("price_service:historical-price:%s:%s:%s", symbol, string(resolution), today)
+	return s.client.Del(ctx, key).Err()
+}
+
 // Cache management methods
 func (s *Service) InvalidateAll(ctx context.Context) error {
 	// Delete all price-related keys

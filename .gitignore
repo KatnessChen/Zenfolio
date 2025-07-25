@@ -45,6 +45,7 @@ npm-debug.log
 backend/backend
 backend/transaction-tracker
 backend/transaction-tracker-test
+price_service/price_service
 price_service/price-service
 price_service/tmp
 frontend/dist
@@ -60,3 +61,4 @@ frontend/public/build
 backend/output/
 backend/test-data/
 backend/tmp/runner-build
+price_service/test-build

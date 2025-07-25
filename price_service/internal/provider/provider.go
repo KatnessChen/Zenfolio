@@ -13,7 +13,4 @@ type StockPriceProvider interface {
 
 	// GetHistoricalPrices retrieves historical prices for a single symbol
 	GetHistoricalPrices(ctx context.Context, symbol string, resolution models.Resolution) (*models.SymbolHistoricalPrice, error)
-
-	// ValidateSymbol checks if a symbol is valid
-	ValidateSymbol(ctx context.Context, symbol string) bool
 }
