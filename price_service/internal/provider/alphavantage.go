@@ -20,7 +20,7 @@ import (
 //go:embed testdata/alphavantage-ibm-daily.json
 var ibmDailyTestData []byte
 
-// AlphaVantageProvider implements StockPriceProvider using Alpha Vantage API
+// AlphaVantageProvider handles historical stock prices from Alpha Vantage API
 type AlphaVantageProvider struct {
 	APIKey  string
 	BaseURL string

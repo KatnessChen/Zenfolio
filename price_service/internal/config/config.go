@@ -29,9 +29,13 @@ type RedisConfig struct {
 }
 
 type StockAPIConfig struct {
-	Provider string
-	APIKey   string
-	BaseURL  string
+	AlphaVantage ProviderConfig
+	Finnhub      ProviderConfig
+}
+
+type ProviderConfig struct {
+	APIKey  string
+	BaseURL string
 }
 
 type CacheConfig struct {
@@ -60,9 +64,14 @@ func Load() (*Config, error) {
 			DB:       getEnvAsInt("REDIS_DB", 0),
 		},
 		StockAPI: StockAPIConfig{
-			Provider: getEnv("STOCK_API_PROVIDER", "alpha_vantage"),
-			APIKey:   getEnv("STOCK_API_KEY", ""),
-			BaseURL:  getEnv("STOCK_API_BASE_URL", ""),
+			AlphaVantage: ProviderConfig{
+				APIKey:  getEnv("ALPHA_VANTAGE_API_KEY", ""),
+				BaseURL: getEnv("ALPHA_VANTAGE_BASE_URL", "https://www.alphavantage.co/query"),
+			},
+			Finnhub: ProviderConfig{
+				APIKey:  getEnv("FINNHUB_API_KEY", ""),
+				BaseURL: getEnv("FINNHUB_BASE_URL", "https://finnhub.io/api/v1"),
+			},
 		},
 		Cache: CacheConfig{
 			DefaultTTL:       time.Duration(getEnvAsInt("DEFAULT_TTL_MINUTES", 60)) * time.Minute,

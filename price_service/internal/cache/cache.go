@@ -63,7 +63,9 @@ func (s *Service) SetCurrentPrice(ctx context.Context, symbol string, price *mod
 		return err
 	}
 
-	return s.client.Set(ctx, key, data, s.defaultTTL).Err()
+	var stockPriceCacheTTL time.Duration = 1 * time.Minute
+
+	return s.client.Set(ctx, key, data, stockPriceCacheTTL).Err()
 }
 
 // Historical price cache methods

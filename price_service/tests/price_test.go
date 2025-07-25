@@ -1,15 +1,16 @@
-package handlers
+package tests
 
 import (
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/transaction-tracker/price_service/api/handlers"
 	"github.com/transaction-tracker/price_service/internal/models"
 )
 
 func TestValidateDateParameters(t *testing.T) {
-	handler := &PriceHandler{}
+	handler := handlers.NewPriceHandler(nil, nil, nil)
 
 	tests := []struct {
 		name        string
@@ -84,7 +85,7 @@ func TestValidateDateParameters(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := handler.validateDateParameters(tt.date, tt.from, tt.to)
+			err := handler.ValidateDateParameters(tt.date, tt.from, tt.to)
 
 			if tt.expectError {
 				assert.Error(t, err)
@@ -97,7 +98,7 @@ func TestValidateDateParameters(t *testing.T) {
 }
 
 func TestValidateSingleDate(t *testing.T) {
-	handler := &PriceHandler{}
+	handler := handlers.NewPriceHandler(nil, nil, nil)
 
 	tests := []struct {
 		name        string
@@ -155,7 +156,7 @@ func TestValidateSingleDate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := handler.validateSingleDate(tt.dateStr)
+			err := handler.ValidateSingleDate(tt.dateStr)
 
 			if tt.expectError {
 				assert.Error(t, err)
@@ -168,7 +169,7 @@ func TestValidateSingleDate(t *testing.T) {
 }
 
 func TestFilterHistoricalDataByDateParams(t *testing.T) {
-	handler := &PriceHandler{}
+	handler := handlers.NewPriceHandler(nil, nil, nil)
 
 	// Sample historical data
 	data := &models.SymbolHistoricalPrice{
@@ -243,7 +244,7 @@ func TestFilterHistoricalDataByDateParams(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := handler.filterHistoricalDataByDateParams(data, tt.dateParam, tt.fromDate, tt.toDate)
+			result := handler.FilterHistoricalDataByDateParams(data, tt.dateParam, tt.fromDate, tt.toDate)
 
 			assert.Equal(t, tt.expectedCount, len(result.HistoricalPrices))
 			assert.Equal(t, "NVDA", result.Symbol)
@@ -257,7 +258,7 @@ func TestFilterHistoricalDataByDateParams(t *testing.T) {
 }
 
 func TestIsUSMarketHoliday(t *testing.T) {
-	handler := &PriceHandler{}
+	handler := handlers.NewPriceHandler(nil, nil, nil)
 
 	tests := []struct {
 		name     string
@@ -324,14 +325,14 @@ func TestIsUSMarketHoliday(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			date, _ := time.Parse("2006-01-02", tt.date)
-			result := handler.isUSMarketHoliday(date)
+			result := handler.IsUSMarketHoliday(date)
 			assert.Equal(t, tt.expected, result)
 		})
 	}
 }
 
 func TestGetLastTradingDay(t *testing.T) {
-	handler := &PriceHandler{}
+	handler := handlers.NewPriceHandler(nil, nil, nil)
 
 	tests := []struct {
 		name     string
@@ -373,21 +374,21 @@ func TestGetLastTradingDay(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			date, _ := time.Parse("2006-01-02", tt.date)
-			result := handler.getLastTradingDay(date)
+			result := handler.GetLastTradingDay(date)
 			assert.Equal(t, tt.expected, result.Format("2006-01-02"))
 		})
 	}
 }
 
 func TestCheckCacheCoverage(t *testing.T) {
-	handler := &PriceHandler{}
+	handler := handlers.NewPriceHandler(nil, nil, nil)
 
 	tests := []struct {
 		name     string
 		data     *models.SymbolHistoricalPrice
 		fromDate string
 		toDate   string
-		expected CacheCoverage
+		expected handlers.CacheCoverage
 	}{
 		{
 			name: "Empty cache",
@@ -396,7 +397,7 @@ func TestCheckCacheCoverage(t *testing.T) {
 			},
 			fromDate: "2025-07-01",
 			toDate:   "2025-07-10",
-			expected: CacheCoverageNone,
+			expected: handlers.CacheCoverageNone,
 		},
 		{
 			name: "Full coverage - cache has recent data",
@@ -408,7 +409,7 @@ func TestCheckCacheCoverage(t *testing.T) {
 			},
 			fromDate: "2025-07-20",
 			toDate:   "2025-07-23",
-			expected: CacheCoverageFull,
+			expected: handlers.CacheCoverageFull,
 		},
 		{
 			name: "No coverage - request is after cache",
@@ -419,7 +420,7 @@ func TestCheckCacheCoverage(t *testing.T) {
 			},
 			fromDate: "2025-07-25",
 			toDate:   "2025-07-30",
-			expected: CacheCoverageNone,
+			expected: handlers.CacheCoverageNone,
 		},
 		{
 			name: "Partial coverage - request spans across cache boundary",
@@ -430,7 +431,7 @@ func TestCheckCacheCoverage(t *testing.T) {
 			},
 			fromDate: "2025-07-20",
 			toDate:   "2025-07-25",
-			expected: CacheCoveragePartial,
+			expected: handlers.CacheCoveragePartial,
 		},
 		{
 			name: "Full coverage with weekend adjustment",
@@ -441,7 +442,7 @@ func TestCheckCacheCoverage(t *testing.T) {
 			},
 			fromDate: "2025-07-20",
 			toDate:   "2025-07-27", // Sunday - should adjust to Friday
-			expected: CacheCoverageFull,
+			expected: handlers.CacheCoverageFull,
 		},
 		{
 			name: "Full coverage with holiday adjustment",
@@ -452,20 +453,20 @@ func TestCheckCacheCoverage(t *testing.T) {
 			},
 			fromDate: "2025-07-01",
 			toDate:   "2025-07-06", // Sunday after July 4th - should adjust to July 3rd
-			expected: CacheCoverageFull,
+			expected: handlers.CacheCoverageFull,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := handler.checkCacheCoverage(tt.data, tt.fromDate, tt.toDate)
+			result := handler.CheckCacheCoverage(tt.data, tt.fromDate, tt.toDate)
 			assert.Equal(t, tt.expected, result)
 		})
 	}
 }
 
 func TestSingleDateQueryWithTradingDayAdjustment(t *testing.T) {
-	handler := &PriceHandler{}
+	handlers := handlers.NewPriceHandler(nil, nil, nil)
 
 	tests := []struct {
 		name               string
@@ -502,7 +503,7 @@ func TestSingleDateQueryWithTradingDayAdjustment(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			requestedDate, _ := time.Parse("2006-01-02", tt.requestedDate)
-			adjustedDate := handler.getLastTradingDay(requestedDate)
+			adjustedDate := handlers.GetLastTradingDay(requestedDate)
 			actualAdjustment := adjustedDate.Format("2006-01-02")
 
 			assert.Equal(t, tt.expectedAdjustment, actualAdjustment,
