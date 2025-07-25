@@ -387,7 +387,7 @@ func TestCheckCacheCoverage(t *testing.T) {
 		data     *models.SymbolHistoricalPrice
 		fromDate string
 		toDate   string
-		expected string
+		expected CacheCoverage
 	}{
 		{
 			name: "Empty cache",
@@ -396,7 +396,7 @@ func TestCheckCacheCoverage(t *testing.T) {
 			},
 			fromDate: "2025-07-01",
 			toDate:   "2025-07-10",
-			expected: "none",
+			expected: CacheCoverageNone,
 		},
 		{
 			name: "Full coverage - cache has recent data",
@@ -408,7 +408,7 @@ func TestCheckCacheCoverage(t *testing.T) {
 			},
 			fromDate: "2025-07-20",
 			toDate:   "2025-07-23",
-			expected: "full",
+			expected: CacheCoverageFull,
 		},
 		{
 			name: "No coverage - request is after cache",
@@ -419,7 +419,7 @@ func TestCheckCacheCoverage(t *testing.T) {
 			},
 			fromDate: "2025-07-25",
 			toDate:   "2025-07-30",
-			expected: "none",
+			expected: CacheCoverageNone,
 		},
 		{
 			name: "Partial coverage - request spans across cache boundary",
@@ -430,7 +430,7 @@ func TestCheckCacheCoverage(t *testing.T) {
 			},
 			fromDate: "2025-07-20",
 			toDate:   "2025-07-25",
-			expected: "partial",
+			expected: CacheCoveragePartial,
 		},
 		{
 			name: "Full coverage with weekend adjustment",
@@ -441,7 +441,7 @@ func TestCheckCacheCoverage(t *testing.T) {
 			},
 			fromDate: "2025-07-20",
 			toDate:   "2025-07-27", // Sunday - should adjust to Friday
-			expected: "full",
+			expected: CacheCoverageFull,
 		},
 		{
 			name: "Full coverage with holiday adjustment",
@@ -452,7 +452,7 @@ func TestCheckCacheCoverage(t *testing.T) {
 			},
 			fromDate: "2025-07-01",
 			toDate:   "2025-07-06", // Sunday after July 4th - should adjust to July 3rd
-			expected: "full",
+			expected: CacheCoverageFull,
 		},
 	}
 
@@ -460,6 +460,54 @@ func TestCheckCacheCoverage(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			result := handler.checkCacheCoverage(tt.data, tt.fromDate, tt.toDate)
 			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestSingleDateQueryWithTradingDayAdjustment(t *testing.T) {
+	handler := &PriceHandler{}
+
+	tests := []struct {
+		name               string
+		requestedDate      string
+		expectedAdjustment string
+	}{
+		{
+			name:               "Regular weekday - no adjustment",
+			requestedDate:      "2025-07-23", // Wednesday
+			expectedAdjustment: "2025-07-23",
+		},
+		{
+			name:               "Saturday - adjust to Friday",
+			requestedDate:      "2025-07-26", // Saturday
+			expectedAdjustment: "2025-07-25", // Friday
+		},
+		{
+			name:               "Sunday - adjust to Friday",
+			requestedDate:      "2025-07-27", // Sunday
+			expectedAdjustment: "2025-07-25", // Friday
+		},
+		{
+			name:               "Holiday (July 4th) - adjust to previous trading day",
+			requestedDate:      "2025-07-04", // Friday, Independence Day
+			expectedAdjustment: "2025-07-03", // Thursday
+		},
+		{
+			name:               "Weekend after holiday - adjust to last trading day",
+			requestedDate:      "2025-07-06", // Sunday after July 4th
+			expectedAdjustment: "2025-07-03", // Thursday (skipping Friday holiday)
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			requestedDate, _ := time.Parse("2006-01-02", tt.requestedDate)
+			adjustedDate := handler.getLastTradingDay(requestedDate)
+			actualAdjustment := adjustedDate.Format("2006-01-02")
+
+			assert.Equal(t, tt.expectedAdjustment, actualAdjustment,
+				"Date %s should be adjusted to %s, but got %s",
+				tt.requestedDate, tt.expectedAdjustment, actualAdjustment)
 		})
 	}
 }

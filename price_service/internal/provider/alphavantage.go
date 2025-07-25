@@ -226,62 +226,6 @@ func (a *AlphaVantageProvider) GetHistoricalPrices(ctx context.Context, symbol s
 	}, nil
 }
 
-func (a *AlphaVantageProvider) GetHistoricalPriceByDate(ctx context.Context, symbol string, date string) (*models.SymbolHistoricalPrice, error) {
-	// Reuse existing GetHistoricalPrices with daily resolution
-	historicalData, err := a.GetHistoricalPrices(ctx, symbol, models.ResolutionDaily)
-	if err != nil {
-		return nil, err
-	}
-
-	// Try to find the exact date, or the previous available data point before the given date
-	var previousData *models.ClosePrice
-
-	for _, priceData := range historicalData.HistoricalPrices {
-		if priceData.Date == date {
-			// Exact match found
-			return &models.SymbolHistoricalPrice{
-				Symbol:     symbol,
-				Resolution: models.ResolutionDaily,
-				HistoricalPrices: []models.ClosePrice{
-					{
-						Date:  date,
-						Price: priceData.Price,
-					},
-				},
-			}, nil
-		}
-
-		// Since prices are sorted newest to oldest, find the first date that's before our target date
-		if priceData.Date < date {
-			previousData = &models.ClosePrice{
-				Date:  priceData.Date,
-				Price: priceData.Price,
-			}
-			break
-		}
-	}
-
-	// If we found a previous data point, return it
-	if previousData != nil {
-		return &models.SymbolHistoricalPrice{
-			Symbol:     symbol,
-			Resolution: models.ResolutionDaily,
-			HistoricalPrices: []models.ClosePrice{
-				*previousData,
-			},
-		}, nil
-	}
-
-	// If no data found at all (no previous data point)
-	return nil, fmt.Errorf("no data found for symbol %s on or before date %s", symbol, date)
-}
-
-func (a *AlphaVantageProvider) ValidateSymbol(ctx context.Context, symbol string) bool {
-	// For Alpha Vantage, we can try a simple quote request
-	_, err := a.getCurrentPriceForSymbol(ctx, symbol)
-	return err == nil
-}
-
 func (a *AlphaVantageProvider) makeRequest(ctx context.Context, params url.Values) ([]byte, error) {
 	reqURL := fmt.Sprintf("%s?%s", a.BaseURL, params.Encode())
 
