@@ -1,12 +1,21 @@
 import axios from 'axios'
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { API_ENDPOINTS } from '@/constants/api'
+import { logger } from '@/lib/logger'
 
 // API configuration
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
 const API_VERSION = '/api/v1'
 
 class ApiClient {
+  // Centralized API call logger
+  private logApiCall(method: string, url: string, dataOrConfig?: unknown, config?: unknown) {
+    if (method === 'GET' || method === 'DELETE') {
+      logger.info(`[API CALL] ${method}`, url, dataOrConfig)
+    } else {
+      logger.info(`[API CALL] ${method}`, url, dataOrConfig, config)
+    }
+  }
   private instance: AxiosInstance
 
   constructor() {
@@ -57,11 +66,13 @@ class ApiClient {
 
   // Generic request method
   public async request<T>(config: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+    this.logApiCall(config.method?.toUpperCase() || 'REQUEST', config.url || '', config)
     return this.instance.request<T>(config)
   }
 
   // Convenience methods
   public async get<T>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+    this.logApiCall('GET', url, config)
     return this.instance.get<T>(url, config)
   }
 
@@ -70,6 +81,7 @@ class ApiClient {
     data?: unknown,
     config?: AxiosRequestConfig
   ): Promise<AxiosResponse<T>> {
+    this.logApiCall('POST', url, data, config)
     return this.instance.post<T>(url, data, config)
   }
 
@@ -78,10 +90,12 @@ class ApiClient {
     data?: unknown,
     config?: AxiosRequestConfig
   ): Promise<AxiosResponse<T>> {
+    this.logApiCall('PUT', url, data, config)
     return this.instance.put<T>(url, data, config)
   }
 
   public async delete<T>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+    this.logApiCall('DELETE', url, config)
     return this.instance.delete<T>(url, config)
   }
 }

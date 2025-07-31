@@ -25,6 +25,8 @@
     --ring: 156 24% 69%; /* Brighter Sage Green #9DC0B2 */
     --destructive: 357 60% 59%; /* Alert Red #E85C6A */
     --destructive-foreground: 0 0% 96%; /* Light Off-White #F4F4F4 */
+    --warning: 357 60% 59%; /* Alert Red #E85C6A (same as destructive) */
+    --warning-foreground: 0 0% 96%; /* Light Off-White #F4F4F4 (same as destructive-foreground) */
     /* Financial Gain/Loss colors */
     --profit: 142 60% 39%; /* Bright Grass Green #4CA866 */
     --profit-foreground: 0 0% 96%;

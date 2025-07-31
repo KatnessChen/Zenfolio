@@ -411,6 +411,11 @@ func (h *PriceHandler) handleResolutionQuery(c *gin.Context, symbol string) {
 		return
 	}
 
+	// Cache the fetched data
+	if err := h.cache.SetHistoricalPrice(c.Request.Context(), symbol, resolution, historicalData); err != nil {
+		log.Printf("error caching historical price for %s with resolution %s: %v", symbol, resolution, err)
+	}
+
 	c.JSON(http.StatusOK, models.SuccessResponse{
 		Success:   true,
 		Data:      historicalData,

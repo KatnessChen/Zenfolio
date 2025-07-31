@@ -19,7 +19,7 @@ export function formatCurrency(amount: number, currency = 'USD'): string {
     style: 'currency',
     currency,
     minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
+    maximumFractionDigits: 4,
   }).format(amount)
 }
 

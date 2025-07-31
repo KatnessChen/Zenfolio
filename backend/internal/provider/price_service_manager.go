@@ -58,6 +58,11 @@ func (psm *PriceServiceManager) GetHistoricalPrices(ctx context.Context, symbols
 	return psm.client.GetHistoricalPrices(ctx, symbols, resolution, fromDate, toDate)
 }
 
+// GetHistoricalPriceAtDate retrieves historical price for a single symbol at a specific date
+func (psm *PriceServiceManager) GetHistoricalPriceAtDate(ctx context.Context, symbol string, date string) (*SymbolHistoricalPrice, error) {
+	return psm.client.GetHistoricalPriceAtDate(ctx, symbol, date)
+}
+
 // HealthCheck performs a health check on the Price Service
 func (psm *PriceServiceManager) HealthCheck(ctx context.Context) (*HealthResponse, error) {
 	return psm.client.HealthCheck(ctx)

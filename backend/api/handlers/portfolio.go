@@ -149,3 +149,116 @@ func (h *PortfolioHandler) GetAllHoldings(c *gin.Context) {
 
 	c.JSON(http.StatusOK, response)
 }
+
+// GetPortfolioSummary handles GET /api/v1/portfolio/summary
+func (h *PortfolioHandler) GetPortfolioSummary(c *gin.Context) {
+	// Get user ID from JWT token (from auth middleware)
+	userIDStr, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"message": "User ID not found in token",
+		})
+		return
+	}
+
+	userID, ok := userIDStr.(uuid.UUID)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"message": "Invalid user ID",
+		})
+		return
+	}
+
+	// Get portfolio summary from service
+	summary, err := h.portfolioService.GetPortfolioSummary(c.Request.Context(), userID)
+	if err != nil {
+		if strings.Contains(err.Error(), "failed to get current price") {
+			c.JSON(http.StatusServiceUnavailable, gin.H{
+				"success": false,
+				"message": "Unable to fetch current price data",
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"message": "Failed to get portfolio summary",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, summary)
+}
+
+// GetHistoricalPortfolioTotalValue handles GET /api/v1/portfolio/chart/historical-market-value
+func (h *PortfolioHandler) GetHistoricalPortfolioTotalValue(c *gin.Context) {
+	// Get user ID from JWT token (from auth middleware)
+	userIDStr, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"message": "User not authenticated",
+		})
+		return
+	}
+
+	userID, ok := userIDStr.(uuid.UUID)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"message": "Invalid user ID",
+		})
+		return
+	}
+
+	// Get timeframe parameter (required)
+	timeframeStr := c.Query("timeframe")
+	if timeframeStr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "timeframe parameter is required",
+		})
+		return
+	}
+
+	// Validate timeframe
+	timeframe := models.TimeFrame(timeframeStr)
+	validTimeframes := []models.TimeFrame{
+		models.TimeFrame1D, models.TimeFrame1W, models.TimeFrame1M,
+		models.TimeFrame3M, models.TimeFrame6M, models.TimeFrameYTD,
+		models.TimeFrame1Y, models.TimeFrame5Y, models.TimeFrameALL,
+	}
+
+	isValidTimeframe := false
+	for _, vt := range validTimeframes {
+		if timeframe == vt {
+			isValidTimeframe = true
+			break
+		}
+	}
+
+	if !isValidTimeframe {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "Invalid timeframe. Supported values: 1D, 1W, 1M, 3M, 6M, YTD, 1Y, 5Y, ALL",
+		})
+		return
+	}
+
+	// Get historical total value data
+	historicalData, err := h.portfolioService.GetHistoricalPortfolioTotalValue(c.Request.Context(), userID, timeframe)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"message": "Failed to get historical total value data",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    historicalData,
+	})
+}

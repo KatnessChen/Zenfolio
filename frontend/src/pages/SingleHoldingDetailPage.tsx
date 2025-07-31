@@ -194,7 +194,7 @@ export default function SingleHoldingDetailPage() {
         {/* Holdings Information Section */}
         <Card>
           <CardContent>
-            <h2 className="text-xl font-semibold text-foreground mb-6">Holding</h2>
+            <h2 className="text-xl font-semibold text-foreground mb-6">Holding Summary</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
               {/* Left Column */}

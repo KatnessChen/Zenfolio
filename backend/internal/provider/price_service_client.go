@@ -20,6 +20,7 @@ import (
 type PriceServiceClient interface {
 	GetCurrentPrices(ctx context.Context, symbols []string) ([]SymbolCurrentPrice, error)
 	GetHistoricalPrices(ctx context.Context, symbols []string, resolution Resolution, fromDate, toDate string) ([]SymbolHistoricalPrice, error)
+	GetHistoricalPriceAtDate(ctx context.Context, symbol string, date string) (*SymbolHistoricalPrice, error)
 	HealthCheck(ctx context.Context) (*HealthResponse, error)
 	IsHealthy() bool
 }
@@ -266,6 +267,42 @@ func (c *priceServiceClient) GetHistoricalPrices(ctx context.Context, symbols []
 	}
 
 	return response.Data, nil
+}
+
+// GetHistoricalPriceAtDate retrieves historical price for a single symbol at a specific date
+func (c *priceServiceClient) GetHistoricalPriceAtDate(ctx context.Context, symbol string, date string) (*SymbolHistoricalPrice, error) {
+	if symbol == "" {
+		return nil, fmt.Errorf("symbol cannot be empty")
+	}
+	if date == "" {
+		return nil, fmt.Errorf("date cannot be empty")
+	}
+
+	// Build query parameters for single symbol single date query
+	params := url.Values{}
+	params.Set("symbol", symbol)
+	params.Set("date", date)
+
+	endpoint := fmt.Sprintf("/api/v1/price/historical?%s", params.Encode())
+
+	respBody, err := c.makeRequest(ctx, "GET", endpoint, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get historical price at date: %w", err)
+	}
+
+	var response struct {
+		Success bool                  `json:"success"`
+		Data    SymbolHistoricalPrice `json:"data"`
+	}
+	if err := json.Unmarshal(respBody, &response); err != nil {
+		return nil, fmt.Errorf("failed to parse response: %w", err)
+	}
+
+	if !response.Success {
+		return nil, fmt.Errorf("price service returned unsuccessful response")
+	}
+
+	return &response.Data, nil
 }
 
 // HealthCheck checks the health of the Price Service

@@ -23,6 +23,7 @@ interface Position {
   totalCost: number
   gainLossAmount: number
   gainLossPercent: number
+  annualizedReturnRate: number
 }
 
 export const PositionCard: React.FC = () => {
@@ -65,6 +66,7 @@ export const PositionCard: React.FC = () => {
           totalCost: holding.total_cost,
           gainLossAmount: holding.unrealized_gain_loss,
           gainLossPercent: holding.simple_return_rate,
+          annualizedReturnRate: holding.annualized_return_rate,
         }))
 
         setPositions(transformedPositions)
@@ -150,6 +152,7 @@ export const PositionCard: React.FC = () => {
                 <TableHead className="text-right">Market Value</TableHead>
                 <TableHead className="text-right">Gain/Loss($)</TableHead>
                 <TableHead className="text-right">Gain/Loss(%)</TableHead>
+                <TableHead className="text-right">Annualized Return</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -173,6 +176,11 @@ export const PositionCard: React.FC = () => {
                   </TableCell>
                   <TableCell className={`text-right ${getChangeColor(position.gainLossPercent)}`}>
                     {formatPercent(position.gainLossPercent)}
+                  </TableCell>
+                  <TableCell
+                    className={`text-right ${getChangeColor(position.annualizedReturnRate)}`}
+                  >
+                    {formatPercent(position.annualizedReturnRate)}
                   </TableCell>
                 </TableRow>
               ))}
