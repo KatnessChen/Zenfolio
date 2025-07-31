@@ -4,8 +4,6 @@ import { usePortfolioSummary } from '@/hooks/usePortfolio'
 
 interface PortfolioData {
   totalValue: number
-  dailyChange: number
-  dailyChangePercent: number
   totalGainLoss: number
   totalGainLossPercent: number
 }
@@ -17,15 +15,11 @@ export const PortfolioSummaryCard: React.FC = () => {
   const portfolioData: PortfolioData = portfolioSummary
     ? {
         totalValue: portfolioSummary.market_value,
-        dailyChange: portfolioSummary.daily_change,
-        dailyChangePercent: portfolioSummary.daily_change_percentage,
         totalGainLoss: portfolioSummary.total_return,
         totalGainLossPercent: portfolioSummary.total_return_percentage,
       }
     : {
         totalValue: 0,
-        dailyChange: 0,
-        dailyChangePercent: 0,
         totalGainLoss: 0,
         totalGainLossPercent: 0,
       }

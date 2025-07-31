@@ -192,7 +192,6 @@ func (h *PriceHandler) handleSingleDateQuery(c *gin.Context, symbol, dateParam s
 		return
 	}
 
-
 	// Adjust the requested date to the last trading day
 	requestedDate, _ := time.Parse(DateFormat, dateParam)
 	adjustedDate := h.getLastTradingDay(requestedDate)
