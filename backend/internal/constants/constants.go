@@ -32,7 +32,9 @@ const (
 	PortfolioHoldingsEndpoint              = "/portfolio/holdings"
 	PortfolioSingleHoldingEndpoint         = "/portfolio/holdings/:symbol"
 	PortfolioHistoricalMarketValueEndpoint = "/portfolio/chart/historical-market-value"
-) // HTTP Headers
+)
+
+// HTTP Headers
 const (
 	AuthorizationHeader = "Authorization"
 	ContentTypeHeader   = "Content-Type"

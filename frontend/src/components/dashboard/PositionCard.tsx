@@ -166,7 +166,7 @@ export const PositionCard: React.FC = () => {
                       {position.symbol}
                     </Link>
                   </TableCell>
-                  <TableCell className="text-right">{formatNumber(position.quantity, 5)}</TableCell>
+                  <TableCell className="text-right">{formatNumber(position.quantity, 4)}</TableCell>
                   <TableCell className="text-right">{formatCurrency(position.last)}</TableCell>
                   <TableCell className="text-right">
                     {formatCurrency(position.marketValue)}

@@ -187,7 +187,6 @@ func (s *PortfolioService) GetPortfolioSummary(ctx context.Context, userID uuid.
 		annualizedReturnRate = s.calculateAnnualizedReturnRate(allTxs, totalCost, totalMarketValue)
 	}
 
-
 	return &models.PortfolioSummary{
 		Timestamp:             now,
 		Currency:              "USD", // Default currency as per requirements
@@ -258,14 +257,11 @@ func (s *PortfolioService) calculateAnnualizedReturnRate(transactions []models.T
 		Date   time.Time
 	}
 
-	// Add all transactions as cash flows
 	for _, tx := range transactions {
 		amount := tx.Amount
 		if tx.TradeType == "Buy" {
-			amount = -amount // Buy transactions are negative cash flows (money out)
+			amount = -amount
 		}
-		// Sell transactions are positive cash flows (money in) - keep as is
-
 		cashFlows = append(cashFlows, struct {
 			Amount float64
 			Date   time.Time
@@ -274,8 +270,6 @@ func (s *PortfolioService) calculateAnnualizedReturnRate(transactions []models.T
 			Date:   tx.TransactionDate,
 		})
 	}
-
-	// Add current market value as final positive cash flow (hypothetical sell)
 	cashFlows = append(cashFlows, struct {
 		Amount float64
 		Date   time.Time
@@ -284,11 +278,8 @@ func (s *PortfolioService) calculateAnnualizedReturnRate(transactions []models.T
 		Date:   time.Now(),
 	})
 
-	// Calculate XIRR using Newton-Raphson method
-	rate := s.calculateXIRR(cashFlows)
+	rate := utils.XIRR(cashFlows)
 	if rate == 0 {
-		// If XIRR calculation fails, fallback to simple annualized return
-		// Find the earliest buy transaction to calculate holding period
 		var earliestBuyDate time.Time
 		for _, tx := range transactions {
 			if tx.TradeType == "Buy" {
@@ -297,78 +288,18 @@ func (s *PortfolioService) calculateAnnualizedReturnRate(transactions []models.T
 				}
 			}
 		}
-
 		if earliestBuyDate.IsZero() {
 			return 0
 		}
-
-		// Calculate holding period in years
 		holdingPeriodDays := time.Since(earliestBuyDate).Hours() / 24
 		holdingPeriodYears := holdingPeriodDays / 365.25
-
 		if holdingPeriodYears <= 0 {
 			return 0
 		}
-
-		// Calculate simple annualized return as fallback
 		totalReturn := marketValue / totalCost
 		return (math.Pow(totalReturn, 1/holdingPeriodYears) - 1) * 100
 	}
-
-	// Convert XIRR rate to percentage
 	return rate * 100
-}
-
-// calculateXIRR implements XIRR calculation using Newton-Raphson method
-func (s *PortfolioService) calculateXIRR(cashFlows []struct{ Amount float64; Date time.Time }) float64 {
-	if len(cashFlows) < 2 {
-		return 0
-	}
-
-	// Initial guess for rate (10%)
-	rate := 0.1
-	tolerance := 1e-6
-	maxIterations := 1000
-
-	baseDate := cashFlows[0].Date
-
-	for i := 0; i < maxIterations; i++ {
-		npv := 0.0
-		npvDerivative := 0.0
-
-		for _, cf := range cashFlows {
-			// Calculate days from base date
-			days := cf.Date.Sub(baseDate).Hours() / 24
-			years := days / 365.25
-
-			// Calculate NPV and its derivative
-			denominator := math.Pow(1+rate, years)
-			npv += cf.Amount / denominator
-			npvDerivative -= cf.Amount * years / (denominator * (1 + rate))
-		}
-
-		// Check convergence
-		if math.Abs(npv) < tolerance {
-			return rate
-		}
-
-		// Newton-Raphson iteration
-		if math.Abs(npvDerivative) < tolerance {
-			break // Avoid division by zero
-		}
-
-		newRate := rate - npv/npvDerivative
-
-		// Prevent negative rates and extreme values
-		if newRate < -0.99 || newRate > 10.0 {
-			break
-		}
-
-		rate = newRate
-	}
-
-	// Return 0 if convergence failed
-	return 0
 }
 
 // GetHistoricalPortfolioTotalValue calculates portfolio total value over time
@@ -625,18 +556,15 @@ func (s *PortfolioService) calculateSummaryStatistics(dataPoints []models.TotalV
 		changePercent = (change / firstValue) * 100
 	}
 
-	// Find min and max values
 	minValue := dataPoints[0].TotalValue
 	maxValue := dataPoints[0].TotalValue
 
-	// Calculate volatility (standard deviation of daily returns)
 	var returns []float64
 	for i := 1; i < len(dataPoints); i++ {
 		if dataPoints[i-1].TotalValue > 0 {
 			dailyReturn := (dataPoints[i].TotalValue - dataPoints[i-1].TotalValue) / dataPoints[i-1].TotalValue
 			returns = append(returns, dailyReturn)
 		}
-
 		if dataPoints[i].TotalValue > maxValue {
 			maxValue = dataPoints[i].TotalValue
 		}
@@ -645,7 +573,7 @@ func (s *PortfolioService) calculateSummaryStatistics(dataPoints []models.TotalV
 		}
 	}
 
-	volatility := s.calculateStandardDeviation(returns) * 100 // Convert to percentage
+	volatility := utils.StandardDeviation(returns) * 100
 
 	return models.TotalValueTrendSummary{
 		Change:        change,
@@ -654,28 +582,4 @@ func (s *PortfolioService) calculateSummaryStatistics(dataPoints []models.TotalV
 		MaxValue:      maxValue,
 		MinValue:      minValue,
 	}
-}
-
-// calculateStandardDeviation calculates the standard deviation of a slice of float64
-func (s *PortfolioService) calculateStandardDeviation(values []float64) float64 {
-	if len(values) == 0 {
-		return 0
-	}
-
-	// Calculate mean
-	sum := 0.0
-	for _, value := range values {
-		sum += value
-	}
-	mean := sum / float64(len(values))
-
-	// Calculate variance
-	sumSquaredDiff := 0.0
-	for _, value := range values {
-		diff := value - mean
-		sumSquaredDiff += diff * diff
-	}
-	variance := sumSquaredDiff / float64(len(values))
-
-	return math.Sqrt(variance)
 }

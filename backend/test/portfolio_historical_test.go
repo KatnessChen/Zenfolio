@@ -247,7 +247,6 @@ func TestHistoricalMarketValueTimeframes(t *testing.T) {
 				nil, // context
 				testUser.UserID,
 				models.TimeFrame(timeframe),
-				nil, // default granularity
 			)
 
 			// We expect this to work structurally even if prices fail to fetch

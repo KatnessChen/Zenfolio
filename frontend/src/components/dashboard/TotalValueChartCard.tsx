@@ -8,6 +8,33 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts'
+// Custom tooltip for chart
+import type { TooltipProps } from 'recharts'
+type CustomTooltipProps = TooltipProps<number, string> & {
+  payload?: Array<{ value: number }>
+  label?: string | number
+  active?: boolean
+}
+const CustomTooltip: React.FC<CustomTooltipProps> = (props) => {
+  const { active, payload, label } = props
+  if (active && payload && payload.length) {
+    return (
+      <div className="rounded border bg-card p-3 shadow">
+        <div className="text-xs text-muted-foreground mb-1">{label}</div>
+        <div className="font-semibold text-sm">
+          Total Value:{' '}
+          {new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+          }).format(payload[0].value)}
+        </div>
+      </div>
+    )
+  }
+  return null
+}
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loader2, TrendingUp, TrendingDown } from 'lucide-react'
 import { useTotalValueTrend } from '@/hooks/usePortfolio'
@@ -160,6 +187,7 @@ export const TotalValueChartCard: React.FC = () => {
                     tick={{ fontSize: 12 }}
                     stroke="hsl(var(--muted-foreground))"
                   />
+                  <Tooltip content={<CustomTooltip />} />
                   <Line
                     type="monotone"
                     dataKey="value"

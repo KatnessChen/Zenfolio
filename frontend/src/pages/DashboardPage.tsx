@@ -1,8 +1,8 @@
 import React from 'react'
 import {
   PortfolioSummaryCard,
-  AssetAllocationCard,
-  TopPerformersCard,
+  // AssetAllocationCard,
+  // TopPerformersCard,
   PositionCard,
   TotalValueChartCard,
 } from '@/components/dashboard'
