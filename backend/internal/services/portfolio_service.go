@@ -180,7 +180,7 @@ func (s *PortfolioService) GetPortfolioSummary(ctx context.Context, userID uuid.
 	var annualizedReturnRate float64
 	if hasTransactions && totalCost > 0 && totalMarketValue > 0 {
 		// Gather all transactions for XIRR calculation
-	   allTxs := append([]models.Transaction{}, allTransactions...)
+		allTxs := append([]models.Transaction{}, allTransactions...)
 		annualizedReturnRate = s.calculateAnnualizedReturnRate(allTxs, totalCost, totalMarketValue)
 	}
 

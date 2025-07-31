@@ -244,11 +244,11 @@ func TestHistoricalMarketValueTimeframes(t *testing.T) {
 		t.Run("Timeframe_"+timeframe, func(t *testing.T) {
 			// Note: This test will likely fail due to external API calls
 			// In a real scenario, we'd mock the price service
-		   result, err := portfolioService.GetHistoricalPortfolioTotalValue(
-			   context.TODO(),
-			   testUser.UserID,
-			   models.TimeFrame(timeframe),
-		   )
+			result, err := portfolioService.GetHistoricalPortfolioTotalValue(
+				context.TODO(),
+				testUser.UserID,
+				models.TimeFrame(timeframe),
+			)
 
 			// We expect this to work structurally even if prices fail to fetch
 			if err != nil {
