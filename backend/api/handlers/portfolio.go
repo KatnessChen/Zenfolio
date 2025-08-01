@@ -25,22 +25,8 @@ func NewPortfolioHandler(portfolioService *services.PortfolioService) *Portfolio
 
 // GetSingleHoldingBasicInfo handles GET /api/v1/portfolio/holdings/{symbol}
 func (h *PortfolioHandler) GetSingleHoldingBasicInfo(c *gin.Context) {
-	// Get user ID from JWT token (from auth middleware)
-	userIDStr, exists := c.Get("user_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"message": "User not authenticated",
-		})
-		return
-	}
-
-	userID, ok := userIDStr.(uuid.UUID)
+	userID, ok := getUserIDFromContext(c)
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"message": "Invalid user ID",
-		})
 		return
 	}
 
@@ -112,22 +98,8 @@ func (h *PortfolioHandler) GetSingleHoldingBasicInfo(c *gin.Context) {
 
 // GetAllHoldings handles GET /api/v1/portfolio/holdings
 func (h *PortfolioHandler) GetAllHoldings(c *gin.Context) {
-	// Get user ID from JWT token (from auth middleware)
-	userIDStr, exists := c.Get("user_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"message": "User ID not found in token",
-		})
-		return
-	}
-
-	userID, ok := userIDStr.(uuid.UUID)
+	userID, ok := getUserIDFromContext(c)
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"message": "Invalid user ID",
-		})
 		return
 	}
 
@@ -152,22 +124,8 @@ func (h *PortfolioHandler) GetAllHoldings(c *gin.Context) {
 
 // GetPortfolioSummary handles GET /api/v1/portfolio/summary
 func (h *PortfolioHandler) GetPortfolioSummary(c *gin.Context) {
-	// Get user ID from JWT token (from auth middleware)
-	userIDStr, exists := c.Get("user_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"message": "User ID not found in token",
-		})
-		return
-	}
-
-	userID, ok := userIDStr.(uuid.UUID)
+	userID, ok := getUserIDFromContext(c)
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"message": "Invalid user ID",
-		})
 		return
 	}
 
@@ -193,22 +151,8 @@ func (h *PortfolioHandler) GetPortfolioSummary(c *gin.Context) {
 
 // GetHistoricalPortfolioTotalValue handles GET /api/v1/portfolio/chart/historical-market-value
 func (h *PortfolioHandler) GetHistoricalPortfolioTotalValue(c *gin.Context) {
-	// Get user ID from JWT token (from auth middleware)
-	userIDStr, exists := c.Get("user_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"message": "User not authenticated",
-		})
-		return
-	}
-
-	userID, ok := userIDStr.(uuid.UUID)
+	userID, ok := getUserIDFromContext(c)
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"message": "Invalid user ID",
-		})
 		return
 	}
 
@@ -261,4 +205,25 @@ func (h *PortfolioHandler) GetHistoricalPortfolioTotalValue(c *gin.Context) {
 		"success": true,
 		"data":    historicalData,
 	})
+}
+
+// getUserIDFromContext extracts and validates user_id from gin.Context
+func getUserIDFromContext(c *gin.Context) (uuid.UUID, bool) {
+	userIDStr, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"message": "User not authenticated",
+		})
+		return uuid.Nil, false
+	}
+	userID, ok := userIDStr.(uuid.UUID)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"message": "Invalid user ID",
+		})
+		return uuid.Nil, false
+	}
+	return userID, true
 }
