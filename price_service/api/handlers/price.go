@@ -197,6 +197,46 @@ func (h *PriceHandler) handleSingleDateQuery(c *gin.Context, symbol, dateParam s
 	adjustedDate := h.getLastTradingDay(requestedDate)
 	adjustedDateStr := adjustedDate.Format(DateFormat)
 
+	// If the adjusted date is today and今天還沒收盤，回傳即時價
+	now := time.Now()
+	todayStr := now.Format(DateFormat)
+	isToday := adjustedDateStr == todayStr
+	// 假設美股收盤時間為美東 16:00 (UTC-4)，這裡以台灣時間為例，請依實際需求調整
+	// 這裡用 UTC 時間 20:00 當作美股收盤
+	marketCloseHourUTC := 20
+	marketCloseMinuteUTC := 0
+	marketCloseTime := time.Date(now.UTC().Year(), now.UTC().Month(), now.UTC().Day(), marketCloseHourUTC, marketCloseMinuteUTC, 0, 0, time.UTC)
+	if isToday && now.UTC().Before(marketCloseTime) {
+		// 回傳即時價
+		currentPrice, err := h.provider.GetCurrentPrices(c.Request.Context(), []string{symbol})
+		if err != nil || len(currentPrice) == 0 {
+			c.JSON(http.StatusServiceUnavailable, models.ErrorResponse{
+				Success: false,
+				Error: models.ErrorDetail{
+					Code:    models.ErrServiceUnavailable,
+					Message: "failed to fetch current price for today (market not closed)",
+				},
+			})
+			return
+		}
+		result := &models.SymbolHistoricalPrice{
+			Symbol:     symbol,
+			Resolution: models.ResolutionDaily,
+			HistoricalPrices: []models.ClosePrice{
+				{
+					Date:  todayStr,
+					Price: currentPrice[0].CurrentPrice,
+				},
+			},
+		}
+		c.JSON(http.StatusOK, models.SuccessResponse{
+			Success:   true,
+			Data:      result,
+			Timestamp: now,
+		})
+		return
+	}
+
 	// Check if we have daily historical data cached
 	cachedData, err := h.cache.GetHistoricalPrice(c.Request.Context(), symbol, models.ResolutionDaily)
 	if err == nil && cachedData != nil && len(cachedData.HistoricalPrices) > 0 {
@@ -409,6 +449,11 @@ func (h *PriceHandler) handleResolutionQuery(c *gin.Context, symbol string) {
 			},
 		})
 		return
+	}
+
+	// Cache the fetched data
+	if err := h.cache.SetHistoricalPrice(c.Request.Context(), symbol, resolution, historicalData); err != nil {
+		log.Printf("error caching historical price for %s with resolution %s: %v", symbol, resolution, err)
 	}
 
 	c.JSON(http.StatusOK, models.SuccessResponse{

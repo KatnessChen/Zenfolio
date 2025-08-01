@@ -26,6 +26,14 @@ const (
 	TransactionHistoryEndpoint = "/transaction-history"
 )
 
+// Portfolio Endpoints
+const (
+	PortfolioSummaryEndpoint               = "/portfolio/summary"
+	PortfolioHoldingsEndpoint              = "/portfolio/holdings"
+	PortfolioSingleHoldingEndpoint         = "/portfolio/holdings/:symbol"
+	PortfolioHistoricalMarketValueEndpoint = "/portfolio/chart/historical-market-value"
+)
+
 // HTTP Headers
 const (
 	AuthorizationHeader = "Authorization"

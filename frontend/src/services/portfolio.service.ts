@@ -3,6 +3,7 @@
 
 import { API_ENDPOINTS } from '@/constants/api'
 import { apiClient } from '@/lib/api-client'
+import type { TimeFrame, Granularity, TotalValueTrendResponse } from '@/types/portfolio'
 
 export interface SingleHoldingBasicInfoResponse {
   symbol: string
@@ -21,6 +22,19 @@ export interface SingleHoldingBasicInfoResponse {
 export interface AllHoldingsResponse {
   holdings: SingleHoldingBasicInfoResponse[]
   timestamp: string
+}
+
+export interface PortfolioSummaryResponse {
+  timestamp: string
+  currency: string
+  market_value: number
+  total_cost: number
+  total_return: number
+  total_return_percentage: number
+  holdings_count: number
+  has_transactions: boolean
+  annualized_return_rate: number
+  last_updated: string
 }
 
 export interface ApiResponse<T> {
@@ -68,6 +82,53 @@ export async function fetchAllHoldings(): Promise<AllHoldingsResponse> {
     return response.data
   } catch (error) {
     console.error('Error fetching all holdings:', error)
+    throw error
+  }
+}
+
+/**
+ * Fetch portfolio summary for the current user
+ * @returns Promise with portfolio summary data
+ */
+export async function fetchPortfolioSummary(): Promise<PortfolioSummaryResponse> {
+  const url = API_ENDPOINTS.PORTFOLIO.SUMMARY
+
+  try {
+    const response = await apiClient.get<PortfolioSummaryResponse>(url)
+    return response.data
+  } catch (error) {
+    console.error('Error fetching portfolio summary:', error)
+    throw error
+  }
+}
+
+/**
+ * Fetch historical market value data for portfolio chart
+ * @param timeframe - Time period for historical data (1D, 1W, 1M, etc.)
+ * @param granularity - Optional data point frequency (hourly, daily, weekly, monthly)
+ * @returns Promise with historical market value data
+ */
+export async function fetchHistoricalMarketValue(
+  timeframe: TimeFrame,
+  granularity?: Granularity
+): Promise<TotalValueTrendResponse> {
+  const url = API_ENDPOINTS.PORTFOLIO.HISTORICAL_CHART
+  const params = new URLSearchParams({ timeframe })
+
+  if (granularity) {
+    params.append('granularity', granularity)
+  }
+
+  try {
+    const response = await apiClient.get<TotalValueTrendResponse>(`${url}?${params}`)
+
+    if (!response.data.success) {
+      throw new Error('Failed to fetch historical market value data')
+    }
+
+    return response.data
+  } catch (error) {
+    console.error('Error fetching historical market value:', error)
     throw error
   }
 }

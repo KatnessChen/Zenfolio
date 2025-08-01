@@ -64,8 +64,10 @@ func SetupRouter(cfg *config.Config) *gin.Engine {
 		api.DELETE(constants.TransactionHistoryEndpoint, handlersProvider.Transactions.DeleteTransactions)
 
 		// Portfolio routes
-		api.GET("/portfolio/holdings", handlersProvider.Portfolio.GetAllHoldings)
-		api.GET("/portfolio/holdings/:symbol", handlersProvider.Portfolio.GetSingleHoldingBasicInfo)
+		api.GET(constants.PortfolioSummaryEndpoint, handlersProvider.Portfolio.GetPortfolioSummary)
+		api.GET(constants.PortfolioHoldingsEndpoint, handlersProvider.Portfolio.GetAllHoldings)
+		api.GET(constants.PortfolioSingleHoldingEndpoint, handlersProvider.Portfolio.GetSingleHoldingBasicInfo)
+		api.GET(constants.PortfolioHistoricalMarketValueEndpoint, handlersProvider.Portfolio.GetHistoricalPortfolioTotalValue)
 	}
 
 	return r

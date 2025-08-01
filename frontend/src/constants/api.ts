@@ -22,7 +22,9 @@ export const API_ENDPOINTS = {
 
   // Portfolio endpoints
   PORTFOLIO: {
+    SUMMARY: '/portfolio/summary',
     HOLDINGS: '/portfolio/holdings',
+    HISTORICAL_CHART: '/portfolio/chart/historical-market-value',
   },
 
   // Other endpoints

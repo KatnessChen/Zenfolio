@@ -1,9 +1,10 @@
 import React from 'react'
 import {
   PortfolioSummaryCard,
-  AssetAllocationCard,
-  TopPerformersCard,
+  // AssetAllocationCard,
+  // TopPerformersCard,
   PositionCard,
+  TotalValueChartCard,
 } from '@/components/dashboard'
 import { Title } from '@/components/ui/title'
 
@@ -21,20 +22,19 @@ const DashboardPage: React.FC = () => {
           {/* Portfolio Summary - Full Width */}
           <PortfolioSummaryCard />
 
+          {/* Total Value Chart - Full Width */}
+          <TotalValueChartCard />
+
           {/* Positions - Full Width */}
           <PositionCard />
 
           {/* Main Content Area */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Main Area - Asset Allocation */}
-            <div className="lg:col-span-2">
-              <AssetAllocationCard />
-            </div>
+            <div className="lg:col-span-2">{/* <AssetAllocationCard /> */}</div>
 
             {/* Aside Area - Top Performers & Recent Activity */}
-            <div className="space-y-6">
-              <TopPerformersCard />
-            </div>
+            <div className="space-y-6">{/* <TopPerformersCard /> */}</div>
           </div>
         </div>
       </div>

@@ -62,25 +62,9 @@ func (f *FinnhubProvider) GetCurrentPrices(ctx context.Context, symbols []string
 func (f *FinnhubProvider) getCurrentPriceForSymbol(ctx context.Context, symbol string) (models.SymbolCurrentPrice, error) {
 	url := fmt.Sprintf("%s/quote?symbol=%s&token=%s", f.BaseURL, symbol, f.APIKey)
 
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	body, err := f.makeRequest(ctx, url)
 	if err != nil {
-		return models.SymbolCurrentPrice{}, fmt.Errorf("failed to create request: %w", err)
-	}
-
-	resp, err := f.client.Do(req)
-	if err != nil {
-		return models.SymbolCurrentPrice{}, fmt.Errorf("failed to make request: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return models.SymbolCurrentPrice{}, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
-	}
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return models.SymbolCurrentPrice{}, fmt.Errorf("failed to read response body: %w", err)
+		return models.SymbolCurrentPrice{}, err
 	}
 
 	var quoteResp FinnhubQuoteResponse
@@ -101,4 +85,36 @@ func (f *FinnhubProvider) getCurrentPriceForSymbol(ctx context.Context, symbol s
 		PreviousClose: quoteResp.PreviousClose,
 		Timestamp:     time.Unix(quoteResp.Timestamp, 0),
 	}, nil
+}
+
+func (f *FinnhubProvider) makeRequest(ctx context.Context, url string) ([]byte, error) {
+	// Log the request URL for debugging (sanitize API key for security)
+	sanitizedURL := strings.Replace(url, f.APIKey, "[API_KEY]", -1)
+	log.Printf("Finnhub API Request: %s", sanitizedURL)
+
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	resp, err := f.client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to make request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		log.Printf("Finnhub API Error Response: %s", string(body))
+		return nil, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	log.Printf("Finnhub API Response Body: %s", string(body))
+
+	return body, nil
 }
