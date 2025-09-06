@@ -55,7 +55,9 @@ jobs:
 
       - name: Run tests in Docker container
         run: |
+          export CGO_ENABLED=1
           docker run --rm \
+            --network host \
             --env CI_SKIP_INTEGRATION=true \
             --env TEST_DB_HOST=127.0.0.1 \
             --env TEST_DB_PORT=3306 \

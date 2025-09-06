@@ -53,7 +53,9 @@ jobs:
 
       - name: Run tests in Docker container
         run: |
+          export CGO_ENABLED=1
           docker run --rm \
+            --network host \
             --env PORT=8081 \
             --env GIN_MODE=test \
             --env API_KEY=test-api-key \
