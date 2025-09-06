@@ -29,7 +29,7 @@ services:
           "--spider",
           "http://localhost:8080/api/v1/health",
         ]
-      interval: 10s
+      interval: 0s
       timeout: 5s
       retries: 3
 
@@ -59,7 +59,7 @@ services:
           "--spider",
           "http://localhost:8081/health",
         ]
-      interval: 10s
+      interval: 0s
       timeout: 5s
       retries: 3
 
@@ -94,7 +94,7 @@ services:
           "root",
           "-p$$MYSQL_ROOT_PASSWORD",
         ]
-      interval: 10s
+      interval: 0s
       timeout: 5s
       retries: 3
 
