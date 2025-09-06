@@ -1,0 +1,15 @@
+# air config for backend (debugger mode)
+root = "./"
+
+[build]
+bin = "main"
+cmd = "go build -o main ."
+delay = 1000
+include_ext = ["go", "yaml", "toml"]
+exclude_dir = ["tmp", "test", "scripts", "migrations"]
+
+[log]
+color = "always"
+
+[run]
+cmd = "air -c .air.toml"
