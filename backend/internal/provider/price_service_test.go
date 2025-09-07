@@ -54,10 +54,10 @@ func TestPriceServiceClient_GetCurrentPrices(t *testing.T) {
 
 	cfg := &config.Config{
 		PriceService: config.PriceServiceConfig{
-			BaseURL:    server.URL,
-			APIKey:     "test-key",
-			Timeout:    30 * time.Second,
-			MaxRetries: 3,
+			BaseURL:            server.URL,
+			PriceServiceApiKey: "test-key",
+			Timeout:            30 * time.Second,
+			MaxRetries:         3,
 		},
 	}
 
@@ -94,10 +94,10 @@ func TestPriceServiceClient_GetCurrentPrices_Error(t *testing.T) {
 
 	cfg := &config.Config{
 		PriceService: config.PriceServiceConfig{
-			BaseURL:    server.URL,
-			APIKey:     "test-key",
-			Timeout:    30 * time.Second,
-			MaxRetries: 0, // No retries for this test
+			BaseURL:            server.URL,
+			PriceServiceApiKey: "test-key",
+			Timeout:            30 * time.Second,
+			MaxRetries:         0, // No retries for this test
 		},
 	}
 
@@ -131,10 +131,10 @@ func TestPriceServiceClient_HealthCheck(t *testing.T) {
 
 	cfg := &config.Config{
 		PriceService: config.PriceServiceConfig{
-			BaseURL:    server.URL,
-			APIKey:     "test-key",
-			Timeout:    30 * time.Second,
-			MaxRetries: 3,
+			BaseURL:            server.URL,
+			PriceServiceApiKey: "test-key",
+			Timeout:            30 * time.Second,
+			MaxRetries:         3,
 		},
 	}
 
@@ -173,10 +173,10 @@ func TestPriceServiceManager_GetCurrentPrice(t *testing.T) {
 
 	cfg := &config.Config{
 		PriceService: config.PriceServiceConfig{
-			BaseURL:    server.URL,
-			APIKey:     "test-key",
-			Timeout:    30 * time.Second,
-			MaxRetries: 3,
+			BaseURL:            server.URL,
+			PriceServiceApiKey: "test-key",
+			Timeout:            30 * time.Second,
+			MaxRetries:         3,
 		},
 	}
 

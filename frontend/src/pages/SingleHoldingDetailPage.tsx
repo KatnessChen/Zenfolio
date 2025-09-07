@@ -1,4 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
+import { Tooltip } from '@/components/ui/tooltip'
+import { tooltipCopywriting } from '@/constants/tooltipCopywriting'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Card, CardContent } from '@/components/ui/card'
 import { Breadcrumb } from '@/components/ui/breadcrumb'
@@ -16,7 +18,7 @@ interface HoldingDetailData {
   totalCost: number
   marketValue: number
   unitCost: number
-  simpleReturn: number
+  totalReturnRate: number
   annualizedReturn: number
   realizedGainLoss: number
   unrealizedGainLoss: number
@@ -49,12 +51,12 @@ export default function SingleHoldingDetailPage() {
         symbol: response.symbol,
         companyName: response.symbol,
         currentPrice: response.current_price,
-        priceChangePercent: response.simple_return_rate,
+        priceChangePercent: response.total_return_rate,
         totalQuantity: response.total_quantity,
         totalCost: response.total_cost,
         marketValue: response.market_value,
         unitCost: response.unit_cost,
-        simpleReturn: response.simple_return_rate,
+        totalReturnRate: response.total_return_rate,
         annualizedReturn: response.annualized_return_rate,
         realizedGainLoss: response.realized_gain_loss,
         unrealizedGainLoss: response.unrealized_gain_loss,
@@ -214,9 +216,11 @@ export default function SingleHoldingDetailPage() {
                 </div>
 
                 <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Simple Return</span>
-                  <span className={`font-medium ${getValueColor(holdingData.simpleReturn)}`}>
-                    {formatPercent(holdingData.simpleReturn)}
+                  <Tooltip content={tooltipCopywriting['Total Return']}>
+                    <span className="text-muted-foreground">Total Return</span>
+                  </Tooltip>
+                  <span className={`font-medium ${getValueColor(holdingData.totalReturnRate)}`}>
+                    {formatPercent(holdingData.totalReturnRate)}
                   </span>
                 </div>
 

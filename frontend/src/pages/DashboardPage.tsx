@@ -20,10 +20,10 @@ const DashboardPage: React.FC = () => {
         {/* Dashboard Grid */}
         <div className="space-y-6">
           {/* Portfolio Summary - Full Width */}
-          <PortfolioSummaryCard />
+          {/* <PortfolioSummaryCard /> */}
 
           {/* Total Value Chart - Full Width */}
-          <TotalValueChartCard />
+          {/* <TotalValueChartCard /> */}
 
           {/* Positions - Full Width */}
           <PositionCard />

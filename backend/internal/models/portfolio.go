@@ -10,7 +10,7 @@ type SingleHolding struct {
 	UnitCost             float64 `json:"unit_cost"`
 	CurrentPrice         float64 `json:"current_price"`
 	MarketValue          float64 `json:"market_value"`
-	SimpleReturnRate     float64 `json:"simple_return_rate"`
+	TotalReturnRate      float64 `json:"total_return_rate"`
 	AnnualizedReturnRate float64 `json:"annualized_return_rate"`
 	RealizedGainLoss     float64 `json:"realized_gain_loss"`
 	UnrealizedGainLoss   float64 `json:"unrealized_gain_loss"`

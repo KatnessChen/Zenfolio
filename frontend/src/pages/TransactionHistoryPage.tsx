@@ -568,10 +568,11 @@ export default function TransactionHistoryPage() {
                               ${transaction.price}
                             </TableCell>
                             <TableCell className="text-right text-muted-foreground">
+                              {transaction.trade_type === TRADE_TYPE.SELL ? '-' : ''}
                               {transaction.quantity}
                             </TableCell>
                             <TableCell className="text-right">
-                              {transaction.trade_type === TRADE_TYPE.SELL ? '-' : ''}$
+                              {transaction.trade_type === TRADE_TYPE.BUY ? '-' : ''}$
                               {transaction.amount}
                             </TableCell>
                             <TableCell className="text-right">{transaction.currency}</TableCell>

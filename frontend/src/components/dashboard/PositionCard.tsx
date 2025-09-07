@@ -9,6 +9,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Tooltip } from '@/components/ui/tooltip'
+import { tooltipCopywriting } from '@/constants/tooltipCopywriting'
 import { formatCurrency, formatPercent } from '@/utils'
 import { ROUTES } from '@/constants'
 import { fetchAllHoldings } from '@/services/portfolio.service'
@@ -65,7 +67,7 @@ export const PositionCard: React.FC = () => {
           unitCost: holding.unit_cost,
           totalCost: holding.total_cost,
           gainLossAmount: holding.unrealized_gain_loss,
-          gainLossPercent: holding.simple_return_rate,
+          gainLossPercent: holding.total_return_rate,
           annualizedReturnRate: holding.annualized_return_rate,
         }))
 
@@ -150,8 +152,10 @@ export const PositionCard: React.FC = () => {
                 <TableHead className="text-right">Quantity</TableHead>
                 <TableHead className="text-right">Last</TableHead>
                 <TableHead className="text-right">Market Value</TableHead>
-                <TableHead className="text-right">Gain/Loss($)</TableHead>
-                <TableHead className="text-right">Gain/Loss(%)</TableHead>
+                <TableHead className="text-right">Unrealized G/L($)</TableHead>
+                <TableHead className="text-right">
+                  <Tooltip content={tooltipCopywriting['Total Return']}>Total Return</Tooltip>
+                </TableHead>
                 <TableHead className="text-right">Annualized Return</TableHead>
               </TableRow>
             </TableHeader>

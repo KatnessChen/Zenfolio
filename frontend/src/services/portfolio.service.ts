@@ -12,7 +12,7 @@ export interface SingleHoldingBasicInfoResponse {
   unit_cost: number
   current_price: number
   market_value: number
-  simple_return_rate: number
+  total_return_rate: number
   annualized_return_rate: number
   realized_gain_loss: number
   unrealized_gain_loss: number

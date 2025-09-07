@@ -30,10 +30,10 @@ type Config struct {
 
 // PriceServiceConfig holds configuration for Price Service integration
 type PriceServiceConfig struct {
-	BaseURL    string
-	APIKey     string
-	Timeout    time.Duration
-	MaxRetries int
+	BaseURL            string
+	PriceServiceApiKey string
+	Timeout            time.Duration
+	MaxRetries         int
 }
 
 // Load loads the configuration from environment variables
@@ -90,10 +90,10 @@ func Load() (*Config, error) {
 
 	// Price Service configuration
 	priceServiceConfig := PriceServiceConfig{
-		BaseURL:    getEnvOrDefault("PRICE_SERVICE_BASE_URL", "http://localhost:8081"),
-		APIKey:     getEnvOrDefault("PRICE_SERVICE_API_KEY", ""),
-		Timeout:    time.Duration(getEnvOrDefaultInt("PRICE_SERVICE_TIMEOUT", 30)) * time.Second,
-		MaxRetries: getEnvOrDefaultInt("PRICE_SERVICE_MAX_RETRIES", 3),
+		BaseURL:            getEnvOrDefault("PRICE_SERVICE_URL", "http://localhost:8081"),
+		PriceServiceApiKey: getEnvOrDefault("PRICE_SERVICE_API_KEY", ""),
+		Timeout:            time.Duration(getEnvOrDefaultInt("PRICE_SERVICE_TIMEOUT", 30)) * time.Second,
+		MaxRetries:         getEnvOrDefaultInt("PRICE_SERVICE_MAX_RETRIES", 3),
 	}
 
 	return &Config{
