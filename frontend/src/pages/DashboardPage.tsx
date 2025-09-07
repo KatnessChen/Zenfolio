@@ -1,10 +1,10 @@
 import React from 'react'
 import {
-  PortfolioSummaryCard,
+  // PortfolioSummaryCard,
   // AssetAllocationCard,
   // TopPerformersCard,
   PositionCard,
-  TotalValueChartCard,
+  // TotalValueChartCard,
 } from '@/components/dashboard'
 import { Title } from '@/components/ui/title'
 
