@@ -32,6 +32,7 @@ func APIKeyMiddleware(validAPIKey string) gin.HandlerFunc {
 		}
 
 		apiKey := c.GetHeader("X-API-Key")
+
 		if apiKey == "" {
 			c.JSON(http.StatusUnauthorized, models.ErrorResponse{
 				Success: false,

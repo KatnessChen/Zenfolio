@@ -55,7 +55,7 @@ func Load() (*Config, error) {
 	config := &Config{
 		Server: ServerConfig{
 			Port:   getEnv("PORT", "8081"),
-			APIKey: getEnv("API_KEY", ""),
+			APIKey: getEnv("PRICE_SERVICE_API_KEY", ""),
 		},
 		Redis: RedisConfig{
 			Host:     getEnv("REDIS_HOST", "localhost"),

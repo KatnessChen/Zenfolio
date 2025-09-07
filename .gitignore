@@ -45,6 +45,7 @@ npm-debug.log
 backend/backend
 backend/transaction-tracker
 backend/transaction-tracker-test
+backend/main
 price_service/price_service
 price_service/price-service
 price_service/tmp

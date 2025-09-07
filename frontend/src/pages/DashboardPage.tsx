@@ -1,10 +1,10 @@
 import React from 'react'
 import {
-  PortfolioSummaryCard,
+  // PortfolioSummaryCard,
   // AssetAllocationCard,
   // TopPerformersCard,
   PositionCard,
-  TotalValueChartCard,
+  // TotalValueChartCard,
 } from '@/components/dashboard'
 import { Title } from '@/components/ui/title'
 
@@ -20,10 +20,10 @@ const DashboardPage: React.FC = () => {
         {/* Dashboard Grid */}
         <div className="space-y-6">
           {/* Portfolio Summary - Full Width */}
-          <PortfolioSummaryCard />
+          {/* <PortfolioSummaryCard /> */}
 
           {/* Total Value Chart - Full Width */}
-          <TotalValueChartCard />
+          {/* <TotalValueChartCard /> */}
 
           {/* Positions - Full Width */}
           <PositionCard />

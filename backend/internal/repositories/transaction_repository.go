@@ -81,7 +81,7 @@ func (r *TransactionRepository) GetByIDAndUserID(id uuid.UUID, userID uuid.UUID)
 // GetByUserID retrieves all transactions for a user by user_id (UUID)
 func (r *TransactionRepository) GetByUserID(userID uuid.UUID) ([]models.Transaction, error) {
 	var transactions []models.Transaction
-	err := r.db.Where("user_id = ?", userID).Preload("User").Find(&transactions).Error
+	err := r.db.Where("user_id = ?", userID).Order("transaction_date ASC").Preload("User").Find(&transactions).Error
 	return transactions, err
 }
 

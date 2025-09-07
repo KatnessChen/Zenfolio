@@ -61,7 +61,7 @@ func (s *PortfolioService) GetSingleHoldingBasicInfo(ctx context.Context, userID
 	unrealizedGainLoss := marketValue - totalCost
 
 	// Calculate return rates
-	simpleReturnRate := s.calculateSimpleReturnRate(totalCost, marketValue)
+	totalReturnRate := s.calculateTotalReturnRate(realizedGainLoss, unrealizedGainLoss, totalCost)
 	annualizedReturnRate := s.calculateAnnualizedReturnRate(transactions, totalCost, marketValue)
 
 	return &models.SingleHolding{
@@ -71,7 +71,7 @@ func (s *PortfolioService) GetSingleHoldingBasicInfo(ctx context.Context, userID
 		UnitCost:             utils.RoundTo4(unitCost),
 		CurrentPrice:         currentPrice,
 		MarketValue:          utils.RoundTo4(marketValue),
-		SimpleReturnRate:     utils.RoundTo4(simpleReturnRate),
+		TotalReturnRate:      utils.RoundTo4(totalReturnRate),
 		AnnualizedReturnRate: utils.RoundTo4(annualizedReturnRate),
 		RealizedGainLoss:     utils.RoundTo4(realizedGainLoss),
 		UnrealizedGainLoss:   utils.RoundTo4(unrealizedGainLoss),
@@ -119,7 +119,7 @@ func (s *PortfolioService) GetAllHoldings(ctx context.Context, userID uuid.UUID)
 		unrealizedGainLoss := marketValue - totalCost
 
 		// Calculate return rates
-		simpleReturnRate := s.calculateSimpleReturnRate(totalCost, marketValue)
+		totalReturnRate := s.calculateTotalReturnRate(realizedGainLoss, unrealizedGainLoss, totalCost)
 		annualizedReturnRate := s.calculateAnnualizedReturnRate(symbolTransactions, totalCost, marketValue)
 
 		holding := models.SingleHolding{
@@ -129,7 +129,7 @@ func (s *PortfolioService) GetAllHoldings(ctx context.Context, userID uuid.UUID)
 			UnitCost:             utils.RoundTo4(unitCost),
 			CurrentPrice:         utils.RoundTo4(currentPrice),
 			MarketValue:          utils.RoundTo4(marketValue),
-			SimpleReturnRate:     utils.RoundTo4(simpleReturnRate),
+			TotalReturnRate:      utils.RoundTo4(totalReturnRate),
 			AnnualizedReturnRate: utils.RoundTo4(annualizedReturnRate),
 			RealizedGainLoss:     utils.RoundTo4(realizedGainLoss),
 			UnrealizedGainLoss:   utils.RoundTo4(unrealizedGainLoss),
@@ -198,48 +198,53 @@ func (s *PortfolioService) GetPortfolioSummary(ctx context.Context, userID uuid.
 	}, nil
 }
 
-// calculateHoldingMetrics calculates total quantity, cost, unit cost, and realized gains/losses
+// calculateHoldingMetrics calculates total quantity, cost, unit cost, and realized gains/losses using weighted average method
 func (s *PortfolioService) calculateHoldingMetrics(transactions []models.Transaction) (totalQuantity, totalCost, unitCost, realizedGainLoss float64) {
-	var totalBoughtQuantity, totalBoughtCost float64
-	var totalSoldQuantity, totalSoldRevenue float64
+	// Initialize variables for weighted average calculation
+	var currentTotalQty, currentTotalCost float64
 
 	for _, tx := range transactions {
+		qtyNum := tx.Quantity
+		priceNum := tx.Price // Using price per share instead of total amount
+
 		switch tx.TradeType {
 		case "Buy":
-			totalBoughtQuantity += tx.Quantity
-			totalBoughtCost += tx.Amount
+			// Add to inventory
+			currentTotalQty += qtyNum
+			currentTotalCost += qtyNum * priceNum
 		case "Sell":
-			totalSoldQuantity += tx.Quantity
-			totalSoldRevenue += tx.Amount
+			if currentTotalQty > 0 {
+				// Calculate current weighted average cost
+				avgCost := currentTotalCost / currentTotalQty
+
+				// Calculate realized gain/loss for this sale
+				sellQty := qtyNum
+				realizedGainLoss += sellQty * (priceNum - avgCost)
+
+				// Update remaining inventory
+				currentTotalCost -= sellQty * avgCost
+				currentTotalQty -= sellQty
+			}
 		}
 	}
 
-	// Current holdings
-	totalQuantity = totalBoughtQuantity - totalSoldQuantity
+	// Final results
+	totalQuantity = currentTotalQty
+	totalCost = currentTotalCost
 
-	if totalQuantity > 0 && totalBoughtQuantity > 0 {
-		// Calculate weighted average cost basis for remaining shares
-		avgCostPerShare := totalBoughtCost / totalBoughtQuantity
-		totalCost = totalQuantity * avgCostPerShare
-		unitCost = avgCostPerShare
-	}
-
-	// Realized gain/loss from sold positions
-	if totalSoldQuantity > 0 && totalBoughtQuantity > 0 {
-		avgCostPerShare := totalBoughtCost / totalBoughtQuantity
-		soldCostBasis := totalSoldQuantity * avgCostPerShare
-		realizedGainLoss = totalSoldRevenue - soldCostBasis
+	if totalQuantity > 0 {
+		unitCost = totalCost / totalQuantity
 	}
 
 	return totalQuantity, totalCost, unitCost, realizedGainLoss
 }
 
-// calculateSimpleReturnRate calculates simple return rate percentage
-func (s *PortfolioService) calculateSimpleReturnRate(totalCost, marketValue float64) float64 {
+// calculateTotalReturnRate calculates total return rate percentage
+func (s *PortfolioService) calculateTotalReturnRate(realizedGainLoss, unrealizedGainLoss, totalCost float64) float64 {
 	if totalCost <= 0 {
 		return 0
 	}
-	return ((marketValue - totalCost) / totalCost) * 100
+	return ((realizedGainLoss + unrealizedGainLoss) / totalCost) * 100
 }
 
 // calculateAnnualizedReturnRate calculates XIRR (Internal Rate of Return) based on cash flows

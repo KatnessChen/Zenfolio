@@ -106,7 +106,7 @@ func NewPriceServiceClient(cfg *config.Config) PriceServiceClient {
 		},
 		circuitBreaker: NewCircuitBreaker(5, 1*time.Minute), // 5 failures, 1 minute reset
 		baseURL:        cfg.PriceService.BaseURL,
-		apiKey:         cfg.PriceService.APIKey,
+		apiKey:         cfg.PriceService.PriceServiceApiKey,
 		lastHealthy:    time.Now(),
 	}
 }
