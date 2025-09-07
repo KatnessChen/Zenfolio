@@ -1,0 +1,15 @@
+# air config for price-service (debugger mode)
+root = "./"
+
+[build]
+bin = "price-service"
+cmd = "go build -o price-service main.go"
+delay = 1000
+include_ext = ["go", "yaml", "toml"]
+exclude_dir = ["tmp", "test"]
+
+[log]
+color = "always"
+
+[run]
+cmd = "air -c .air.toml"

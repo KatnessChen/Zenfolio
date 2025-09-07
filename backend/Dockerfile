@@ -9,5 +9,5 @@ RUN wget -O - https://github.com/golangci/golangci-lint/releases/download/v1.58.
 	&& mv /tmp/golangci-lint-1.58.2-linux-amd64/golangci-lint /usr/local/bin/ \
 	&& chmod +x /usr/local/bin/golangci-lint
 COPY . .
-EXPOSE 8081
+EXPOSE 8080
 CMD ["air", "-c", ".air.toml"]

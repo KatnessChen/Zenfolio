@@ -34,116 +34,37 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
-
-    env:
-      # Integration tests requiring AI API keys are skipped in CI
-      CI_SKIP_INTEGRATION: "true"
-      TEST_DB_HOST: 127.0.0.1
-      TEST_DB_PORT: 3306
-      TEST_DB_USER: root
-      TEST_DB_PASS: root
-      TEST_DB_NAME: transaction_tracker_test
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: "1.21"
-          cache-dependency-path: backend/go.sum
-
-      - name: Clean Go modules directory before cache restore
-        run: go clean -modcache
-
-      - name: Cache Go modules
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('backend/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-
-      - name: Download dependencies
-        run: go mod download
-
-      - name: Verify dependencies
-        run: go mod verify
-
-      - name: Wait for MySQL to be ready
-        run: |
-          echo "Waiting for MySQL to be ready..."
-          for i in {1..30}; do
-            if mysqladmin ping -h 127.0.0.1 -u root -proot --silent; then
-              echo "MySQL is ready!"
-              break
-            fi
-            echo "Waiting for MySQL... ($i/30)"
-            sleep 2
-          done
-
-      - name: Format check
-        id: format-check
-        run: |
-          echo "Checking code formatting..."
-          if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
-            echo "❌ Code is not properly formatted. Run 'go fmt ./...' to fix:"
-            gofmt -s -l .
-            exit 1
-          fi
-          echo "✅ Code formatting is correct"
+      - name: Build Docker image
+        run: docker build -t backend:ci .
 
       - name: Install golangci-lint
         run: |
           curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.61.0
 
       - name: Run linting
-        id: linting
         run: |
-          echo "Running linting checks..."
-          $(go env GOPATH)/bin/golangci-lint run --timeout=5m
-          echo "✅ Linting passed"
+          docker run --rm backend:ci golangci-lint run --timeout=5m
 
       - name: Vet check
         run: |
-          echo "Running go vet..."
-          go vet ./...
-          echo "✅ Vet check passed"
+          docker run --rm backend:ci go vet ./...
 
-      - name: Build
-        id: build
+      - name: Run tests in Docker container
         run: |
-          echo "Building application..."
-          go build -v ./...
-          echo "✅ Build successful"
-
-      - name: Test with coverage
-        id: tests
-        run: |
-          echo "Running tests (skipping integration tests)..."
-          echo "ℹ️  Integration tests that require AI API keys are skipped in CI"
-          # Run tests with -short flag to skip integration tests
-          # This will skip any test that calls testing.Short()
-          go test -v -race -coverprofile=coverage.out -covermode=atomic -short ./...
-          echo "✅ Tests completed successfully"
-
-      - name: Generate coverage report
-        run: |
-          echo "Generating coverage report..."
-          go tool cover -func=coverage.out
-          go tool cover -html=coverage.out -o coverage.html
-          COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
-          echo "📊 Total test coverage: ${COVERAGE}%"
-          # Check if coverage is below 50% using shell arithmetic (avoid bc dependency)
-          COVERAGE_NUM=${COVERAGE%.*}
-          if [ "$COVERAGE_NUM" -lt 50 ] 2>/dev/null; then
-            echo "⚠️  Warning: Test coverage is below 50%"
-          else
-            echo "✅ Test coverage is acceptable (≥50%)"
-          fi
+          export CGO_ENABLED=1
+          docker run --rm \
+            --network host \
+            --env CI_SKIP_INTEGRATION=true \
+            --env TEST_DB_HOST=127.0.0.1 \
+            --env TEST_DB_PORT=3306 \
+            --env TEST_DB_USER=root \
+            --env TEST_DB_PASS=root \
+            --env TEST_DB_NAME=transaction_tracker_test \
+            backend:ci go test -v -race -coverprofile=coverage.out -covermode=atomic -short ./...
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
@@ -159,40 +80,3 @@ jobs:
           name: test-results
           path: |
             backend/coverage.out
-            backend/coverage.html
-
-      - name: Build binary
-        run: |
-          echo "Building production binary..."
-          CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
-          ls -la main
-          echo "✅ Binary build successful"
-
-      - name: Upload binary artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-binary
-          path: backend/main
-
-      - name: Pipeline summary
-        if: always()
-        run: |
-          echo "## 🎯 Backend CI Results" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Test Execution Mode:" >> $GITHUB_STEP_SUMMARY
-          echo "- 🧪 **Unit Tests**: ✅ Executed" >> $GITHUB_STEP_SUMMARY
-          echo "- 🔌 **Integration Tests**: ⏭️  Skipped (AI API not available in CI)" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          if [ "${{ job.status }}" == "success" ]; then
-            echo "✅ **All essential checks passed!**" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "❌ **Some checks failed**" >> $GITHUB_STEP_SUMMARY
-          fi
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Pipeline Stages:" >> $GITHUB_STEP_SUMMARY
-          echo "- 📦 Setup: ✅" >> $GITHUB_STEP_SUMMARY
-          echo "- 🎯 MySQL Ready: ✅" >> $GITHUB_STEP_SUMMARY
-          echo "- 🎨 Format Check: ${{ steps.format-check.outcome == 'success' && '✅' || '❌' }}" >> $GITHUB_STEP_SUMMARY
-          echo "- 🔍 Linting: ${{ steps.linting.outcome == 'success' && '✅' || '❌' }}" >> $GITHUB_STEP_SUMMARY  
-          echo "- 🔧 Build: ${{ steps.build.outcome == 'success' && '✅' || '❌' }}" >> $GITHUB_STEP_SUMMARY
-          echo "- 🧪 Tests (Unit): ${{ steps.tests.outcome == 'success' && '✅' || '❌' }}" >> $GITHUB_STEP_SUMMARY
