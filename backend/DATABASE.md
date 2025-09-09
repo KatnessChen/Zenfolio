@@ -137,8 +137,8 @@ Before setting up the database, you need to configure environment variables in y
 DB_HOST=localhost
 DB_PORT=3306
 DB_NAME=transaction_tracker_dev
-DB_USER=tracker_user
-DB_PASSWORD=tracker_password
+DB_USER=
+DB_PASSWORD=
 DB_SSL_MODE=disable
 DB_MAX_CONNECTIONS=100
 DB_MAX_IDLE=10

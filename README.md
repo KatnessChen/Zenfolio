@@ -56,15 +56,15 @@ graph TD
 
 ## 🛠️ Tech Stack
 
-| Component        | Technology              |
-| ---------------- | ----------------------- |
-| Core API         | Go, Gin, GORM           |
-| Frontend         | React, TypeScript, Vite |
-| Database         | MySQL 8.0               |
-| Cache            | Redis                   |
-| Containerization | Docker, Docker Compose  |
-| UI Framework     | Tailwind CSS, shadcn/ui |
-| State Management | Redux Toolkit           |
+| Component        | Technology                         |
+| ---------------- | ---------------------------------- |
+| Core API         | Go, Gin, GORM                      |
+| Frontend         | React, TypeScript, pnpm, Vite      |
+| Database         | MySQL 8.0                          |
+| Cache            | Redis                              |
+| Containerization | Docker, Docker Compose             |
+| UI Framework     | Tailwind CSS, shadcn/ui, Storybook |
+| State Management | Redux Toolkit                      |
 
 ## 🚀 Quick Start
 
@@ -79,8 +79,8 @@ graph TD
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/KatnessChen/transaction_tracker.git
-   cd transaction_tracker
+   git clone https://github.com/KatnessChen/zenfolio.git
+   cd zenfolio
    ```
 
 2. **Set up environment variables**

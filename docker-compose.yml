@@ -5,7 +5,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: transaction_tracker_frontend
+    container_name: zenfolio_frontend
     restart: unless-stopped
     ports:
       - "3000:3000"
@@ -27,7 +27,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: transaction_tracker_backend
+    container_name: zenfolio_backend
     restart: unless-stopped
     ports:
       - "8080:8080"
@@ -59,7 +59,7 @@ services:
     build:
       context: ./price_service
       dockerfile: Dockerfile
-    container_name: transaction_tracker_price_service
+    container_name: zenfolio_price_service
     restart: unless-stopped
     ports:
       - "8081:8081"
@@ -87,13 +87,10 @@ services:
 
   mysql:
     image: mysql:8.0
-    container_name: transaction_tracker_mysql
+    container_name: zenfolio_mysql
     restart: unless-stopped
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: transaction_tracker_dev
-      MYSQL_USER: tracker_user
-      MYSQL_PASSWORD: tracker_password
+    env_file:
+      - .env
     ports:
       - "3306:3306"
     volumes:
@@ -122,7 +119,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: transaction_tracker_redis
+    container_name: zenfolio_redis
     restart: unless-stopped
     ports:
       - "6379:6379"
