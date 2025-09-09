@@ -1,4 +1,24 @@
-# Transaction Tracker API
+# Core API
+
+# API Endpoints
+
+### Portfolio Endpoints
+
+- `GET /api/v1/portfolio/summary` - Portfolio overview
+- `GET /api/v1/portfolio/holdings` - All current holdings
+- `GET /api/v1/portfolio/holdings/{symbol}` - Single holding details
+
+### Transaction Endpoints
+
+- `GET /api/v1/transactions` - Transaction history
+- `POST /api/v1/transactions` - Create new transaction
+- `PUT /api/v1/transactions/{id}` - Update transaction
+- `DELETE /api/v1/transactions/{id}` - Delete transaction
+
+### Price Service Endpoints
+
+- `GET /api/v1/price/current` - Current stock prices
+- `GET /api/v1/price/historical` - Historical price data
 
 A RESTful Golang API for tracking financial transactions with AI-powered transaction extraction from images.
 
@@ -15,7 +35,6 @@ A RESTful Golang API for tracking financial transactions with AI-powered transac
 ## Prerequisites
 
 - Go 1.21 or higher
-- Git
 - Valid Gemini API key for AI features
 
 ## Getting Started
@@ -63,13 +82,6 @@ go run main.go
 ```
 
 The server will start on http://localhost:8080.
-
-## API Documentation
-
-- **OpenAPI Specification**: `/docs/api.yaml`
-- **Postman Collection**: `/docs/postman_collection.json`
-
-Import the Postman collection to quickly test all endpoints with pre-configured requests.
 
 ## AI Features
 
@@ -163,18 +175,3 @@ JWT-based authentication with the following flow:
 2. **Token**: Receive JWT token in response
 3. **Access**: Include token in Authorization header: `Authorization: Bearer <token>`
 4. **Expiry**: Tokens expire after 24 hours (configurable)
-
-## Deployment
-
-### Local Development
-
-```bash
-go run main.go
-```
-
-### Build for Production
-
-```bash
-go build -o transaction-tracker main.go
-./transaction-tracker
-```

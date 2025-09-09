@@ -54,6 +54,31 @@ The service will start on port 8081 by default.
 
 ## API Endpoints
 
+### GET /api/v1/price/current/symbols?symbols=AAPL,TSLA
+
+Input: Path and query param `symbols` (comma-separated)
+Output: JSON array of current prices for each symbol
+
+### GET /api/v1/price/historical/symbol?symbol=AAPL&from=2025-01-01&to=2025-07-17&resolution=daily
+
+Input: Path and query params `symbol`, `from`, `to`, optional `resolution`
+Output: JSON array of historical prices for the symbol
+
+### PUT /api/v1/update-ttl
+
+Input: JSON body `{ "minutes": <int> }`
+Output: Success confirmation JSON
+
+### POST /api/v1/invalid-cache
+
+Input: None
+Output: Success confirmation JSON
+
+### GET /health
+
+Input: None
+Output: Service health status JSON
+
 ### Authentication
 
 All API endpoints (except `/health`) require authentication via the `X-API-Key` header:

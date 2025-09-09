@@ -39,45 +39,9 @@ src/
 
 ## 🛠️ Development Setup
 
-### Prerequisites
+### Development with Docker
 
-- Node.js 18+
-- pnpm (recommended package manager)
-
-### Installation
-
-1. **Install dependencies**:
-
-   ```bash
-   pnpm install
-   ```
-
-2. **Set up environment variables**:
-
-   ```bash
-   cp .env.example .env
-   ```
-
-   Edit `.env` to configure your backend API URL.
-
-3. **Start development server**:
-
-   ```bash
-   pnpm dev
-   ```
-
-   The app will be available at `http://localhost:5173`
-
-### Available Scripts
-
-- `pnpm dev` - Start development server with hot reload
-- `pnpm build` - Build for production
-- `pnpm preview` - Preview production build locally
-- `pnpm lint` - Run ESLint
-- `pnpm lint:fix` - Fix ESLint issues automatically
-- `pnpm format` - Format code with Prettier
-- `pnpm format:check` - Check code formatting
-- `pnpm type-check` - Run TypeScript type checking
+All development and testing should be done using Docker containers. See the main project README and Makefile for setup and available commands.
 
 ## 🎨 UI Components
 
@@ -127,22 +91,11 @@ export const apiSlice = createApi({
 })
 ```
 
-## 🎯 Features
-
-- **Transaction Extraction**: Upload trading screenshots to extract transaction data using AI
-- **Transaction History**: View and manage extracted transactions
-- **Responsive Design**: Mobile-friendly interface
-- **Dark/Light Theme**: Built-in theme support via shadcn/ui
-- **Type Safety**: Full TypeScript support with strict mode
-
 ## 🔧 Configuration
 
 ### Environment Variables
 
-| Variable            | Description          | Default                 |
-| ------------------- | -------------------- | ----------------------- |
-| `VITE_API_BASE_URL` | Backend API base URL | `http://localhost:8080` |
-| `VITE_APP_NAME`     | Application name     | `Transaction Tracker`   |
+See the example configuration in [`frontend/.env.example`](./.env.example).
 
 ### Path Aliases
 
@@ -158,20 +111,23 @@ import { useAppSelector } from '@/hooks/redux'
 import { Transaction } from '@/types'
 ```
 
-## 📦 Build & Deployment
+## � Storybook
 
-1. **Build for production**:
+Storybook is used for developing and testing UI components in isolation. It provides an interactive development environment for building and showcasing components.
 
-   ```bash
-   pnpm build
-   ```
+### Running Storybook
 
-2. **Preview production build**:
-   ```bash
-   pnpm preview
-   ```
+To start the Storybook development server:
 
-The built files will be in the `dist/` directory, ready for deployment to any static hosting service.
+```bash
+docker-compose exec frontend pnpm storybook
+```
+
+Storybook will be available at `http://localhost:6006`
+
+## �📦 Build & Deployment
+
+WIP
 
 ## 🤝 Development Guidelines
 

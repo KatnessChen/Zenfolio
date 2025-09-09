@@ -1,4 +1,4 @@
-# AI Rules for `transaction_tracker`
+# AI Rules for `zenfolio`
 
 ## FRONTEND
 
