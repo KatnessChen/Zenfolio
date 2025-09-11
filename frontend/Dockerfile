@@ -14,7 +14,7 @@ RUN npm install -g pnpm
 
 # Copy package files first for better caching
 COPY package*.json ./
-COPY pnpm-lock.yaml ./
+COPY pnpm-lock.yaml* ./
 
 # Install dependencies
 RUN pnpm install
@@ -28,6 +28,6 @@ EXPOSE 3000
 # Set environment variables for development
 ENV NODE_ENV=development
 ENV CHOKIDAR_USEPOLLING=true
+ENV VITE_HOST=0.0.0.0
 
-# Start development server with hot reload
-CMD ["pnpm", "run", "dev"]
+CMD ["pnpm", "run", "dev", "--host", "0.0.0.0"]

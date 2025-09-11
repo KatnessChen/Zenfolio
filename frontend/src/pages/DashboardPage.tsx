@@ -6,7 +6,7 @@ import {
   PositionCard,
   // TotalValueChartCard,
 } from '@/components/dashboard'
-import { Title } from '@/components/ui/title'
+import { Title } from '@/components/ui'
 
 const DashboardPage: React.FC = () => {
   return (

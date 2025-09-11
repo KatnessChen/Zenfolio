@@ -1,17 +1,20 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import { ROUTES } from '@/constants'
-import { TRADE_TYPE, CURRENCY } from '@/constants'
+import { ROUTES, TRADE_TYPE, CURRENCY } from '@/constants'
 import type { TransactionData } from '@/types'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Dropdown, DropdownItem } from '@/components/ui/dropdown'
-import DropdownTrigger from '@/components/ui/dropdown-trigger'
-import { ConfirmationModal } from '@/components/ui/confirmation-modal'
+import {
+  Card,
+  CardContent,
+  Button,
+  Input,
+  Label,
+  Checkbox,
+  Dropdown,
+  DropdownItem,
+  DropdownTrigger,
+  ConfirmationModal,
+} from '@/components/ui'
 import {
   Table,
   TableBody,
@@ -583,26 +586,25 @@ export default function TransactionHistoryPage() {
                             <TableCell>
                               <div className="flex items-center gap-2">
                                 <Button
-                                  variant="ghost"
+                                  variant="outline"
                                   onClick={() => handleEditTransaction(transaction)}
+                                  size="sm"
+                                  className="h-8 w-8 p-0"
                                   title="Edit transaction"
                                 >
-                                  <EditIcon
-                                    size={16}
-                                    className="text-muted-foreground hover:text-primary"
-                                  />
+                                  <EditIcon size={16} />
                                 </Button>
+
                                 <Button
-                                  variant="ghost"
+                                  variant="outline"
+                                  size="sm"
                                   onClick={() =>
                                     handleDeleteTransactionById(transaction.transaction_id)
                                   }
+                                  className="h-8 w-8 p-0"
                                   title="Delete transaction"
                                 >
-                                  <DeleteIcon
-                                    size={16}
-                                    className="text-muted-foreground hover:text-destructive"
-                                  />
+                                  <DeleteIcon size={16} />
                                 </Button>
                               </div>
                             </TableCell>

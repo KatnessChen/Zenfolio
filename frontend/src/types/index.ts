@@ -17,7 +17,8 @@ export interface User {
 export type TradeType = 'Buy' | 'Sell' | 'Dividends'
 
 export type TransactionData = {
-  id: string
+  id: string // Temporary frontend-only ID for new transactions (not persisted)
+  transaction_id?: string // Persistent backend ID (from database, if available)
   symbol: string
   trade_type: TradeType
   quantity: number
@@ -28,7 +29,6 @@ export type TransactionData = {
   transaction_date: string
   user_notes: string
   exchange: string
-  transaction_id?: string // from backend
 }
 
 export interface ExtractResponseData {
