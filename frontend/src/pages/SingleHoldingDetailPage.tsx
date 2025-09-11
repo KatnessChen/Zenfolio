@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { Tooltip } from '@/components/ui/tooltip'
-import { tooltipCopywriting } from '@/constants/tooltipCopywriting'
+import { tooltipCopywriting } from '@/constants'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Card, CardContent } from '@/components/ui/card'
 import { Breadcrumb } from '@/components/ui/breadcrumb'

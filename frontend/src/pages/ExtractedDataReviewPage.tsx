@@ -1,14 +1,19 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { ROUTES } from '@/constants'
-import { CURRENCY } from '@/constants/setting'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { ConfirmationModal, ImageViewerModal } from '@/components/ui'
-import { Dropdown, DropdownItem } from '@/components/ui/dropdown'
-import DropdownTrigger from '@/components/ui/dropdown-trigger'
+import { ROUTES, CURRENCY } from '@/constants'
+import {
+  Card,
+  CardContent,
+  Button,
+  Input,
+  Dropdown,
+  DropdownItem,
+  DropdownTrigger,
+  ConfirmationModal,
+  ImageViewerModal,
+  Title,
+} from '@/components/ui'
 import {
   Table,
   TableBody,
@@ -18,7 +23,6 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { DeleteIcon, PlusIcon, ClockIcon, SpinnerIcon, CheckIcon, XIcon } from '@/components/icons'
-import { Title } from '@/components/ui/title'
 import type { RootState } from '@/store'
 import type { TransactionData, TradeType } from '@/types'
 import {

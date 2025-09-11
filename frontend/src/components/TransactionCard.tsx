@@ -5,7 +5,7 @@ import { Checkbox } from './ui/checkbox'
 import { EditIcon } from './icons/EditIcon'
 import { DeleteIcon } from './icons/DeleteIcon'
 import type { TransactionData } from '@/types'
-import { TRADE_TYPE } from '../constants'
+import { TRADE_TYPE } from '@/constants'
 
 interface TransactionCardProps {
   transaction: TransactionData

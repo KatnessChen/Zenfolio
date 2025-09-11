@@ -14,6 +14,7 @@ interface DropdownItemProps {
   onClick?: () => void
   className?: string
   disabled?: boolean
+  closeDropdown?: () => void
 }
 
 const Dropdown = React.forwardRef<HTMLDivElement, DropdownProps>(
@@ -30,6 +31,11 @@ const Dropdown = React.forwardRef<HTMLDivElement, DropdownProps>(
 
       document.addEventListener('mousedown', handleClickOutside)
       return () => document.removeEventListener('mousedown', handleClickOutside)
+    }, [])
+
+    // Function to close dropdown - will be passed to children
+    const closeDropdown = React.useCallback(() => {
+      setIsOpen(false)
     }, [])
 
     return (
@@ -50,7 +56,14 @@ const Dropdown = React.forwardRef<HTMLDivElement, DropdownProps>(
             )}
             style={width ? { minWidth: width } : undefined}
           >
-            <div className="p-1">{children}</div>
+            <div className="p-1">
+              {React.Children.map(children, (child) => {
+                if (React.isValidElement<DropdownItemProps>(child) && child.type === DropdownItem) {
+                  return React.cloneElement(child, { closeDropdown } as Partial<DropdownItemProps>)
+                }
+                return child
+              })}
+            </div>
           </div>
         )}
       </div>
@@ -60,11 +73,25 @@ const Dropdown = React.forwardRef<HTMLDivElement, DropdownProps>(
 Dropdown.displayName = 'Dropdown'
 
 const DropdownItem = React.forwardRef<HTMLDivElement, DropdownItemProps>(
-  ({ children, onClick, className, disabled = false }, ref) => {
+  ({ children, onClick, className, disabled = false, closeDropdown }, ref) => {
+    const handleClick = () => {
+      if (disabled) return
+
+      // Execute the original onClick handler
+      if (onClick) {
+        onClick()
+      }
+
+      // Close the dropdown after selecting an item
+      if (closeDropdown) {
+        closeDropdown()
+      }
+    }
+
     return (
       <div
         ref={ref}
-        onClick={disabled ? undefined : onClick}
+        onClick={handleClick}
         className={cn(
           'px-3 py-2 text-sm rounded-sm cursor-pointer',
           'text-foreground',

@@ -1,8 +1,6 @@
-import { Button } from '@/components/ui/button'
-import { Logo } from '@/components/ui/logo'
+import { Button, Logo, Title } from '@/components/ui'
 import { GoogleIcon } from '@/components/icons'
 import { Link } from 'react-router-dom'
-import { Title } from '@/components/ui/title'
 
 export default function HomePage() {
   return (

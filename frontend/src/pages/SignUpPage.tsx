@@ -1,12 +1,7 @@
 import * as React from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent } from '@/components/ui/card'
+import { Button, Input, Label, Card, CardContent, Title, Link } from '@/components/ui'
 import { GoogleIcon } from '@/components/icons'
-import { Title } from '@/components/ui/title'
 import { ROUTES } from '@/constants'
-import { Link } from '@/components/ui/link'
 import { AuthService } from '@/services/auth.service'
 import { useNavigate } from 'react-router-dom'
 

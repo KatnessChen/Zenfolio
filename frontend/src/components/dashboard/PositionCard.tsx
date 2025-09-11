@@ -10,7 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Tooltip } from '@/components/ui/tooltip'
-import { tooltipCopywriting } from '@/constants/tooltipCopywriting'
+import { tooltipCopywriting } from '@/constants'
 import { formatCurrency, formatPercent } from '@/utils'
 import { ROUTES } from '@/constants'
 import { fetchAllHoldings } from '@/services/portfolio.service'
