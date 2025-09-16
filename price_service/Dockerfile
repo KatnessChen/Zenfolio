@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM golang:1.21-alpine
+FROM golang:1.23-alpine
 WORKDIR /app
 RUN apk add --no-cache git tzdata
 RUN apk add --no-cache gcc musl-dev

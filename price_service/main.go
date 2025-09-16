@@ -11,6 +11,7 @@ import (
 
 	"github.com/transaction-tracker/price_service/api/routes"
 	"github.com/transaction-tracker/price_service/internal/config"
+	"github.com/transaction-tracker/price_service/internal/logger"
 )
 
 func main() {
@@ -31,8 +32,14 @@ func main() {
 
 	// Start server in a goroutine
 	go func() {
-		log.Printf("Starting price service on port %s", cfg.Server.Port)
+		// Use structured logging for server startup
+		logger.Info("Starting price service", logger.H{
+			"port": cfg.Server.Port,
+			"gin_mode": os.Getenv("GIN_MODE"),
+		})
+
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logger.Error("Failed to start server", err, logger.H{"port": cfg.Server.Port})
 			log.Fatalf("Failed to start server: %v", err)
 		}
 	}()
@@ -41,15 +48,17 @@ func main() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	log.Println("Shutting down server...")
+
+	logger.Info("Shutting down server", logger.H{"signal": "received"})
 
 	// Give outstanding requests a deadline for completion
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	if err := srv.Shutdown(ctx); err != nil {
+		logger.Error("Server forced to shutdown", err, logger.H{})
 		log.Fatalf("Server forced to shutdown: %v", err)
 	}
 
-	log.Println("Server exited")
+	logger.Info("Server exited gracefully", logger.H{})
 }
