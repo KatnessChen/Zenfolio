@@ -69,7 +69,7 @@ func Load() (*Config, error) {
 				BaseURL: getEnv("ALPHA_VANTAGE_BASE_URL", "https://www.alphavantage.co/query"),
 			},
 			Finnhub: ProviderConfig{
-				APIKey:  getEnv("FINNHUB_API_KEY", "d21egb1r01qpst74jltgd21egb1r01qpst74jlu0"),
+				APIKey:  getEnv("FINNHUB_API_KEY", ""),
 				BaseURL: getEnv("FINNHUB_BASE_URL", "https://finnhub.io/api/v1"),
 			},
 		},
