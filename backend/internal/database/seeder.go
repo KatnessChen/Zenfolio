@@ -1,14 +1,13 @@
 package database
 
 import (
-	"log"
 	"time"
 
-	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
-
+	"github.com/transaction-tracker/backend/internal/logger"
 	"github.com/transaction-tracker/backend/internal/models"
 	"github.com/transaction-tracker/backend/internal/types"
+	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 // Seeder handles database seeding operations
@@ -23,7 +22,7 @@ func NewSeeder(db *gorm.DB) *Seeder {
 
 // SeedDevelopmentData seeds the database with development data
 func (s *Seeder) SeedDevelopmentData() error {
-	log.Println("Seeding development data...")
+	logger.Info("Seeding development data...")
 
 	// Seed users
 	if err := s.seedUsers(); err != nil {
@@ -35,7 +34,7 @@ func (s *Seeder) SeedDevelopmentData() error {
 		return err
 	}
 
-	log.Println("Development data seeded successfully")
+	logger.Info("Development data seeded successfully", logger.H{})
 	return nil
 }
 
@@ -48,11 +47,11 @@ func (s *Seeder) seedUsers() error {
 	}
 
 	if count > 0 {
-		log.Println("Users already exist, skipping user seeding")
+		logger.Info("Users already exist, skipping user seeding", logger.H{})
 		return nil
 	}
 
-	log.Println("Seeding users...")
+	logger.Info("Seeding users...", logger.H{})
 
 	// Hash password for demo users
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
@@ -91,7 +90,7 @@ func (s *Seeder) seedUsers() error {
 		if err := s.db.Create(&user).Error; err != nil {
 			return err
 		}
-		log.Printf("Created user: %s", user.Username)
+		logger.Info("Created user", logger.H{"username": user.Username})
 	}
 
 	return nil
@@ -106,11 +105,11 @@ func (s *Seeder) seedTransactions() error {
 	}
 
 	if count > 0 {
-		log.Println("Transactions already exist, skipping transaction seeding")
+		logger.Info("Transactions already exist, skipping transaction seeding", logger.H{})
 		return nil
 	}
 
-	log.Println("Seeding transactions...")
+	logger.Info("Seeding transactions...", logger.H{})
 
 	// Get the demo user
 	var demoUser models.User
@@ -256,13 +255,13 @@ func (s *Seeder) seedTransactions() error {
 		return err
 	}
 
-	log.Printf("Created %d sample transactions", len(transactions))
+	logger.Info("Created sample transactions", logger.H{"count": len(transactions)})
 	return nil
 }
 
 // SeedTestData seeds the database with test data
 func (s *Seeder) SeedTestData() error {
-	log.Println("Seeding test data...")
+	logger.Info("Seeding test data...", logger.H{})
 
 	// Create a test user
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte("testpass"), bcrypt.DefaultCost)
@@ -302,13 +301,13 @@ func (s *Seeder) SeedTestData() error {
 		return err
 	}
 
-	log.Println("Test data seeded successfully")
+	logger.Info("Test data seeded successfully", logger.H{})
 	return nil
 }
 
 // ClearTestData removes all test data
 func (s *Seeder) ClearTestData() error {
-	log.Println("Clearing test data...")
+	logger.Info("Clearing test data...", logger.H{})
 
 	// Delete test transactions (those belonging to test_user)
 	if err := s.db.Unscoped().Where("user_id IN (SELECT user_id FROM users WHERE username = ?)", "test_user").Delete(&models.Transaction{}).Error; err != nil {
@@ -320,6 +319,6 @@ func (s *Seeder) ClearTestData() error {
 		return err
 	}
 
-	log.Println("Test data cleared successfully")
+	logger.Info("Test data cleared successfully", logger.H{})
 	return nil
 }

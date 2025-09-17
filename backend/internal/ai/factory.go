@@ -2,9 +2,9 @@ package ai
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/transaction-tracker/backend/config"
+	"github.com/transaction-tracker/backend/internal/logger"
 )
 
 // NewClient creates a new AI client based on the configuration
@@ -21,7 +21,7 @@ func NewClient(cfg *config.Config) (Client, error) {
 		Environment: cfg.Environment,
 	}
 
-	log.Printf("Initializing AI client with model: %s", aiConfig.Model)
+	logger.Info("Initializing AI client", logger.H{"model": aiConfig.Model})
 
 	client, err := NewAIModelClient(aiConfig)
 	if err != nil {

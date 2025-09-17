@@ -8,6 +8,7 @@ import (
 	"github.com/transaction-tracker/price_service/api/middlewares"
 	"github.com/transaction-tracker/price_service/internal/cache"
 	"github.com/transaction-tracker/price_service/internal/config"
+	"github.com/transaction-tracker/price_service/internal/logger"
 	"github.com/transaction-tracker/price_service/internal/provider"
 )
 
@@ -15,6 +16,8 @@ func SetupRouter(cfg *config.Config) *gin.Engine {
 	if os.Getenv("GIN_MODE") == "release" {
 		gin.SetMode(gin.ReleaseMode)
 	}
+
+	logger.InitLogger()
 
 	cacheService, err := cache.NewService(cfg)
 	if err != nil {
@@ -33,7 +36,9 @@ func SetupRouter(cfg *config.Config) *gin.Engine {
 
 	// Create router
 	router := gin.New()
-	router.Use(gin.Logger())
+
+	// Apply logging middleware with response capture
+	router.Use(logger.GinLoggerMiddleware())
 	router.Use(gin.Recovery())
 	router.Use(middlewares.CORSMiddleware())
 	router.Use(rateLimiter.RateLimitMiddleware())

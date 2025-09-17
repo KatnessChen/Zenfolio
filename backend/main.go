@@ -1,10 +1,11 @@
 package main
 
 import (
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/transaction-tracker/backend/internal/logger"
 
 	"github.com/transaction-tracker/backend/api/routes"
 	"github.com/transaction-tracker/backend/config"
@@ -12,22 +13,28 @@ import (
 )
 
 func main() {
+
+	// Initialize structured logger
+	logger.InitLogger()
+
 	// Load configuration
 	cfg, err := config.Load()
 	if err != nil {
-		log.Fatalf("Failed to load configuration: %v", err)
+		logger.Error("Failed to load configuration", err, logger.H{})
+		os.Exit(1)
 	}
 
 	// Initialize database
-	log.Println("Initializing database...")
+	logger.Info("Initializing database...")
 	dm, err := database.Initialize(cfg)
 	if err != nil {
-		log.Fatalf("Failed to initialize database: %v", err)
+		logger.Error("Failed to initialize database", err, logger.H{})
+		os.Exit(1)
 	}
 	defer func() {
-		log.Println("Closing database connection...")
+		logger.Info("Closing database connection...")
 		if err := dm.Close(); err != nil {
-			log.Printf("Error closing database: %v", err)
+			logger.Info("Backend server started", logger.H{"port": cfg.ServerAddress})
 		}
 	}()
 
@@ -40,13 +47,14 @@ func main() {
 
 	go func() {
 		<-c
-		log.Println("Shutting down gracefully...")
+		logger.Info("Shutting down gracefully...")
 		os.Exit(0)
 	}()
 
 	// Start server
-	log.Printf("Server starting on %s", cfg.ServerAddress)
+	logger.Info("Server starting", logger.H{"address": cfg.ServerAddress})
 	if err := router.Run(cfg.ServerAddress); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
+		logger.Error("Failed to start server", err, logger.H{"address": cfg.ServerAddress})
+		os.Exit(1)
 	}
 }

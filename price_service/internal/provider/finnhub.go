@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/transaction-tracker/price_service/internal/logger"
 	"github.com/transaction-tracker/price_service/internal/models"
 )
 
@@ -49,7 +49,7 @@ func (f *FinnhubProvider) GetCurrentPrices(ctx context.Context, symbols []string
 	for _, symbol := range symbols {
 		price, err := f.getCurrentPriceForSymbol(ctx, symbol)
 		if err != nil {
-			log.Printf("Error fetching current price for symbol %s: %v", symbol, err)
+			logger.Warn("Error fetching current price", logger.H{"symbol": symbol, "error": err})
 			// Continue with other symbols instead of failing completely
 			continue
 		}
@@ -90,7 +90,7 @@ func (f *FinnhubProvider) getCurrentPriceForSymbol(ctx context.Context, symbol s
 func (f *FinnhubProvider) makeRequest(ctx context.Context, url string) ([]byte, error) {
 	// Log the request URL for debugging (sanitize API key for security)
 	sanitizedURL := strings.Replace(url, f.APIKey, "[API_KEY]", -1)
-	log.Printf("Finnhub API Request: %s", sanitizedURL)
+	logger.Info("Finnhub API Request", logger.H{"url": sanitizedURL})
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
@@ -105,7 +105,7 @@ func (f *FinnhubProvider) makeRequest(ctx context.Context, url string) ([]byte, 
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
-		log.Printf("Finnhub API Error Response: %s", string(body))
+		logger.Warn("Finnhub API Error Response", logger.H{"body": string(body)})
 		return nil, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
 	}
 
@@ -114,7 +114,7 @@ func (f *FinnhubProvider) makeRequest(ctx context.Context, url string) ([]byte, 
 		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
-	log.Printf("Finnhub API Response Body: %s", string(body))
+	logger.Info("Finnhub API Response Body", logger.H{"body": string(body)})
 
 	return body, nil
 }

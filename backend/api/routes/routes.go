@@ -10,11 +10,18 @@ import (
 	"github.com/transaction-tracker/backend/config"
 	"github.com/transaction-tracker/backend/internal/constants"
 	"github.com/transaction-tracker/backend/internal/database"
+	"github.com/transaction-tracker/backend/internal/logger"
 )
 
 // SetupRouter configures the API routes
 func SetupRouter(cfg *config.Config) *gin.Engine {
-	r := gin.Default()
+	r := gin.New()
+
+	logger.InitLogger()
+
+	// Apply logging middleware with response capture
+	r.Use(logger.GinLoggerMiddleware())
+	r.Use(gin.Recovery())
 
 	// Configure CORS
 	r.Use(cors.New(cors.Config{

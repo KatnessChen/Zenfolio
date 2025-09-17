@@ -2,9 +2,10 @@ package migrations
 
 import (
 	"fmt"
-	"log"
 	"sort"
 	"time"
+
+	"github.com/transaction-tracker/backend/internal/logger"
 
 	"gorm.io/gorm"
 )
@@ -83,7 +84,7 @@ func (m *Migrator) ApplyAll() error {
 		if applied[migration.ID] {
 			continue
 		}
-		log.Printf("Applying migration: %s - %s", migration.ID, migration.Description)
+		logger.Info("Applying migration", logger.H{"id": migration.ID, "desc": migration.Description})
 		tx := m.db.Begin()
 		if err := migration.Up(tx); err != nil {
 			tx.Rollback()
@@ -98,12 +99,12 @@ func (m *Migrator) ApplyAll() error {
 			return fmt.Errorf("failed to commit migration %s: %w", migration.ID, err)
 		}
 		appliedCount++
-		log.Printf("Migration %s applied successfully", migration.ID)
+		logger.Info("Migration applied successfully", logger.H{"id": migration.ID})
 	}
 	if appliedCount == 0 {
-		log.Println("No pending migrations found")
+		logger.Info("No pending migrations found", logger.H{})
 	} else {
-		log.Printf("Applied %d migrations successfully", appliedCount)
+		logger.Info("Migrations applied", logger.H{"count": appliedCount})
 	}
 	return nil
 }
@@ -116,7 +117,7 @@ func (m *Migrator) RollbackLast() error {
 	var lastRecord MigrationRecord
 	if err := m.db.Order("applied_at DESC").First(&lastRecord).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			log.Println("No migrations to rollback")
+			logger.Info("No migrations to rollback", logger.H{})
 			return nil
 		}
 		return fmt.Errorf("failed to get last migration: %w", err)
@@ -134,7 +135,7 @@ func (m *Migrator) RollbackLast() error {
 	if targetMigration.Down == nil {
 		return fmt.Errorf("migration %s does not have a down method", lastRecord.ID)
 	}
-	log.Printf("Rolling back migration: %s - %s", targetMigration.ID, targetMigration.Description)
+	logger.Info("Rolling back migration", logger.H{"id": targetMigration.ID, "desc": targetMigration.Description})
 	tx := m.db.Begin()
 	if err := targetMigration.Down(tx); err != nil {
 		tx.Rollback()
@@ -147,7 +148,7 @@ func (m *Migrator) RollbackLast() error {
 	if err := tx.Commit().Error; err != nil {
 		return fmt.Errorf("failed to commit rollback %s: %w", targetMigration.ID, err)
 	}
-	log.Printf("Migration %s rolled back successfully", targetMigration.ID)
+	logger.Info("Migration rolled back successfully", logger.H{"id": targetMigration.ID})
 	return nil
 }
 
@@ -161,14 +162,14 @@ func (m *Migrator) Status() error {
 		return fmt.Errorf("failed to get applied migrations: %w", err)
 	}
 	sort.Slice(m.migrations, func(i, j int) bool { return m.migrations[i].ID < m.migrations[j].ID })
-	log.Println("Migration Status:")
-	log.Println("================")
+	logger.Info("Migration Status", logger.H{})
+	logger.Info("================", logger.H{})
 	for _, migration := range m.migrations {
 		status := "Pending"
 		if applied[migration.ID] {
 			status = "Applied"
 		}
-		log.Printf("[%s] %s - %s", status, migration.ID, migration.Description)
+		logger.Info("Migration", logger.H{"status": status, "id": migration.ID, "desc": migration.Description})
 	}
 	return nil
 }
