@@ -4,12 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
 	"time"
+
+	"github.com/transaction-tracker/backend/internal/logger"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
+	gormlogger "gorm.io/gorm/logger"
 
 	"github.com/transaction-tracker/backend/config"
 )
@@ -34,11 +35,8 @@ func NewDatabaseManager(cfg *config.DatabaseConfig) *DatabaseManager {
 func (dm *DatabaseManager) Connect() error {
 	var err error
 
-	// Configure GORM logger
-	gormLogger := logger.Default
-	if dm.config.SSLMode != "disable" {
-		gormLogger = logger.Default.LogMode(logger.Info)
-	}
+	// Configure GORM logger (use default GORM logger)
+	gormLogger := gormlogger.Default
 
 	// Open database connection
 	dm.db, err = gorm.Open(mysql.Open(dm.config.GetDSNWithSSL()), &gorm.Config{
@@ -67,7 +65,7 @@ func (dm *DatabaseManager) Connect() error {
 	// Set global DB variable
 	DB = dm.db
 
-	log.Println("Database connection established successfully")
+	logger.Info("Database connection established successfully")
 	return nil
 }
 
@@ -81,10 +79,10 @@ func (dm *DatabaseManager) ConnectWithRetry(maxRetries int, retryDelay time.Dura
 			return nil
 		}
 
-		log.Printf("Database connection attempt %d failed: %v", i+1, err)
+		logger.Warn("Database connection attempt failed", logger.H{"attempt": i + 1, "error": err})
 
 		if i < maxRetries-1 {
-			log.Printf("Retrying in %v...", retryDelay)
+			logger.Info("Retrying database connection", logger.H{"delay": retryDelay})
 			time.Sleep(retryDelay)
 			retryDelay *= 2 // Exponential backoff
 		}
@@ -130,7 +128,7 @@ func (dm *DatabaseManager) Close() error {
 		return fmt.Errorf("failed to get underlying sql.DB: %w", err)
 	}
 
-	log.Println("Closing database connection...")
+	logger.Info("Closing database connection...")
 	return sqlDB.Close()
 }
 
@@ -140,14 +138,14 @@ func (dm *DatabaseManager) CreateIndexes() error {
 		return fmt.Errorf("database connection is nil")
 	}
 
-	log.Println("Checking database indexes...")
+	logger.Info("Checking database indexes...")
 
 	// Note: All necessary indexes are now created by GORM AutoMigrate and migration files
 	// - Basic indexes: created by GORM based on model tags
 	// - Composite indexes: created by migration SQL files
 	// This function is kept for future custom index additions if needed
 
-	log.Println("Database indexes verified successfully")
+	logger.Info("Database indexes verified successfully")
 	return nil
 }
 

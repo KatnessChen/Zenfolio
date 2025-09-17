@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"math/rand"
 	"path/filepath"
 	"strings"
@@ -13,6 +12,7 @@ import (
 
 	"github.com/google/generative-ai-go/genai"
 	"github.com/transaction-tracker/backend/internal/constants"
+	"github.com/transaction-tracker/backend/internal/logger"
 	"github.com/transaction-tracker/backend/internal/prompts"
 	"github.com/transaction-tracker/backend/internal/types"
 	"google.golang.org/api/option"
@@ -181,7 +181,7 @@ func (c *AIModelClient) extractTransactionsGemini(ctx context.Context, image typ
 		}
 
 		if attempt < maxRetry-1 {
-			log.Printf("Attempt %d failed, retrying: %v", attempt+1, err)
+			logger.Warn("AI model attempt failed, retrying", logger.H{"attempt": attempt + 1, "error": err})
 			time.Sleep(time.Duration(attempt+1) * time.Second)
 		}
 	}
@@ -215,7 +215,7 @@ func (c *AIModelClient) parseTransactionResponse(responseText string, filename s
 	}
 
 	if err := json.Unmarshal([]byte(responseText), &result); err != nil {
-		log.Printf("Failed to parse AI response as JSON: %v\nResponse: %s", err, responseText)
+		logger.Error("Failed to parse AI response as JSON", err, logger.H{"response": responseText})
 		return &types.ExtractResponse{
 			Success: false,
 			Message: fmt.Sprintf("Failed to parse AI response: %v", err),

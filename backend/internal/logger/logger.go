@@ -201,28 +201,36 @@ func GinLoggerMiddleware() gin.HandlerFunc {
 	}
 }
 
+// getFields extracts the first H map from variadic arguments or returns empty H
+func getFields(fields ...H) H {
+	if len(fields) > 0 {
+		return fields[0]
+	}
+	return H{}
+}
+
 // Debug logs a debug level message
-func Debug(message string, fields H) {
-	globalLogger.Debug().Fields(map[string]interface{}(fields)).Msg(message)
+func Debug(message string, fields ...H) {
+	globalLogger.Debug().Fields(map[string]interface{}(getFields(fields...))).Msg(message)
 }
 
 // Info logs an info level message
-func Info(message string, fields H) {
-	globalLogger.Info().Fields(map[string]interface{}(fields)).Msg(message)
+func Info(message string, fields ...H) {
+	globalLogger.Info().Fields(map[string]interface{}(getFields(fields...))).Msg(message)
 }
 
 // Warn logs a warning level message
-func Warn(message string, fields H) {
-	globalLogger.Warn().Fields(map[string]interface{}(fields)).Msg(message)
+func Warn(message string, fields ...H) {
+	globalLogger.Warn().Fields(map[string]interface{}(getFields(fields...))).Msg(message)
 }
 
 // Error logs an error level message
-func Error(message string, err error, fields H) {
+func Error(message string, err error, fields ...H) {
 	logEvent := globalLogger.Error()
 	if err != nil {
 		logEvent = logEvent.Err(err)
 	}
-	logEvent.Fields(map[string]interface{}(fields)).Msg(message)
+	logEvent.Fields(map[string]interface{}(getFields(fields...))).Msg(message)
 }
 
 // GetLogger returns the global logger instance

@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -14,6 +13,7 @@ import (
 	"time"
 
 	"github.com/transaction-tracker/backend/config"
+	"github.com/transaction-tracker/backend/internal/logger"
 )
 
 // PriceServiceClient defines the interface for Price Service operations
@@ -173,11 +173,11 @@ func (c *priceServiceClient) doRequest(ctx context.Context, method, endpoint str
 	}
 
 	// Log request
-	log.Printf("Price Service Request: %s %s", method, url)
+	logger.Info("Price Service Request", logger.H{"method": method, "url": url})
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		log.Printf("Price Service Request Failed: %v", err)
+		logger.Warn("Price Service Request Failed", logger.H{"error": err})
 		return nil, fmt.Errorf("request failed: %w", err)
 	}
 	defer resp.Body.Close()
@@ -188,7 +188,7 @@ func (c *priceServiceClient) doRequest(ctx context.Context, method, endpoint str
 	}
 
 	// Log response
-	log.Printf("Price Service Response: %d %s", resp.StatusCode, string(respBody))
+	logger.Info("Price Service Response", logger.H{"status": resp.StatusCode, "body": string(respBody)})
 
 	if resp.StatusCode >= 400 {
 		var errorResp ErrorResponse

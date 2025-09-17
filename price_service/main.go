@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -18,7 +17,8 @@ func main() {
 	// Load configuration
 	cfg, err := config.Load()
 	if err != nil {
-		log.Fatalf("Failed to load configuration: %v", err)
+		logger.Error("Failed to load configuration", err)
+		os.Exit(1)
 	}
 
 	// Setup router
@@ -40,7 +40,7 @@ func main() {
 
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			logger.Error("Failed to start server", err, logger.H{"port": cfg.Server.Port})
-			log.Fatalf("Failed to start server: %v", err)
+			os.Exit(1)
 		}
 	}()
 
@@ -57,7 +57,7 @@ func main() {
 
 	if err := srv.Shutdown(ctx); err != nil {
 		logger.Error("Server forced to shutdown", err, logger.H{})
-		log.Fatalf("Server forced to shutdown: %v", err)
+		os.Exit(1)
 	}
 
 	logger.Info("Server exited gracefully", logger.H{})

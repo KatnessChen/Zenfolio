@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -10,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/transaction-tracker/price_service/internal/cache"
 	"github.com/transaction-tracker/price_service/internal/config"
+	"github.com/transaction-tracker/price_service/internal/logger"
 	"github.com/transaction-tracker/price_service/internal/models"
 	"github.com/transaction-tracker/price_service/internal/provider"
 )
@@ -118,7 +118,7 @@ func (h *PriceHandler) GetCurrentPrices(c *gin.Context) {
 		for _, price := range fetchedPrices {
 			if err := h.cache.SetCurrentPrice(c.Request.Context(), price.Symbol, &price); err != nil {
 				// Log error but continue
-				log.Printf("error caching current price for %s: %v", price.Symbol, err)
+				logger.Warn("Error caching current price", logger.H{"symbol": price.Symbol, "error": err})
 			}
 			result = append(result, price)
 		}
@@ -272,7 +272,7 @@ func (h *PriceHandler) handleSingleDateQuery(c *gin.Context, symbol, dateParam s
 
 		// If latest record is before the adjusted date, invalidate cache and fetch fresh data
 		if err := h.cache.DeleteHistoricalPrice(c.Request.Context(), symbol, models.ResolutionDaily); err != nil {
-			log.Printf("error invalidating cache for %s: %v", symbol, err)
+			logger.Warn("Error invalidating cache", logger.H{"symbol": symbol, "error": err})
 		}
 	}
 
@@ -291,7 +291,7 @@ func (h *PriceHandler) handleSingleDateQuery(c *gin.Context, symbol, dateParam s
 
 	// Cache the fresh data
 	if err := h.cache.SetHistoricalPrice(c.Request.Context(), symbol, models.ResolutionDaily, historicalData); err != nil {
-		log.Printf("error caching historical price for %s: %v", symbol, err)
+		logger.Warn("Error caching historical price", logger.H{"symbol": symbol, "error": err})
 	}
 
 	// Find the adjusted date in the fresh data
@@ -351,7 +351,7 @@ func (h *PriceHandler) handleDateRangeQuery(c *gin.Context, symbol, fromParam, t
 
 			// Invalidate the existing cache to ensure we get fresh data from provider
 			if err := h.cache.DeleteHistoricalPrice(c.Request.Context(), symbol, models.ResolutionDaily); err != nil {
-				log.Printf("error invalidating cache for %s: %v", symbol, err)
+				logger.Warn("Error invalidating cache", logger.H{"symbol": symbol, "error": err})
 			}
 
 			freshData, err := h.provider.GetHistoricalPrices(c.Request.Context(), symbol, models.ResolutionDaily)
@@ -368,7 +368,7 @@ func (h *PriceHandler) handleDateRangeQuery(c *gin.Context, symbol, fromParam, t
 
 			// Update cache with fresh data
 			if err := h.cache.SetHistoricalPrice(c.Request.Context(), symbol, models.ResolutionDaily, freshData); err != nil {
-				log.Printf("error updating cache for %s: %v", symbol, err)
+				logger.Warn("Error updating cache", logger.H{"symbol": symbol, "error": err})
 			}
 
 			// Filter for the requested date range
@@ -396,7 +396,7 @@ func (h *PriceHandler) handleDateRangeQuery(c *gin.Context, symbol, fromParam, t
 
 	// Cache the full daily data
 	if err := h.cache.SetHistoricalPrice(c.Request.Context(), symbol, models.ResolutionDaily, historicalData); err != nil {
-		log.Printf("error caching historical price for %s: %v", symbol, err)
+		logger.Warn("Error caching historical price", logger.H{"symbol": symbol, "error": err})
 	}
 
 	// Filter for the requested date range
@@ -453,7 +453,7 @@ func (h *PriceHandler) handleResolutionQuery(c *gin.Context, symbol string) {
 
 	// Cache the fetched data
 	if err := h.cache.SetHistoricalPrice(c.Request.Context(), symbol, resolution, historicalData); err != nil {
-		log.Printf("error caching historical price for %s with resolution %s: %v", symbol, resolution, err)
+		logger.Warn("Error caching historical price with resolution", logger.H{"symbol": symbol, "resolution": resolution, "error": err})
 	}
 
 	c.JSON(http.StatusOK, models.SuccessResponse{

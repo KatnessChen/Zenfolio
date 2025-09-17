@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"sort"
@@ -14,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/transaction-tracker/price_service/internal/logger"
 	"github.com/transaction-tracker/price_service/internal/models"
 )
 
@@ -164,7 +164,7 @@ func (a *AlphaVantageProvider) makeRequest(ctx context.Context, params url.Value
 
 	// Log the request URL for debugging (sanitize API key for security)
 	sanitizedURL := strings.Replace(reqURL, a.APIKey, "[API_KEY]", -1)
-	log.Printf("Alpha Vantage API Request: %s", sanitizedURL)
+	logger.Info("Alpha Vantage API Request", logger.H{"url": sanitizedURL})
 
 	req, err := http.NewRequestWithContext(ctx, "GET", reqURL, nil)
 	if err != nil {
