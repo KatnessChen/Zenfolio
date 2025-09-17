@@ -34,7 +34,7 @@ func main() {
 	go func() {
 		// Use structured logging for server startup
 		logger.Info("Starting price service", logger.H{
-			"port": cfg.Server.Port,
+			"port":     cfg.Server.Port,
 			"gin_mode": os.Getenv("GIN_MODE"),
 		})
 
