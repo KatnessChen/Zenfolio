@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   frontend:
     build:
@@ -42,6 +40,8 @@ services:
         condition: service_healthy
       price-service:
         condition: service_started
+      zenfolio_backend_redis:
+        condition: service_started
     healthcheck:
       test:
         [
@@ -71,7 +71,7 @@ services:
     volumes:
       - ./price_service:/app
     depends_on:
-      redis:
+      price_service_redis:
         condition: service_started
     healthcheck:
       test:
@@ -121,15 +121,25 @@ services:
       retries: 3
       start_period: 30s
 
-  redis:
+  price_service_redis:
     image: redis:7-alpine
-    container_name: zenfolio_redis
+    container_name: zenfolio_price_service_redis
     restart: unless-stopped
     ports:
       - "6379:6379"
     volumes:
-      - redis_data:/data
+      - price_service_redis_data:/data
+
+  zenfolio_backend_redis:
+    image: redis:7-alpine
+    container_name: zenfolio_backend_redis
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    volumes:
+      - backend_redis_data:/data
 
 volumes:
   mysql_data:
-  redis_data:
+  price_service_redis_data:
+  backend_redis_data:
