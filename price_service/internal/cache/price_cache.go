@@ -1,0 +1,103 @@
+package cache
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"time"
+
+	"github.com/redis/go-redis/v9"
+	"github.com/transaction-tracker/price_service/internal/models"
+)
+
+// Current price cache methods
+func (s *Service) GetCurrentPrice(ctx context.Context, symbol string) (*models.SymbolCurrentPrice, error) {
+	key := fmt.Sprintf("price_service:current-price:%s", symbol)
+	val, err := s.redisGet(ctx, key)
+	if err != nil {
+		if err == redis.Nil {
+			return nil, nil // Not found
+		}
+		return nil, err
+	}
+
+	var price models.SymbolCurrentPrice
+	if err := json.Unmarshal([]byte(val), &price); err != nil {
+		return nil, err
+	}
+
+	return &price, nil
+}
+
+func (s *Service) SetCurrentPrice(ctx context.Context, symbol string, price *models.SymbolCurrentPrice) error {
+	key := fmt.Sprintf("price_service:current-price:%s", symbol)
+	data, err := json.Marshal(price)
+	if err != nil {
+		return err
+	}
+
+	var stockPriceCacheTTL = 1 * time.Minute
+
+	return s.redisSet(ctx, key, data, stockPriceCacheTTL)
+}
+
+// Historical price cache methods
+func (s *Service) GetHistoricalPrice(ctx context.Context, symbol string, resolution models.Resolution) (*models.SymbolHistoricalPrice, error) {
+	today := time.Now().Format("2006-01-02")
+	key := fmt.Sprintf("price_service:historical-price:%s:%s:%s", symbol, string(resolution), today)
+	val, err := s.redisGet(ctx, key)
+	if err != nil {
+		if err == redis.Nil {
+			return nil, nil // Not found
+		}
+		return nil, err
+	}
+
+	var price models.SymbolHistoricalPrice
+	if err := json.Unmarshal([]byte(val), &price); err != nil {
+		return nil, err
+	}
+
+	return &price, nil
+}
+
+func (s *Service) SetHistoricalPrice(ctx context.Context, symbol string, resolution models.Resolution, price *models.SymbolHistoricalPrice) error {
+	today := time.Now().Format("2006-01-02")
+	key := fmt.Sprintf("price_service:historical-price:%s:%s:%s", symbol, string(resolution), today)
+	data, err := json.Marshal(price)
+	if err != nil {
+		return err
+	}
+
+	// Historical data never expires (0 TTL means no expiration)
+	historicalTTL := time.Duration(0)
+	return s.redisSet(ctx, key, data, historicalTTL)
+}
+
+// DeleteHistoricalPrice removes historical price data from cache
+func (s *Service) DeleteHistoricalPrice(ctx context.Context, symbol string, resolution models.Resolution) error {
+	today := time.Now().Format("2006-01-02")
+	key := fmt.Sprintf("price_service:historical-price:%s:%s:%s", symbol, string(resolution), today)
+	return s.redisDel(ctx, key)
+}
+
+// Cache management methods
+func (s *Service) InvalidateAll(ctx context.Context) error {
+	// Delete all price-related keys
+	currentPriceKeys, err := s.client.Keys(ctx, "price_service:current-price:*").Result()
+	if err != nil {
+		return err
+	}
+
+	historicalPriceKeys, err := s.client.Keys(ctx, "price_service:historical-price:*:*:*").Result()
+	if err != nil {
+		return err
+	}
+
+	allKeys := append(currentPriceKeys, historicalPriceKeys...)
+	if len(allKeys) > 0 {
+		return s.redisDel(ctx, allKeys...)
+	}
+
+	return nil
+}

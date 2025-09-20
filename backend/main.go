@@ -13,10 +13,6 @@ import (
 )
 
 func main() {
-
-	// Initialize structured logger
-	logger.InitLogger()
-
 	// Load configuration
 	cfg, err := config.Load()
 	if err != nil {

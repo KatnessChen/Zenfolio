@@ -38,6 +38,10 @@ func NewAlphaVantageProvider(apiKey string) *AlphaVantageProvider {
 }
 
 func (a *AlphaVantageProvider) GetHistoricalPrices(ctx context.Context, symbol string, resolution models.Resolution) (*models.SymbolHistoricalPrice, error) {
+	logger.Info("Alpha Vantage GetHistoricalPrices Start", logger.H{
+		"symbol":     symbol,
+		"resolution": string(resolution),
+	})
 
 	params := url.Values{}
 	// Map our resolution to Alpha Vantage function
@@ -60,8 +64,17 @@ func (a *AlphaVantageProvider) GetHistoricalPrices(ctx context.Context, symbol s
 	var err error
 	if strings.EqualFold(symbol, "IBM") && resolution == models.ResolutionDaily {
 		// Read mock response for IBM daily from file to avoid rate limit
+		logger.Info("Using Mock Data for Alpha Vantage", logger.H{
+			"symbol":     symbol,
+			"resolution": string(resolution),
+			"reason":     "rate_limit_avoidance",
+		})
 		resp, err = readIBMTestData()
 		if err != nil {
+			logger.Warn("Failed to Read Mock Data", logger.H{
+				"symbol": symbol,
+				"error":  err.Error(),
+			})
 			return nil, fmt.Errorf("failed to read IBM mock data: %w", err)
 		}
 	} else {
@@ -76,7 +89,29 @@ func (a *AlphaVantageProvider) GetHistoricalPrices(ctx context.Context, symbol s
 	var result map[string]interface{}
 
 	if err := json.Unmarshal(resp, &result); err != nil {
+		logger.Warn("Alpha Vantage Response Parse Failed", logger.H{
+			"symbol": symbol,
+			"error":  err.Error(),
+		})
 		return nil, fmt.Errorf("failed to parse Alpha Vantage response: %w", err)
+	}
+
+	// Check for API error response
+	if errorMsg, exists := result["Error Message"]; exists {
+		logger.Warn("Alpha Vantage API Error", logger.H{
+			"symbol":        symbol,
+			"error_message": errorMsg,
+		})
+		return nil, fmt.Errorf("alpha vantage API error: %v", errorMsg)
+	}
+
+	// Check for rate limit response
+	if note, exists := result["Note"]; exists {
+		logger.Warn("Alpha Vantage Rate Limit", logger.H{
+			"symbol": symbol,
+			"note":   note,
+		})
+		return nil, fmt.Errorf("alpha vantage rate limit: %v", note)
 	}
 
 	// Extract time series data based on resolution
@@ -152,6 +187,12 @@ func (a *AlphaVantageProvider) GetHistoricalPrices(ctx context.Context, symbol s
 		return d1.After(d2)
 	})
 
+	logger.Info("Alpha Vantage GetHistoricalPrices Complete", logger.H{
+		"symbol":      symbol,
+		"resolution":  string(resolution),
+		"price_count": len(prices),
+	})
+
 	return &models.SymbolHistoricalPrice{
 		Symbol:           symbol,
 		Resolution:       resolution,
@@ -173,18 +214,36 @@ func (a *AlphaVantageProvider) makeRequest(ctx context.Context, params url.Value
 
 	resp, err := a.client.Do(req)
 	if err != nil {
+		logger.Warn("Alpha Vantage API Request Failed", logger.H{
+			"url":   sanitizedURL,
+			"error": err.Error(),
+		})
 		return nil, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
+		logger.Warn("Alpha Vantage API Error Response", logger.H{
+			"url":         sanitizedURL,
+			"status_code": resp.StatusCode,
+		})
 		return nil, fmt.Errorf("alpha vantage API error: %d", resp.StatusCode)
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
+		logger.Warn("Alpha Vantage Response Read Failed", logger.H{
+			"url":   sanitizedURL,
+			"error": err.Error(),
+		})
 		return nil, err
 	}
+
+	logger.Info("Alpha Vantage API Response Success", logger.H{
+		"url":           sanitizedURL,
+		"status_code":   resp.StatusCode,
+		"response_size": len(body),
+	})
 
 	return body, nil
 }

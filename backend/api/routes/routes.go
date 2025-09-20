@@ -57,7 +57,6 @@ func SetupRouter(cfg *config.Config) *gin.Engine {
 	api.Use(middlewares.RateLimitMiddleware(rateLimiter))
 	{
 		// TODO: only allowed admin users to access these routes
-		api.GET(constants.HelloWorldEndpoint, handlers.HelloWorld)
 		api.GET(constants.DatabaseHealthEndpoint, handlers.DatabaseHealthHandler)
 
 		api.POST(constants.LogoutEndpoint, handlersProvider.Auth.Logout)
