@@ -2,13 +2,12 @@ package cache
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 
 	"github.com/redis/go-redis/v9"
 	"github.com/transaction-tracker/price_service/internal/config"
-	"github.com/transaction-tracker/price_service/internal/models"
+	"github.com/transaction-tracker/price_service/internal/logger"
 )
 
 type Service struct {
@@ -37,96 +36,73 @@ func NewService(cfg *config.Config) (*Service, error) {
 	}, nil
 }
 
-// Current price cache methods
-func (s *Service) GetCurrentPrice(ctx context.Context, symbol string) (*models.SymbolCurrentPrice, error) {
-	key := fmt.Sprintf("price_service:current-price:%s", symbol)
-	val, err := s.client.Get(ctx, key).Result()
+// Redis wrapper methods with logging
+func (s *Service) redisGet(ctx context.Context, key string) (string, error) {
+	logger.Info("Redis Cache Get", logger.H{
+		"operation": "cache_get",
+		"key":       key,
+	})
+
+	result, err := s.client.Get(ctx, key).Result()
+
 	if err != nil {
 		if err == redis.Nil {
-			return nil, nil // Not found
+			logger.Info("Redis Cache Miss", logger.H{
+				"operation": "cache_miss",
+				"key":       key,
+			})
+		} else {
+			logger.Warn("Redis Cache Get Failed", logger.H{
+				"operation": "cache_get",
+				"key":       key,
+				"error":     err.Error(),
+			})
 		}
-		return nil, err
+		return result, err
 	}
 
-	var price models.SymbolCurrentPrice
-	if err := json.Unmarshal([]byte(val), &price); err != nil {
-		return nil, err
-	}
+	logger.Info("Redis Cache Hit", logger.H{
+		"operation": "cache_hit",
+		"key":       key,
+	})
 
-	return &price, nil
+	return result, nil
 }
 
-func (s *Service) SetCurrentPrice(ctx context.Context, symbol string, price *models.SymbolCurrentPrice) error {
-	key := fmt.Sprintf("price_service:current-price:%s", symbol)
-	data, err := json.Marshal(price)
+func (s *Service) redisSet(ctx context.Context, key string, value interface{}, expiration time.Duration) error {
+	logger.Info("Redis Cache Set", logger.H{
+		"operation": "cache_set",
+		"key":       key,
+		"ttl":       expiration.String(),
+	})
+
+	err := s.client.Set(ctx, key, value, expiration).Err()
 	if err != nil {
-		return err
+		logger.Warn("Redis Cache Set Failed", logger.H{
+			"operation": "cache_set",
+			"key":       key,
+			"error":     err.Error(),
+		})
 	}
-
-	var stockPriceCacheTTL = 1 * time.Minute
-
-	return s.client.Set(ctx, key, data, stockPriceCacheTTL).Err()
+	return err
 }
 
-// Historical price cache methods
-func (s *Service) GetHistoricalPrice(ctx context.Context, symbol string, resolution models.Resolution) (*models.SymbolHistoricalPrice, error) {
-	today := time.Now().Format("2006-01-02")
-	key := fmt.Sprintf("price_service:historical-price:%s:%s:%s", symbol, string(resolution), today)
-	val, err := s.client.Get(ctx, key).Result()
+func (s *Service) redisDel(ctx context.Context, keys ...string) error {
+	logger.Info("Redis Cache Delete", logger.H{
+		"operation": "cache_delete",
+		"keys":      keys,
+		"count":     len(keys),
+	})
+
+	err := s.client.Del(ctx, keys...).Err()
 	if err != nil {
-		if err == redis.Nil {
-			return nil, nil // Not found
-		}
-		return nil, err
+		logger.Warn("Redis Cache Delete Failed", logger.H{
+			"operation": "cache_delete",
+			"keys":      keys,
+			"error":     err.Error(),
+		})
 	}
-
-	var price models.SymbolHistoricalPrice
-	if err := json.Unmarshal([]byte(val), &price); err != nil {
-		return nil, err
-	}
-
-	return &price, nil
-}
-
-func (s *Service) SetHistoricalPrice(ctx context.Context, symbol string, resolution models.Resolution, price *models.SymbolHistoricalPrice) error {
-	today := time.Now().Format("2006-01-02")
-	key := fmt.Sprintf("price_service:historical-price:%s:%s:%s", symbol, string(resolution), today)
-	data, err := json.Marshal(price)
-	if err != nil {
-		return err
-	}
-
-	// Historical data uses 24 hour TTL
-	historicalTTL := 24 * time.Hour
-	return s.client.Set(ctx, key, data, historicalTTL).Err()
-}
-
-// DeleteHistoricalPrice removes historical price data from cache
-func (s *Service) DeleteHistoricalPrice(ctx context.Context, symbol string, resolution models.Resolution) error {
-	today := time.Now().Format("2006-01-02")
-	key := fmt.Sprintf("price_service:historical-price:%s:%s:%s", symbol, string(resolution), today)
-	return s.client.Del(ctx, key).Err()
-}
-
-// Cache management methods
-func (s *Service) InvalidateAll(ctx context.Context) error {
-	// Delete all price-related keys
-	currentPriceKeys, err := s.client.Keys(ctx, "price_service:current-price:*").Result()
-	if err != nil {
-		return err
-	}
-
-	historicalPriceKeys, err := s.client.Keys(ctx, "price_service:historical-price:*:*:*").Result()
-	if err != nil {
-		return err
-	}
-
-	allKeys := append(currentPriceKeys, historicalPriceKeys...)
-	if len(allKeys) > 0 {
-		return s.client.Del(ctx, allKeys...).Err()
-	}
-
-	return nil
+	return err
 }
 
 func (s *Service) Close() error {
