@@ -124,6 +124,11 @@ func (w *responseWriter) Write(data []byte) (int, error) {
 // GinLoggerMiddleware returns a configured gin-contrib/logger middleware with advanced features
 func GinLoggerMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		if c.Request.Method == "OPTIONS" {
+			c.Next()
+			return
+		}
+
 		// Create a custom response writer to capture the response body
 		rw := &responseWriter{
 			ResponseWriter: c.Writer,
