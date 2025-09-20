@@ -99,7 +99,7 @@ func (a *AlphaVantageProvider) GetHistoricalPrices(ctx context.Context, symbol s
 	// Check for API error response
 	if errorMsg, exists := result["Error Message"]; exists {
 		logger.Warn("Alpha Vantage API Error", logger.H{
-			"symbol":       symbol,
+			"symbol":        symbol,
 			"error_message": errorMsg,
 		})
 		return nil, fmt.Errorf("alpha vantage API error: %v", errorMsg)
