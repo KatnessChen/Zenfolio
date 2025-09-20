@@ -1,13 +1,33 @@
-package config
+package cache
 
 import (
 	"context"
 	"fmt"
+	"os"
+	"strconv"
 	"time"
 
 	"github.com/redis/go-redis/v9"
 	"github.com/transaction-tracker/backend/internal/logger"
 )
+
+// getEnvOrDefault returns environment variable value or default if not set
+func getEnvOrDefault(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
+}
+
+// getEnvOrDefaultInt returns environment variable as int or default if not set
+func getEnvOrDefaultInt(key string, defaultValue int) int {
+	if value := os.Getenv(key); value != "" {
+		if intValue, err := strconv.Atoi(value); err == nil {
+			return intValue
+		}
+	}
+	return defaultValue
+}
 
 // RedisConfig holds Redis configuration
 type RedisConfig struct {
